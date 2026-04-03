@@ -694,7 +694,7 @@ Step 16：將 FCM Service Account Key 存入 Supabase Secrets
 Step 17：部署 Edge Functions
 
 > ✅ **已完成（CLI 自動化）**：Steps 1–14 已透過 `supabase db push` 完成。
-> 專案 Reference ID：`dfrtaekllyeyozwcntsj`（Tokyo region）
+> 專案 Reference ID：`xzqwzpwpjofpkbewkwzx`（Tokyo region）
 ```
 
 ---

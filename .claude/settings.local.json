@@ -86,7 +86,19 @@
       "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\(''''skills'''', d.get\\(''''skillPaths'''', []\\)\\), indent=2\\)\\)\")",
       "Bash(gh repo:*)",
       "Bash(find C:/Users/user -path */anthropic-skills* -name SKILL.md)",
-      "Bash(python -c \":*)"
+      "Bash(python -c \":*)",
+      "WebFetch(domain:www.threads.com)",
+      "mcp__plugin_playwright_playwright__browser_navigate",
+      "mcp__plugin_playwright_playwright__browser_snapshot",
+      "Bash(grep -r supabase.co /d/Startup/Luko/app --include=*.dart --include=*.json --include=*.md)",
+      "Bash(grep -r \"AIzaSyBbDsQ17jaAJTASO0EfqjdsmkmRyH2azZY\\\\|AIzaSyAUk2u3nYocJg0WdGKQn61De5z1vLNt6N0\" /d/Startup/Luko/app --include=*.dart --include=*.json --include=*.md)",
+      "Bash(grep -r eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9 /d/Startup/Luko --include=*.dart --include=*.json --include=*.xml --include=*.md)",
+      "Bash(xargs head:*)",
+      "Bash(python -c \"from PIL import Image; img = Image.open\\(''web/favicon.png''\\); print\\(img.size, img.mode\\)\")",
+      "Bash(identify web/favicon.png)",
+      "Skill(commit-commands:commit-push-pr)",
+      "Skill(commit-commands:commit-push-pr:*)",
+      "Bash(git checkout:*)"
     ]
   }
 }

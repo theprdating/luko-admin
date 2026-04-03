@@ -1,0 +1,573 @@
+{
+  "@@locale": "zh",
+
+  "appName": "Luko",
+  "@appName": { "description": "App 名稱" },
+
+  "commonConfirm": "確認",
+  "@commonConfirm": { "description": "確認按鈕" },
+
+  "commonCancel": "取消",
+  "@commonCancel": { "description": "取消按鈕" },
+
+  "commonSave": "儲存",
+  "@commonSave": { "description": "儲存按鈕" },
+
+  "commonNext": "下一步",
+  "@commonNext": { "description": "下一步按鈕" },
+
+  "commonBack": "返回",
+  "@commonBack": { "description": "返回按鈕" },
+
+  "commonLoading": "載入中...",
+  "@commonLoading": { "description": "通用載入文字" },
+
+  "commonError": "發生錯誤，請再試一次。",
+  "@commonError": { "description": "通用錯誤訊息" },
+
+  "commonSkip": "略過",
+  "@commonSkip": { "description": "略過按鈕" },
+
+  "commonRetry": "重試",
+  "@commonRetry": { "description": "重試按鈕" },
+
+  "authWelcomeTitle": "與認真打理自己的人相遇。",
+  "@authWelcomeTitle": { "description": "歡迎頁主標題" },
+
+  "authWelcomeSubtitle": "申請加入 Luko，每一個帳號都經過人工審核。",
+  "@authWelcomeSubtitle": { "description": "歡迎頁副標題" },
+
+  "welcomeBadge": "申請制",
+  "@welcomeBadge": { "description": "歡迎頁 badge 標籤（排他性標記）" },
+
+  "welcomeHeadline": "你在認真，他們也是。",
+  "@welcomeHeadline": { "description": "歡迎頁主標語" },
+
+  "welcomeBody": "每個帳號都由真人審核。",
+  "@welcomeBody": { "description": "歡迎頁副標文字" },
+
+  "authApplyButton": "申請加入",
+  "@authApplyButton": { "description": "申請 CTA 按鈕" },
+
+  "authLoginButton": "已有帳號，直接登入",
+  "@authLoginButton": { "description": "登入按鈕" },
+
+  "authContinueWithGoogle": "使用 Google 繼續",
+  "@authContinueWithGoogle": { "description": "Google OAuth 登入按鈕" },
+
+  "authContinueWithApple": "使用 Apple 繼續",
+  "@authContinueWithApple": { "description": "Apple OAuth 登入按鈕" },
+
+  "authConsentSuffix": " 與 {privacy}",
+  "@authConsentSuffix": {
+    "description": "同意文字後綴（接在 authConsentPrefix + termsLabel 之後）",
+    "placeholders": { "privacy": { "type": "String" } }
+  },
+
+  "verifyPhoneTitle": "綁定手機號碼",
+  "@verifyPhoneTitle": { "description": "審核通過後手機綁定頁標題" },
+
+  "verifyPhoneSubtitle": "最後一步！綁定手機號碼以確認你的身份。",
+  "@verifyPhoneSubtitle": { "description": "審核通過後手機綁定頁說明" },
+
+  "verifyPhoneUniqueNote": "每個手機號碼只能綁定一個帳號",
+  "@verifyPhoneUniqueNote": { "description": "手機唯一性說明" },
+
+  "authPhoneTitle": "驗證手機號碼",
+  "@authPhoneTitle": { "description": "手機驗證頁標題" },
+
+  "authPhoneSubtitle": "輸入你的手機號碼，我們將發送驗證碼簡訊",
+  "@authPhoneSubtitle": { "description": "手機驗證頁說明" },
+
+  "authPhoneLabel": "手機號碼",
+  "@authPhoneLabel": { "description": "手機號碼輸入框 label" },
+
+  "authPhoneHint": "09XX XXX XXX",
+  "@authPhoneHint": { "description": "手機號碼輸入框 placeholder" },
+
+  "authSendCode": "發送驗證碼",
+  "@authSendCode": { "description": "發送 OTP 按鈕" },
+
+  "authOtpTitle": "輸入驗證碼",
+  "@authOtpTitle": { "description": "OTP 驗證頁標題" },
+
+  "authOtpSentTo": "驗證碼已發送至 {phone}",
+  "@authOtpSentTo": {
+    "description": "OTP 發送確認文字",
+    "placeholders": { "phone": { "type": "String" } }
+  },
+
+  "authOtpVerify": "驗證",
+  "@authOtpVerify": { "description": "OTP 驗證按鈕" },
+
+  "authOtpResend": "重新發送",
+  "@authOtpResend": { "description": "重新發送 OTP 按鈕" },
+
+  "authOtpResendIn": "{seconds} 秒後可重新發送",
+  "@authOtpResendIn": {
+    "description": "重新發送倒數",
+    "placeholders": { "seconds": { "type": "int" } }
+  },
+
+  "authOtpInvalid": "驗證碼不正確，請重新輸入",
+  "@authOtpInvalid": { "description": "OTP 錯誤提示" },
+
+  "authOtpExpired": "驗證碼已過期，請重新發送",
+  "@authOtpExpired": { "description": "OTP 過期提示" },
+
+  "authPhoneInvalid": "請輸入正確的手機號碼",
+  "@authPhoneInvalid": { "description": "手機號碼格式錯誤提示" },
+
+  "authLoginTitle": "歡迎回來",
+  "@authLoginTitle": { "description": "登入頁標題" },
+
+  "authLoginSubtitle": "輸入手機號碼以驗證身份",
+  "@authLoginSubtitle": { "description": "登入頁說明" },
+
+  "applyStep": "{current} / {total}",
+  "@applyStep": {
+    "description": "申請步驟指示器",
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "applyInfoTitle": "基本資料",
+  "@applyInfoTitle": { "description": "申請 Step 2 標題" },
+
+  "applyInfoSubtitle": "讓大家認識你",
+  "@applyInfoSubtitle": { "description": "申請 Step 2 說明" },
+
+  "applyNameLabel": "顯示名稱",
+  "@applyNameLabel": { "description": "顯示名稱欄位 label" },
+
+  "applyNameHint": "輸入你的名稱",
+  "@applyNameHint": { "description": "顯示名稱 placeholder" },
+
+  "applyNameHelper": "最多 20 個字",
+  "@applyNameHelper": { "description": "顯示名稱字數說明" },
+
+  "applyNameEmpty": "請輸入顯示名稱",
+  "@applyNameEmpty": { "description": "顯示名稱空白錯誤" },
+
+  "applyBirthDateLabel": "生日",
+  "@applyBirthDateLabel": { "description": "生日欄位 label" },
+
+  "applyBirthDateHint": "選擇你的生日",
+  "@applyBirthDateHint": { "description": "生日 placeholder" },
+
+  "applyBirthDateEmpty": "請選擇生日",
+  "@applyBirthDateEmpty": { "description": "生日未選取錯誤" },
+
+  "applyAgeError": "需年滿 18 歲才能申請",
+  "@applyAgeError": { "description": "年齡不足錯誤" },
+
+  "applyGenderLabel": "性別",
+  "@applyGenderLabel": { "description": "性別欄位 label" },
+
+  "applyGenderMale": "男",
+  "@applyGenderMale": { "description": "男性選項" },
+
+  "applyGenderFemale": "女",
+  "@applyGenderFemale": { "description": "女性選項" },
+
+  "applyGenderOther": "其他",
+  "@applyGenderOther": { "description": "其他性別選項" },
+
+  "applyGenderEmpty": "請選擇性別",
+  "@applyGenderEmpty": { "description": "性別未選取錯誤" },
+
+  "applySeekingLabel": "想認識",
+  "@applySeekingLabel": { "description": "想認識欄位 label" },
+
+  "applySeekingMen": "男性",
+  "@applySeekingMen": { "description": "想認識男性選項" },
+
+  "applySeekingWomen": "女性",
+  "@applySeekingWomen": { "description": "想認識女性選項" },
+
+  "applySeekingEveryone": "都可以",
+  "@applySeekingEveryone": { "description": "想認識都可以選項" },
+
+  "applySeekingEmpty": "請選擇想認識的對象",
+  "@applySeekingEmpty": { "description": "想認識未選取錯誤" },
+
+  "applyPhotosTitle": "上傳照片",
+  "@applyPhotosTitle": { "description": "申請 Step 3 標題" },
+
+  "applyPhotosSubtitle": "上傳 2–9 張近期清晰照片，展現真實的你。長按照片可調整順序。",
+  "@applyPhotosSubtitle": { "description": "申請 Step 3 說明" },
+
+  "applyPhotosAddPhoto": "新增照片",
+  "@applyPhotosAddPhoto": { "description": "照片格空白時顯示的文字" },
+
+  "applyPhotosFromGallery": "從相簿選取",
+  "@applyPhotosFromGallery": { "description": "從相簿選取照片選項" },
+
+  "applyPhotosFromCamera": "拍照",
+  "@applyPhotosFromCamera": { "description": "使用相機拍照選項" },
+
+  "applyPhotosUploading": "上傳照片中...",
+  "@applyPhotosUploading": { "description": "照片上傳載入文字" },
+
+  "applyPhotosSelected": "已選取 {count} 張照片",
+  "@applyPhotosSelected": {
+    "description": "已選取照片數量提示",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "applyPhotosMinRequired": "至少需要 {min} 張照片",
+  "@applyPhotosMinRequired": {
+    "description": "未達最低照片數量提示",
+    "placeholders": { "min": { "type": "int" } }
+  },
+
+  "permissionPhotoTitle": "需要相簿權限",
+  "@permissionPhotoTitle": { "description": "相簿權限被拒 Dialog 標題" },
+
+  "permissionPhotoBody": "Luko 需要存取您的相簿才能上傳照片。請前往設定開啟相簿權限。",
+  "@permissionPhotoBody": { "description": "相簿權限被拒 Dialog 內文" },
+
+  "permissionCameraTitle": "需要相機權限",
+  "@permissionCameraTitle": { "description": "相機權限被拒 Dialog 標題" },
+
+  "permissionCameraBody": "Luko 需要存取相機才能拍照。請前往設定開啟相機權限。",
+  "@permissionCameraBody": { "description": "相機權限被拒 Dialog 內文" },
+
+  "permissionOpenSettings": "前往設定",
+  "@permissionOpenSettings": { "description": "開啟系統設定按鈕" },
+
+  "applyVerifyIntroTitle": "真人認證",
+  "@applyVerifyIntroTitle": { "description": "真人認證介紹頁標題" },
+
+  "applyVerifyIntroBody": "為了保護社群安全，我們需要確認你是真實的人。\n認證照片僅供審核人員查閱，不會對外顯示。",
+  "@applyVerifyIntroBody": { "description": "真人認證介紹頁說明" },
+
+  "applyVerifyIntroStep1": "正面照",
+  "@applyVerifyIntroStep1": { "description": "認證流程步驟 1 說明" },
+
+  "applyVerifyIntroStep2": "左側臉照",
+  "@applyVerifyIntroStep2": { "description": "認證流程步驟 2 說明" },
+
+  "applyVerifyIntroStep3": "隨機動作 ×2",
+  "@applyVerifyIntroStep3": { "description": "認證流程步驟 3 說明" },
+
+  "applyVerifyStartButton": "開始認證",
+  "@applyVerifyStartButton": { "description": "開始認證按鈕" },
+
+  "applyVerifyStepFrontTitle": "拍正面照",
+  "@applyVerifyStepFrontTitle": { "description": "認證步驟 — 正面照標題" },
+
+  "applyVerifyStepFrontHint": "面對鏡頭，保持自然表情",
+  "@applyVerifyStepFrontHint": { "description": "認證步驟 — 正面照提示" },
+
+  "applyVerifyStepSideTitle": "拍左側臉照",
+  "@applyVerifyStepSideTitle": { "description": "認證步驟 — 側臉照標題" },
+
+  "applyVerifyStepSideHint": "頭轉向左側，讓側臉清楚入鏡",
+  "@applyVerifyStepSideHint": { "description": "認證步驟 — 側臉照提示" },
+
+  "applyVerifyStepActionTitle": "完成動作",
+  "@applyVerifyStepActionTitle": { "description": "認證步驟 — 動作標題" },
+
+  "applyVerifyStepActionHint": "面對鏡頭，做出以下動作：",
+  "@applyVerifyStepActionHint": { "description": "認證步驟 — 動作提示" },
+
+  "applyVerifyTakePhoto": "拍照",
+  "@applyVerifyTakePhoto": { "description": "拍照按鈕" },
+
+  "applyVerifyRetake": "重拍",
+  "@applyVerifyRetake": { "description": "重拍按鈕" },
+
+  "applyVerifyNextStep": "繼續",
+  "@applyVerifyNextStep": { "description": "繼續下一步按鈕" },
+
+  "applyVerifyUploading": "上傳認證照片中...",
+  "@applyVerifyUploading": { "description": "認證照片上傳載入文字" },
+
+  "verifyActionSmile": "對鏡頭微笑",
+  "@verifyActionSmile": { "description": "認證動作：微笑" },
+
+  "verifyActionBlink": "慢慢眨一次眼",
+  "@verifyActionBlink": { "description": "認證動作：眨眼" },
+
+  "verifyActionOpenMouth": "張開嘴巴",
+  "@verifyActionOpenMouth": { "description": "認證動作：張嘴" },
+
+  "verifyActionRaiseRightHand": "舉起右手",
+  "@verifyActionRaiseRightHand": { "description": "認證動作：舉右手" },
+
+  "verifyActionRaiseLeftHand": "舉起左手",
+  "@verifyActionRaiseLeftHand": { "description": "認證動作：舉左手" },
+
+  "verifyActionWave": "向鏡頭揮手",
+  "@verifyActionWave": { "description": "認證動作：揮手" },
+
+  "verifyActionThumbsUp": "比讚",
+  "@verifyActionThumbsUp": { "description": "認證動作：比讚" },
+
+  "verifyActionTouchNose": "用手指摸鼻子",
+  "@verifyActionTouchNose": { "description": "認證動作：摸鼻子" },
+
+  "verifyActionCrossArms": "雙手交叉抱胸",
+  "@verifyActionCrossArms": { "description": "認證動作：交叉抱胸" },
+
+  "verifyActionTiltHead": "頭歪向右肩",
+  "@verifyActionTiltHead": { "description": "認證動作：頭歪向右肩" },
+
+  "applyBioTitle": "自我介紹",
+  "@applyBioTitle": { "description": "申請 Step 5 標題" },
+
+  "applyBioSubtitle": "簡短介紹一下自己（選填）",
+  "@applyBioSubtitle": { "description": "申請 Step 4 說明" },
+
+  "applyBioHint": "分享你的興趣、生活方式或任何想說的話...",
+  "@applyBioHint": { "description": "Bio 輸入框 placeholder" },
+
+  "applyBioHelper": "最多 150 字",
+  "@applyBioHelper": { "description": "Bio 字數說明" },
+
+  "applyConfirmTitle": "確認送出",
+  "@applyConfirmTitle": { "description": "申請 Step 5 標題" },
+
+  "applyConfirmSubtitle": "請確認以下資料後送出申請",
+  "@applyConfirmSubtitle": { "description": "申請 Step 5 說明" },
+
+  "applyConfirmNoBio": "（未填寫）",
+  "@applyConfirmNoBio": { "description": "自我介紹未填寫的佔位文字" },
+
+  "applyConfirmSubmitting": "送出申請中...",
+  "@applyConfirmSubmitting": { "description": "送出申請時的載入文字" },
+
+  "applySubmitButton": "送出申請",
+  "@applySubmitButton": { "description": "送出申請按鈕" },
+
+  "applyTermsAgree": "我同意 服務條款 及 隱私權政策",
+  "@applyTermsAgree": { "description": "條款同意文字" },
+
+  "reviewPendingTitle": "申請已送出",
+  "@reviewPendingTitle": { "description": "審核中頁面標題" },
+
+  "reviewPendingBody": "我們的團隊將在 48 小時內審核您的資料，結果將以推播通知告知您。",
+  "@reviewPendingBody": { "description": "審核中頁面說明" },
+
+  "reviewPendingStep1Label": "申請已送出",
+  "@reviewPendingStep1Label": { "description": "審核中時間軸第 1 步標題" },
+
+  "reviewPendingStep1Sub": "資料已收到，等待排程審核",
+  "@reviewPendingStep1Sub": { "description": "審核中時間軸第 1 步說明" },
+
+  "reviewPendingStep2Label": "審核中",
+  "@reviewPendingStep2Label": { "description": "審核中時間軸第 2 步標題" },
+
+  "reviewPendingStep2Sub": "預計 24–48 小時內完成",
+  "@reviewPendingStep2Sub": { "description": "審核中時間軸第 2 步說明" },
+
+  "reviewPendingStep3Label": "通知發送",
+  "@reviewPendingStep3Label": { "description": "審核中時間軸第 3 步標題" },
+
+  "reviewPendingStep3Sub": "結果將以推播通知告知你",
+  "@reviewPendingStep3Sub": { "description": "審核中時間軸第 3 步說明" },
+
+  "reviewRejectedTitle": "暫時未能通過",
+  "@reviewRejectedTitle": { "description": "審核未通過頁面標題（備用）" },
+
+  "reviewRejectedBody": "您目前暫時未符合我們的社群標準。歡迎在 30 天後重新申請。",
+  "@reviewRejectedBody": { "description": "審核未通過頁面說明（備用）" },
+
+  "reviewRejectedTitleSoft": "目前還不是時候",
+  "@reviewRejectedTitleSoft": { "description": "拒絕頁面標題 — 一般拒絕" },
+
+  "reviewRejectedBodySoft": "感謝你申請加入 Luko。\n目前的呈現方式暫時與我們的標準有些距離。",
+  "@reviewRejectedBodySoft": { "description": "拒絕頁面說明 — 一般拒絕" },
+
+  "reviewRejectedTitlePotential": "你有 Luko 的潛力！",
+  "@reviewRejectedTitlePotential": { "description": "拒絕頁面標題 — 有潛力" },
+
+  "reviewRejectedBodyPotential": "我們看見你的潛力，但目前的照片還不夠展現你的魅力。\n試試這些建議，讓自己更容易通過審核：",
+  "@reviewRejectedBodyPotential": { "description": "拒絕頁面說明 — 有潛力" },
+
+  "reviewRejectedTip1": "靠近窗戶或在戶外自然光下拍攝",
+  "@reviewRejectedTip1": { "description": "改善建議 1" },
+
+  "reviewRejectedTip2": "臉部清晰，避免過度修圖或濾鏡",
+  "@reviewRejectedTip2": { "description": "改善建議 2" },
+
+  "reviewRejectedTip3": "加入一張展現你個性的生活照",
+  "@reviewRejectedTip3": { "description": "改善建議 3" },
+
+  "reviewReapplyDays": "{days} 天後可重新申請",
+  "@reviewReapplyDays": {
+    "description": "距離可重申日期的剩餘天數",
+    "placeholders": { "days": { "type": "int" } }
+  },
+
+  "reviewReapplyAvailable": "現在可以重新申請了",
+  "@reviewReapplyAvailable": { "description": "重申請已解鎖時顯示的文字" },
+
+  "reviewReapplyButton": "重新申請",
+  "@reviewReapplyButton": { "description": "重新申請 CTA 按鈕" },
+
+  "reviewReapplyDateHint": "最早可於 {date} 重新申請",
+  "@reviewReapplyDateHint": {
+    "description": "顯示重申請開放日期的提示",
+    "placeholders": { "date": { "type": "String" } }
+  },
+
+  "discoverTitle": "探索",
+  "@discoverTitle": { "description": "探索分頁標題" },
+
+  "discoverEmptyTitle": "已經看完所有人了",
+  "@discoverEmptyTitle": { "description": "探索頁空狀態標題" },
+
+  "discoverEmptySubtitle": "稍後再回來看看新的用戶吧。",
+  "@discoverEmptySubtitle": { "description": "探索頁空狀態副標題" },
+
+  "matchTitle": "配對",
+  "@matchTitle": { "description": "配對分頁標題" },
+
+  "matchNewMatch": "互相喜歡！",
+  "@matchNewMatch": { "description": "新配對通知標題" },
+
+  "chatTitle": "訊息",
+  "@chatTitle": { "description": "聊天分頁標題" },
+
+  "chatEmptyTitle": "還沒有任何訊息",
+  "@chatEmptyTitle": { "description": "聊天空狀態" },
+
+  "profileTitle": "個人檔案",
+  "@profileTitle": { "description": "個人檔案分頁標題" },
+
+  "profileEditButton": "編輯資料",
+  "@profileEditButton": { "description": "編輯個人資料按鈕" },
+
+  "settingsTitle": "設定",
+  "@settingsTitle": { "description": "設定頁標題" },
+
+  "settingsLanguage": "語言",
+  "@settingsLanguage": { "description": "語言設定標籤" },
+
+  "settingsLogout": "登出",
+  "@settingsLogout": { "description": "登出按鈕" },
+
+  "settingsDeleteAccount": "刪除帳號",
+  "@settingsDeleteAccount": { "description": "刪除帳號按鈕" },
+
+  "reportTitle": "檢舉此用戶",
+  "@reportTitle": { "description": "檢舉對話框標題" },
+
+  "reportSubmit": "送出檢舉",
+  "@reportSubmit": { "description": "送出檢舉按鈕" },
+
+  "blockUser": "封鎖用戶",
+  "@blockUser": { "description": "封鎖用戶按鈕" },
+
+  "onboardingSkip": "略過",
+  "@onboardingSkip": { "description": "Onboarding 略過按鈕（保留備用，目前不顯示）" },
+
+  "onboardingContinue": "繼續",
+  "@onboardingContinue": { "description": "Onboarding 中間頁的 CTA 按鈕" },
+
+  "onboardingGetStarted": "我準備好了",
+  "@onboardingGetStarted": { "description": "Onboarding 最後一頁的 CTA 按鈕" },
+
+  "onboarding1Title": "打理好自己的人，\n你值得遇見",
+  "@onboarding1Title": { "description": "Onboarding 第 1 頁標題" },
+
+  "onboarding1Body": "細心，是看得見的。\n\n一個對自己認真的人，\n見到你的時候，也不會例外。",
+  "@onboarding1Body": { "description": "Onboarding 第 1 頁內文" },
+
+  "onboarding2Title": "我們用態度，\n篩選每一個人",
+  "@onboarding2Title": { "description": "Onboarding 第 2 頁標題" },
+
+  "onboarding2Body": "不是演算法，是真人審核。\n\n每一個通過的帳號，都代表一個人決定認真對待自己，以及認識他的人。",
+  "@onboarding2Body": { "description": "Onboarding 第 2 頁內文" },
+
+  "onboarding3Title": "好的相遇，\n不是在人堆碰運氣",
+  "@onboarding3Title": { "description": "Onboarding 第 3 頁標題" },
+
+  "onboarding3Body": "不再是無限滑卡。\n\n每天 Luko 只為你精選幾個人\n讓你把所有的注意力，放在真正值得的人身上。\n\n認真的你，值得一個認真的遇見。",
+  "@onboarding3Body": { "description": "Onboarding 第 3 頁內文" },
+
+  "onboarding1Quote1": "「連能挑選的照片都這樣，誰還相信見面他會打理好自己」",
+  "@onboarding1Quote1": { "description": "Onboarding 第 1 頁背景引號 1" },
+  "onboarding1Quote2": "「是我要求太多嗎？」",
+  "@onboarding1Quote2": { "description": "Onboarding 第 1 頁背景引號 2" },
+  "onboarding1Quote3": "「我打扮了一小時，對方卻⋯」",
+  "@onboarding1Quote3": { "description": "Onboarding 第 1 頁背景引號 3" },
+  "onboarding1Quote4": "「怎麼都不認真打扮？」",
+  "@onboarding1Quote4": { "description": "Onboarding 第 1 頁背景引號 4" },
+  "onboarding1Quote5": "「對方的照片看起來好敷衍」",
+  "@onboarding1Quote5": { "description": "Onboarding 第 1 頁背景引號 5" },
+  "onboarding1Quote6": "「難道只有我在乎見面這件事？」",
+  "@onboarding1Quote6": { "description": "Onboarding 第 1 頁背景引號 6" },
+
+  "onboarding2Quote1": "「怎麼知道他是真的？」",
+  "@onboarding2Quote1": { "description": "Onboarding 第 2 頁背景引號 1" },
+  "onboarding2Quote2": "「都是假照片假資訊」",
+  "@onboarding2Quote2": { "description": "Onboarding 第 2 頁背景引號 2" },
+  "onboarding2Quote3": "「感覺在跟機器人聊天」",
+  "@onboarding2Quote3": { "description": "Onboarding 第 2 頁背景引號 3" },
+  "onboarding2Quote4": "「搞不清楚對面是不是真人」",
+  "@onboarding2Quote4": { "description": "Onboarding 第 2 頁背景引號 4" },
+  "onboarding2Quote5": "「聊了好久才發現是假帳號」",
+  "@onboarding2Quote5": { "description": "Onboarding 第 2 頁背景引號 5" },
+  "onboarding2Quote6": "「說好見面，卻突然消失了⋯」",
+  "@onboarding2Quote6": { "description": "Onboarding 第 2 頁背景引號 6" },
+
+  "onboarding3Quote1": "「滑了好久一個都不對」",
+  "@onboarding3Quote1": { "description": "Onboarding 第 3 頁背景引號 1" },
+  "onboarding3Quote2": "「真的好累不想滑了」",
+  "@onboarding3Quote2": { "description": "Onboarding 第 3 頁背景引號 2" },
+  "onboarding3Quote3": "「滑到後來根本不知道自己在找什麼」",
+  "@onboarding3Quote3": { "description": "Onboarding 第 3 頁背景引號 3" },
+  "onboarding3Quote4": "「這樣找下去到底有沒有用」",
+  "@onboarding3Quote4": { "description": "Onboarding 第 3 頁背景引號 4" },
+  "onboarding3Quote5": "「每天99+訊息到底要怎麼聊天」",
+  "@onboarding3Quote5": { "description": "Onboarding 第 3 頁背景引號 5" },
+  "onboarding3Quote6": "「感覺這樣找不是辦法⋯」",
+  "@onboarding3Quote6": { "description": "Onboarding 第 3 頁背景引號 6" },
+
+  "termsUpdateTitle": "條款已更新",
+  "@termsUpdateTitle": { "description": "條款更新頁標題" },
+
+  "termsUpdateSubtitle": "我們更新了服務條款與隱私政策，請閱讀後繼續使用 Luko。",
+  "@termsUpdateSubtitle": { "description": "條款更新頁說明" },
+
+  "termsUpdateAccept": "我已閱讀並同意最新條款",
+  "@termsUpdateAccept": { "description": "條款更新接受按鈕" },
+
+  "termsUpdateDecline": "不同意，登出",
+  "@termsUpdateDecline": { "description": "條款更新拒絕按鈕" },
+
+  "termsUpdateAccepting": "更新中...",
+  "@termsUpdateAccepting": { "description": "條款更新處理中的載入文字" },
+
+  "termsPageTitle": "服務條款",
+  "@termsPageTitle": { "description": "服務條款頁面標題" },
+
+  "privacyPageTitle": "隱私權政策",
+  "@privacyPageTitle": { "description": "隱私權政策頁面標題" },
+
+  "termsLabel": "服務條款",
+  "@termsLabel": { "description": "服務條款行內連結標籤" },
+
+  "privacyLabel": "隱私權政策",
+  "@privacyLabel": { "description": "隱私權政策行內連結標籤" },
+
+  "termsReadFull": "閱讀完整服務條款",
+  "@termsReadFull": { "description": "開啟完整服務條款頁面的連結" },
+
+  "privacyReadFull": "閱讀完整隱私權政策",
+  "@privacyReadFull": { "description": "開啟完整隱私權政策頁面的連結" },
+
+  "termsAgreePrefix": "我同意 ",
+  "@termsAgreePrefix": { "description": "同意列中服務條款連結前的文字" },
+
+  "termsAgreeAnd": " 及 ",
+  "@termsAgreeAnd": { "description": "服務條款連結與隱私政策連結之間的連接詞" },
+
+  "authConsentPrefix": "繼續即代表您同意我們的 ",
+  "@authConsentPrefix": { "description": "發送 OTP 前的隱式同意告知文字前綴" }
+}

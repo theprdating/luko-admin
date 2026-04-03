@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Supabase Studio",
+      "runtimeExecutable": "supabase",
+      "runtimeArgs": ["start"],
+      "port": 54323
+    },
+    {
+      "name": "Flutter Web",
+      "runtimeExecutable": "flutter",
+      "runtimeArgs": ["run", "-d", "web-server", "--web-hostname", "0.0.0.0", "--web-port", "3000"],
+      "port": 3000
+    },
+    {
+      "name": "Legal Pages",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "web", "-l", "8080", "--no-clipboard"],
+      "port": 8080
+    }
+  ]
+}

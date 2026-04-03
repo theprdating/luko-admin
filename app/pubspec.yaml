@@ -1,0 +1,102 @@
+name: luko
+description: "Luko — A curated dating app for people who take care of themselves."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.7.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # Backend
+  supabase_flutter: ^2.9.0
+
+  # State Management
+  flutter_riverpod: ^2.6.1
+
+  # Navigation
+  go_router: ^15.0.0
+
+  # Image
+  cached_network_image: ^3.4.1
+  image_picker: ^1.1.2                  # 從相簿 / 相機選取照片
+  flutter_image_compress: ^2.4.0        # HEIC/JPEG/PNG 壓縮與格式轉換
+  path_provider: ^2.1.5                 # 取得裝置暫存目錄（寫入壓縮後 JPEG）
+  image_cropper: ^12.1.1                # 照片裁切（需搭配 AndroidManifest 設定）
+  wechat_assets_picker: ^9.3.0         # 相簿選取（記憶上次位置、多選、自訂 UI）
+
+  # i18n（版本需與 flutter_localizations SDK 對齊，目前 Flutter 3.29 鎖定 0.19.0）
+  intl: ^0.20.0
+
+  # Local key-value storage（first-launch flag, cache）
+  shared_preferences: ^2.3.0
+
+  # Social Sign-In
+  google_sign_in: ^6.2.2
+  sign_in_with_apple: ^6.1.2
+  crypto: ^3.0.3               # Apple Sign-In nonce hashing
+
+  # Firebase
+  firebase_core: ^3.6.0
+  firebase_messaging: ^15.1.5
+
+  # Analytics
+  mixpanel_flutter: ^2.3.1
+
+  # Typography
+  google_fonts: ^6.2.1
+
+  # Icons
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.3
+  flutter_native_splash: ^2.4.3
+
+flutter:
+  uses-material-design: true
+  generate: true           # 啟用 l10n 自動產生
+
+  assets:
+    - assets/images/
+
+# ── App 圖示設定（flutter_launcher_icons）────────────────────────────────────
+# 執行：dart run flutter_launcher_icons
+# 會自動產生所有平台所需尺寸
+
+flutter_launcher_icons:
+  # ── iOS ───────────────────────────────────────────────────────────────────
+  # iOS 系統自動裁切圓角，提供正方形即可
+  ios: true
+  image_path_ios: "assets/images/app_icon.png"
+
+  # ── Android ───────────────────────────────────────────────────────────────
+  android: true
+  image_path_android: "assets/images/app_icon.png"
+
+  # Adaptive Icon（Android 8.0+）
+  # 不同廠商手機會自動套用圓形、圓角方形等形狀
+  adaptive_icon_background: "#1E3D2F"          # Luko 深森林綠背景
+  adaptive_icon_foreground: "assets/images/app_icon.png"
+
+  # 圖示出現在通知、設定等地方的最小尺寸保護
+  min_sdk_android: 21
+
+# ── Splash Screen 設定（flutter_native_splash）────────────────────────────────
+# 執行：dart run flutter_native_splash:create
+flutter_native_splash:
+  color: "#0F1E15"
+  image: assets/images/app_icon_white_03.png
+
+  android_12:
+    color: "#0F1E15"
+    image: assets/images/app_icon_white_03.png
+    icon_background_color: "#0F1E15"

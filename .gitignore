@@ -1,0 +1,40 @@
+# Environment variables - never commit credentials
+.env
+.env.local
+.env.*.local
+supabase/.env.local
+
+# Supabase
+.supabase/
+
+# Android 簽名金鑰（密碼明文，絕對不能上傳）
+app/android/key.properties
+*.jks
+*.keystore
+
+# Firebase 設定（含 API Key）
+app/android/app/google-services.json
+app/ios/Runner/GoogleService-Info.plist
+
+# Flutter build artifacts
+build/
+app/build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+
+# iOS / macOS
+app/ios/Pods/
+app/ios/.symlinks/
+app/macos/Pods/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+web/

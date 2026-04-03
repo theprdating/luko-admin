@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12+ windowSplashScreenAnimatedIcon
+     使用正方形透明底圖 app_icon_white_02，讓系統自動縮放不失真
+     gravity="center" 確保置中顯示 -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <bitmap
+            android:gravity="center"
+            android:src="@drawable/app_icon_white_03" />
+    </item>
+</layer-list>

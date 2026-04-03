@@ -1,0 +1,573 @@
+{
+  "@@locale": "en",
+
+  "appName": "Luko",
+  "@appName": { "description": "App name" },
+
+  "commonConfirm": "Confirm",
+  "@commonConfirm": { "description": "Confirm button" },
+
+  "commonCancel": "Cancel",
+  "@commonCancel": { "description": "Cancel button" },
+
+  "commonSave": "Save",
+  "@commonSave": { "description": "Save button" },
+
+  "commonNext": "Next",
+  "@commonNext": { "description": "Next button" },
+
+  "commonBack": "Back",
+  "@commonBack": { "description": "Back button" },
+
+  "commonLoading": "Loading...",
+  "@commonLoading": { "description": "Generic loading text" },
+
+  "commonError": "Something went wrong. Please try again.",
+  "@commonError": { "description": "Generic error message" },
+
+  "commonSkip": "Skip",
+  "@commonSkip": { "description": "Skip button" },
+
+  "commonRetry": "Retry",
+  "@commonRetry": { "description": "Retry button" },
+
+  "authWelcomeTitle": "Date people who take care of themselves.",
+  "@authWelcomeTitle": { "description": "Welcome screen main title" },
+
+  "authWelcomeSubtitle": "Apply to join Luko. We review every profile.",
+  "@authWelcomeSubtitle": { "description": "Welcome screen subtitle" },
+
+  "welcomeBadge": "BY APPLICATION",
+  "@welcomeBadge": { "description": "Welcome page badge label (exclusivity marker)" },
+
+  "welcomeHeadline": "You're serious. So are they.",
+  "@welcomeHeadline": { "description": "Welcome page main headline" },
+
+  "welcomeBody": "Every account is human-reviewed.",
+  "@welcomeBody": { "description": "Welcome page body copy" },
+
+  "authApplyButton": "Apply to Join",
+  "@authApplyButton": { "description": "Apply CTA button" },
+
+  "authLoginButton": "Already have an account? Sign In",
+  "@authLoginButton": { "description": "Login button" },
+
+  "authContinueWithGoogle": "Continue with Google",
+  "@authContinueWithGoogle": { "description": "Google OAuth sign-in button" },
+
+  "authContinueWithApple": "Continue with Apple",
+  "@authContinueWithApple": { "description": "Apple OAuth sign-in button" },
+
+  "authConsentSuffix": " and {privacy}",
+  "@authConsentSuffix": {
+    "description": "Consent text suffix (appended after authConsentPrefix + termsLabel)",
+    "placeholders": { "privacy": { "type": "String" } }
+  },
+
+  "verifyPhoneTitle": "Link Your Phone",
+  "@verifyPhoneTitle": { "description": "Post-approval phone linking page title" },
+
+  "verifyPhoneSubtitle": "One last step! Link your phone number to verify your identity.",
+  "@verifyPhoneSubtitle": { "description": "Post-approval phone linking page subtitle" },
+
+  "verifyPhoneUniqueNote": "Each phone number can only be linked to one account",
+  "@verifyPhoneUniqueNote": { "description": "Phone uniqueness note" },
+
+  "authPhoneTitle": "Verify Your Phone",
+  "@authPhoneTitle": { "description": "Phone verification page title" },
+
+  "authPhoneSubtitle": "Enter your phone number and we'll send you a verification code",
+  "@authPhoneSubtitle": { "description": "Phone verification page subtitle" },
+
+  "authPhoneLabel": "Phone Number",
+  "@authPhoneLabel": { "description": "Phone number field label" },
+
+  "authPhoneHint": "Enter your phone number",
+  "@authPhoneHint": { "description": "Phone number field placeholder" },
+
+  "authSendCode": "Send Code",
+  "@authSendCode": { "description": "Send OTP button" },
+
+  "authOtpTitle": "Enter Verification Code",
+  "@authOtpTitle": { "description": "OTP verification page title" },
+
+  "authOtpSentTo": "Code sent to {phone}",
+  "@authOtpSentTo": {
+    "description": "OTP sent confirmation text",
+    "placeholders": { "phone": { "type": "String" } }
+  },
+
+  "authOtpVerify": "Verify",
+  "@authOtpVerify": { "description": "OTP verify button" },
+
+  "authOtpResend": "Resend Code",
+  "@authOtpResend": { "description": "Resend OTP button" },
+
+  "authOtpResendIn": "Resend in {seconds}s",
+  "@authOtpResendIn": {
+    "description": "Resend OTP countdown",
+    "placeholders": { "seconds": { "type": "int" } }
+  },
+
+  "authOtpInvalid": "Invalid verification code. Please try again.",
+  "@authOtpInvalid": { "description": "OTP error message" },
+
+  "authOtpExpired": "Code expired. Please request a new one.",
+  "@authOtpExpired": { "description": "OTP expired message" },
+
+  "authPhoneInvalid": "Please enter a valid phone number",
+  "@authPhoneInvalid": { "description": "Invalid phone number error" },
+
+  "authLoginTitle": "Welcome back",
+  "@authLoginTitle": { "description": "Login page title" },
+
+  "authLoginSubtitle": "Enter your phone number to sign in",
+  "@authLoginSubtitle": { "description": "Login page subtitle" },
+
+  "applyStep": "{current} / {total}",
+  "@applyStep": {
+    "description": "Apply step indicator",
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "applyInfoTitle": "Basic Info",
+  "@applyInfoTitle": { "description": "Apply Step 2 title" },
+
+  "applyInfoSubtitle": "Let others know you",
+  "@applyInfoSubtitle": { "description": "Apply Step 2 subtitle" },
+
+  "applyNameLabel": "Display Name",
+  "@applyNameLabel": { "description": "Display name field label" },
+
+  "applyNameHint": "Enter your name",
+  "@applyNameHint": { "description": "Display name placeholder" },
+
+  "applyNameHelper": "Up to 20 characters",
+  "@applyNameHelper": { "description": "Display name helper text" },
+
+  "applyNameEmpty": "Please enter a display name",
+  "@applyNameEmpty": { "description": "Name empty error" },
+
+  "applyBirthDateLabel": "Date of Birth",
+  "@applyBirthDateLabel": { "description": "Birth date field label" },
+
+  "applyBirthDateHint": "Select your birthday",
+  "@applyBirthDateHint": { "description": "Birth date placeholder" },
+
+  "applyBirthDateEmpty": "Please select your date of birth",
+  "@applyBirthDateEmpty": { "description": "Birth date empty error" },
+
+  "applyAgeError": "You must be at least 18 years old to apply",
+  "@applyAgeError": { "description": "Age requirement error" },
+
+  "applyGenderLabel": "Gender",
+  "@applyGenderLabel": { "description": "Gender field label" },
+
+  "applyGenderMale": "Male",
+  "@applyGenderMale": { "description": "Male option" },
+
+  "applyGenderFemale": "Female",
+  "@applyGenderFemale": { "description": "Female option" },
+
+  "applyGenderOther": "Other",
+  "@applyGenderOther": { "description": "Other gender option" },
+
+  "applyGenderEmpty": "Please select a gender",
+  "@applyGenderEmpty": { "description": "Gender empty error" },
+
+  "applySeekingLabel": "Interested in",
+  "@applySeekingLabel": { "description": "Seeking field label" },
+
+  "applySeekingMen": "Men",
+  "@applySeekingMen": { "description": "Seeking men option" },
+
+  "applySeekingWomen": "Women",
+  "@applySeekingWomen": { "description": "Seeking women option" },
+
+  "applySeekingEveryone": "Everyone",
+  "@applySeekingEveryone": { "description": "Seeking everyone option" },
+
+  "applySeekingEmpty": "Please select who you're interested in",
+  "@applySeekingEmpty": { "description": "Seeking empty error" },
+
+  "applyPhotosTitle": "Add Photos",
+  "@applyPhotosTitle": { "description": "Apply Step 3 title" },
+
+  "applyPhotosSubtitle": "Upload 2–9 recent, clear photos that show the real you. Long-press to reorder.",
+  "@applyPhotosSubtitle": { "description": "Apply Step 3 subtitle" },
+
+  "applyPhotosAddPhoto": "Add Photo",
+  "@applyPhotosAddPhoto": { "description": "Text shown in empty photo slot" },
+
+  "applyPhotosFromGallery": "Choose from Gallery",
+  "@applyPhotosFromGallery": { "description": "Pick photo from gallery option" },
+
+  "applyPhotosFromCamera": "Take Photo",
+  "@applyPhotosFromCamera": { "description": "Take photo with camera option" },
+
+  "applyPhotosUploading": "Uploading photos...",
+  "@applyPhotosUploading": { "description": "Photo upload loading text" },
+
+  "applyPhotosSelected": "{count} photo(s) selected",
+  "@applyPhotosSelected": {
+    "description": "Number of photos selected",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "applyPhotosMinRequired": "At least {min} photos required",
+  "@applyPhotosMinRequired": {
+    "description": "Minimum photos not met message",
+    "placeholders": { "min": { "type": "int" } }
+  },
+
+  "permissionPhotoTitle": "Photo Library Access Required",
+  "@permissionPhotoTitle": { "description": "Gallery permission denied dialog title" },
+
+  "permissionPhotoBody": "Luko needs access to your photo library to upload photos. Please enable it in Settings.",
+  "@permissionPhotoBody": { "description": "Gallery permission denied dialog body" },
+
+  "permissionCameraTitle": "Camera Access Required",
+  "@permissionCameraTitle": { "description": "Camera permission denied dialog title" },
+
+  "permissionCameraBody": "Luko needs camera access to take photos. Please enable it in Settings.",
+  "@permissionCameraBody": { "description": "Camera permission denied dialog body" },
+
+  "permissionOpenSettings": "Open Settings",
+  "@permissionOpenSettings": { "description": "Open system settings button" },
+
+  "applyVerifyIntroTitle": "Verify Your Identity",
+  "@applyVerifyIntroTitle": { "description": "Identity verification intro page title" },
+
+  "applyVerifyIntroBody": "To keep our community safe, we need to confirm you're a real person.\nVerification photos are only visible to our review team and will never be shown publicly.",
+  "@applyVerifyIntroBody": { "description": "Identity verification intro page body" },
+
+  "applyVerifyIntroStep1": "Front-facing photo",
+  "@applyVerifyIntroStep1": { "description": "Verification flow step 1 description" },
+
+  "applyVerifyIntroStep2": "Left profile photo",
+  "@applyVerifyIntroStep2": { "description": "Verification flow step 2 description" },
+
+  "applyVerifyIntroStep3": "2 random actions",
+  "@applyVerifyIntroStep3": { "description": "Verification flow step 3 description" },
+
+  "applyVerifyStartButton": "Start Verification",
+  "@applyVerifyStartButton": { "description": "Start verification button" },
+
+  "applyVerifyStepFrontTitle": "Front-facing photo",
+  "@applyVerifyStepFrontTitle": { "description": "Verification step — front face title" },
+
+  "applyVerifyStepFrontHint": "Face the camera with a natural expression",
+  "@applyVerifyStepFrontHint": { "description": "Verification step — front face hint" },
+
+  "applyVerifyStepSideTitle": "Left profile photo",
+  "@applyVerifyStepSideTitle": { "description": "Verification step — side face title" },
+
+  "applyVerifyStepSideHint": "Turn your head to the left so your profile is clearly visible",
+  "@applyVerifyStepSideHint": { "description": "Verification step — side face hint" },
+
+  "applyVerifyStepActionTitle": "Perform the action",
+  "@applyVerifyStepActionTitle": { "description": "Verification step — action title" },
+
+  "applyVerifyStepActionHint": "Face the camera and perform the following action:",
+  "@applyVerifyStepActionHint": { "description": "Verification step — action hint" },
+
+  "applyVerifyTakePhoto": "Take Photo",
+  "@applyVerifyTakePhoto": { "description": "Take photo button" },
+
+  "applyVerifyRetake": "Retake",
+  "@applyVerifyRetake": { "description": "Retake photo button" },
+
+  "applyVerifyNextStep": "Continue",
+  "@applyVerifyNextStep": { "description": "Continue to next step button" },
+
+  "applyVerifyUploading": "Uploading verification photos...",
+  "@applyVerifyUploading": { "description": "Verification photo upload loading text" },
+
+  "verifyActionSmile": "Smile at the camera",
+  "@verifyActionSmile": { "description": "Verification action: smile" },
+
+  "verifyActionBlink": "Slowly blink once",
+  "@verifyActionBlink": { "description": "Verification action: blink" },
+
+  "verifyActionOpenMouth": "Open your mouth",
+  "@verifyActionOpenMouth": { "description": "Verification action: open mouth" },
+
+  "verifyActionRaiseRightHand": "Raise your right hand",
+  "@verifyActionRaiseRightHand": { "description": "Verification action: raise right hand" },
+
+  "verifyActionRaiseLeftHand": "Raise your left hand",
+  "@verifyActionRaiseLeftHand": { "description": "Verification action: raise left hand" },
+
+  "verifyActionWave": "Wave at the camera",
+  "@verifyActionWave": { "description": "Verification action: wave" },
+
+  "verifyActionThumbsUp": "Give a thumbs up",
+  "@verifyActionThumbsUp": { "description": "Verification action: thumbs up" },
+
+  "verifyActionTouchNose": "Touch your nose with your finger",
+  "@verifyActionTouchNose": { "description": "Verification action: touch nose" },
+
+  "verifyActionCrossArms": "Cross your arms over your chest",
+  "@verifyActionCrossArms": { "description": "Verification action: cross arms" },
+
+  "verifyActionTiltHead": "Tilt your head toward your right shoulder",
+  "@verifyActionTiltHead": { "description": "Verification action: tilt head" },
+
+  "applyBioTitle": "About You",
+  "@applyBioTitle": { "description": "Apply Step 5 title" },
+
+  "applyBioSubtitle": "Tell us a little about yourself (optional)",
+  "@applyBioSubtitle": { "description": "Apply Step 4 subtitle" },
+
+  "applyBioHint": "Share your interests, lifestyle, or anything you'd like others to know...",
+  "@applyBioHint": { "description": "Bio input placeholder" },
+
+  "applyBioHelper": "Up to 150 characters",
+  "@applyBioHelper": { "description": "Bio character limit helper" },
+
+  "applyConfirmTitle": "Review & Submit",
+  "@applyConfirmTitle": { "description": "Apply Step 5 title" },
+
+  "applyConfirmSubtitle": "Please review your details before submitting",
+  "@applyConfirmSubtitle": { "description": "Apply Step 5 subtitle" },
+
+  "applyConfirmNoBio": "(Not filled in)",
+  "@applyConfirmNoBio": { "description": "Placeholder when bio is empty" },
+
+  "applyConfirmSubmitting": "Submitting application...",
+  "@applyConfirmSubmitting": { "description": "Loading text while submitting" },
+
+  "applySubmitButton": "Submit Application",
+  "@applySubmitButton": { "description": "Submit application button" },
+
+  "applyTermsAgree": "I agree to the Terms of Service and Privacy Policy",
+  "@applyTermsAgree": { "description": "Terms agreement text" },
+
+  "reviewPendingTitle": "Application Submitted",
+  "@reviewPendingTitle": { "description": "Review pending screen title" },
+
+  "reviewPendingBody": "Our team will review your profile within 48 hours. We'll notify you via push notification.",
+  "@reviewPendingBody": { "description": "Review pending screen body text" },
+
+  "reviewPendingStep1Label": "Submitted",
+  "@reviewPendingStep1Label": { "description": "Pending timeline step 1 label" },
+
+  "reviewPendingStep1Sub": "Your profile is queued for review",
+  "@reviewPendingStep1Sub": { "description": "Pending timeline step 1 sublabel" },
+
+  "reviewPendingStep2Label": "Under Review",
+  "@reviewPendingStep2Label": { "description": "Pending timeline step 2 label" },
+
+  "reviewPendingStep2Sub": "Usually completed within 24–48 hours",
+  "@reviewPendingStep2Sub": { "description": "Pending timeline step 2 sublabel" },
+
+  "reviewPendingStep3Label": "Notification",
+  "@reviewPendingStep3Label": { "description": "Pending timeline step 3 label" },
+
+  "reviewPendingStep3Sub": "We'll notify you via push notification",
+  "@reviewPendingStep3Sub": { "description": "Pending timeline step 3 sublabel" },
+
+  "reviewRejectedTitle": "Not Quite Yet",
+  "@reviewRejectedTitle": { "description": "Review rejected screen title (fallback)" },
+
+  "reviewRejectedBody": "Your profile doesn't meet our community standards at this time. You're welcome to reapply in 30 days.",
+  "@reviewRejectedBody": { "description": "Review rejected screen body text (fallback)" },
+
+  "reviewRejectedTitleSoft": "Not Quite Yet",
+  "@reviewRejectedTitleSoft": { "description": "Rejected screen title — soft rejection" },
+
+  "reviewRejectedBodySoft": "Thanks for applying to Luko.\nYour current presentation doesn't quite meet our standards at this time.",
+  "@reviewRejectedBodySoft": { "description": "Rejected screen body — soft rejection" },
+
+  "reviewRejectedTitlePotential": "You're Almost There",
+  "@reviewRejectedTitlePotential": { "description": "Rejected screen title — potential tier" },
+
+  "reviewRejectedBodyPotential": "We see something in you — but your photos aren't fully showcasing you yet.\nTry these tips before reapplying:",
+  "@reviewRejectedBodyPotential": { "description": "Rejected screen body — potential tier" },
+
+  "reviewRejectedTip1": "Shoot near a window or outdoors in natural light",
+  "@reviewRejectedTip1": { "description": "Improvement tip 1" },
+
+  "reviewRejectedTip2": "Keep your face clear — avoid heavy filters or editing",
+  "@reviewRejectedTip2": { "description": "Improvement tip 2" },
+
+  "reviewRejectedTip3": "Add a lifestyle photo that shows your personality",
+  "@reviewRejectedTip3": { "description": "Improvement tip 3" },
+
+  "reviewReapplyDays": "Reapply in {days} days",
+  "@reviewReapplyDays": {
+    "description": "Days remaining until reapply is allowed",
+    "placeholders": { "days": { "type": "int" } }
+  },
+
+  "reviewReapplyAvailable": "Ready to Reapply",
+  "@reviewReapplyAvailable": { "description": "Label shown when reapply is unlocked" },
+
+  "reviewReapplyButton": "Reapply Now",
+  "@reviewReapplyButton": { "description": "Reapply CTA button" },
+
+  "reviewReapplyDateHint": "Available after {date}",
+  "@reviewReapplyDateHint": {
+    "description": "Hint showing the exact date when reapply becomes available",
+    "placeholders": { "date": { "type": "String" } }
+  },
+
+  "discoverTitle": "Discover",
+  "@discoverTitle": { "description": "Discover tab title" },
+
+  "discoverEmptyTitle": "You've seen everyone",
+  "@discoverEmptyTitle": { "description": "Empty state on discover page" },
+
+  "discoverEmptySubtitle": "Check back later for new profiles.",
+  "@discoverEmptySubtitle": { "description": "Empty state subtitle on discover page" },
+
+  "matchTitle": "Matches",
+  "@matchTitle": { "description": "Match tab title" },
+
+  "matchNewMatch": "It's a Match!",
+  "@matchNewMatch": { "description": "New match notification title" },
+
+  "chatTitle": "Messages",
+  "@chatTitle": { "description": "Chat tab title" },
+
+  "chatEmptyTitle": "No messages yet",
+  "@chatEmptyTitle": { "description": "Empty chat state" },
+
+  "profileTitle": "Profile",
+  "@profileTitle": { "description": "Profile tab title" },
+
+  "profileEditButton": "Edit Profile",
+  "@profileEditButton": { "description": "Edit profile button" },
+
+  "settingsTitle": "Settings",
+  "@settingsTitle": { "description": "Settings page title" },
+
+  "settingsLanguage": "Language",
+  "@settingsLanguage": { "description": "Language setting label" },
+
+  "settingsLogout": "Sign Out",
+  "@settingsLogout": { "description": "Logout button" },
+
+  "settingsDeleteAccount": "Delete Account",
+  "@settingsDeleteAccount": { "description": "Delete account button" },
+
+  "reportTitle": "Report Profile",
+  "@reportTitle": { "description": "Report profile dialog title" },
+
+  "reportSubmit": "Submit Report",
+  "@reportSubmit": { "description": "Submit report button" },
+
+  "blockUser": "Block User",
+  "@blockUser": { "description": "Block user button" },
+
+  "onboardingSkip": "Skip",
+  "@onboardingSkip": { "description": "Onboarding skip button (reserved, not shown)" },
+
+  "onboardingContinue": "Continue",
+  "@onboardingContinue": { "description": "Onboarding mid-page CTA button" },
+
+  "onboardingGetStarted": "I'm Ready",
+  "@onboardingGetStarted": { "description": "Onboarding last page CTA button" },
+
+  "onboarding1Title": "You deserve\nsomeone like you.",
+  "@onboarding1Title": { "description": "Onboarding page 1 title" },
+
+  "onboarding1Body": "Intentionality shows.\n\nThe care someone puts into how they present themselves\n\nThat's how they'll show up for you too.",
+  "@onboarding1Body": { "description": "Onboarding page 1 body" },
+
+  "onboarding2Title": "We screen\nfor intention.",
+  "@onboarding2Title": { "description": "Onboarding page 2 title" },
+
+  "onboarding2Body": "Not algorithms. Real people.\n\nEvery account on Luko is reviewed by hand — because attitude can't be automated.\n",
+  "@onboarding2Body": { "description": "Onboarding page 2 body" },
+
+  "onboarding3Title": "Good connections\naren't luck.",
+  "@onboarding3Title": { "description": "Onboarding page 3 title" },
+
+  "onboarding3Body": "No more endless scrolling.\n\nEvery day, Luko curates a small circle of people — each one genuinely worth your time.\n\nYou take yourself seriously.\nYou deserve someone who does too.",
+  "@onboarding3Body": { "description": "Onboarding page 3 body" },
+
+  "onboarding1Quote1": "These are the photos they handpicked to show you.\n Imagine what meeting them looks like.",
+  "@onboarding1Quote1": { "description": "Onboarding page 1 background quote 1" },
+  "onboarding1Quote2": "Am I asking for too much?",
+  "@onboarding1Quote2": { "description": "Onboarding page 1 background quote 2" },
+  "onboarding1Quote3": "I spent an hour getting ready and they showed up like…",
+  "@onboarding1Quote3": { "description": "Onboarding page 1 background quote 3" },
+  "onboarding1Quote4": "Why does nobody put in effort anymore?",
+  "@onboarding1Quote4": { "description": "Onboarding page 1 background quote 4" },
+  "onboarding1Quote5": "Their photos look like they couldn't care less",
+  "@onboarding1Quote5": { "description": "Onboarding page 1 background quote 5" },
+  "onboarding1Quote6": "Am I the only one who actually cares about showing up?",
+  "@onboarding1Quote6": { "description": "Onboarding page 1 background quote 6" },
+
+  "onboarding2Quote1": "How do I even know if he's real?",
+  "@onboarding2Quote1": { "description": "Onboarding page 2 background quote 1" },
+  "onboarding2Quote2": "Fake photos, fake info — all of it",
+  "@onboarding2Quote2": { "description": "Onboarding page 2 background quote 2" },
+  "onboarding2Quote3": "It feels like I'm talking to a bot",
+  "@onboarding2Quote3": { "description": "Onboarding page 2 background quote 3" },
+  "onboarding2Quote4": "I can't tell if there's a real person on the other side",
+  "@onboarding2Quote4": { "description": "Onboarding page 2 background quote 4" },
+  "onboarding2Quote5": "Chatted for weeks before realizing it was a fake account",
+  "@onboarding2Quote5": { "description": "Onboarding page 2 background quote 5" },
+  "onboarding2Quote6": "We had plans and then they just vanished…",
+  "@onboarding2Quote6": { "description": "Onboarding page 2 background quote 6" },
+
+  "onboarding3Quote1": "Scrolled forever and nobody feels right",
+  "@onboarding3Quote1": { "description": "Onboarding page 3 background quote 1" },
+  "onboarding3Quote2": "I'm so tired of swiping",
+  "@onboarding3Quote2": { "description": "Onboarding page 3 background quote 2" },
+  "onboarding3Quote3": "After a while I forgot what I was even looking for",
+  "@onboarding3Quote3": { "description": "Onboarding page 3 background quote 3" },
+  "onboarding3Quote4": "Is this even working?",
+  "@onboarding3Quote4": { "description": "Onboarding page 3 background quote 4" },
+  "onboarding3Quote5": "99+ messages a day and I can't connect with anyone",
+  "@onboarding3Quote5": { "description": "Onboarding page 3 background quote 5" },
+  "onboarding3Quote6": "There has to be a better way than this…",
+  "@onboarding3Quote6": { "description": "Onboarding page 3 background quote 6" },
+
+  "termsUpdateTitle": "We've Updated Our Terms",
+  "@termsUpdateTitle": { "description": "Terms update page title" },
+
+  "termsUpdateSubtitle": "We've updated our Terms of Service and Privacy Policy. Please review them to continue using Luko.",
+  "@termsUpdateSubtitle": { "description": "Terms update page subtitle" },
+
+  "termsUpdateAccept": "I've Read and Agree to the New Terms",
+  "@termsUpdateAccept": { "description": "Terms update accept button" },
+
+  "termsUpdateDecline": "Decline and Sign Out",
+  "@termsUpdateDecline": { "description": "Terms update decline button" },
+
+  "termsUpdateAccepting": "Updating...",
+  "@termsUpdateAccepting": { "description": "Terms update processing loading text" },
+
+  "termsPageTitle": "Terms of Service",
+  "@termsPageTitle": { "description": "Terms of Service page title" },
+
+  "privacyPageTitle": "Privacy Policy",
+  "@privacyPageTitle": { "description": "Privacy Policy page title" },
+
+  "termsLabel": "Terms of Service",
+  "@termsLabel": { "description": "Terms of Service inline link label" },
+
+  "privacyLabel": "Privacy Policy",
+  "@privacyLabel": { "description": "Privacy Policy inline link label" },
+
+  "termsReadFull": "Read full Terms of Service",
+  "@termsReadFull": { "description": "Link to open full Terms of Service page" },
+
+  "privacyReadFull": "Read full Privacy Policy",
+  "@privacyReadFull": { "description": "Link to open full Privacy Policy page" },
+
+  "termsAgreePrefix": "I agree to the ",
+  "@termsAgreePrefix": { "description": "Prefix before the terms link in the agree row" },
+
+  "termsAgreeAnd": " and ",
+  "@termsAgreeAnd": { "description": "Conjunction between terms link and privacy link" },
+
+  "authConsentPrefix": "By continuing, you agree to our ",
+  "@authConsentPrefix": { "description": "Implicit consent notice prefix shown before sending OTP" }
+}

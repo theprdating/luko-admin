@@ -82,7 +82,11 @@
       "Bash(gh --version)",
       "Bash(find D:StartupLuko -name *.env -o -name .env*)",
       "Bash(find D:StartupLuko -name google-services.json -o -name GoogleService-Info.plist -o -name *.keystore -o -name key.properties -o -name *.jks)",
-      "WebFetch(domain:akseolabs.com)"
+      "WebFetch(domain:akseolabs.com)",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\(''''skills'''', d.get\\(''''skillPaths'''', []\\)\\), indent=2\\)\\)\")",
+      "Bash(gh repo:*)",
+      "Bash(find C:/Users/user -path */anthropic-skills* -name SKILL.md)",
+      "Bash(python -c \":*)"
     ]
   }
 }

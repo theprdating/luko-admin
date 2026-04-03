@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -91,6 +92,18 @@ class _ApplyConfirmPageState extends ConsumerState<ApplyConfirmPage> {
         onConflict: 'user_id',
       );
 
+      // 申請送出成功後，請求推播通知權限
+      // 此時機最佳：用戶剛完成重要行動，接受通知許可的意願最高
+      try {
+        await FirebaseMessaging.instance.requestPermission(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+      } catch (_) {
+        // 通知權限請求失敗不影響申請流程，靜默忽略
+      }
+
       // 清空暫存的申請資料
       ref.read(applyFormProvider.notifier).reset();
 
@@ -177,6 +190,10 @@ class _ApplyConfirmPageState extends ConsumerState<ApplyConfirmPage> {
 
                 // ── 基本資料卡片 ──────────────────────────────────────────
                 _InfoCard(form: form, colors: colors),
+                const SizedBox(height: AppSpacing.lg),
+
+                // ── 審核說明卡片 ──────────────────────────────────────────
+                _ReviewInfoCard(colors: colors, l10n: l10n),
                 const SizedBox(height: AppSpacing.xxxl),
               ],
             ),
@@ -514,6 +531,109 @@ class _TermsRowState extends State<_TermsRow> {
                   style: linkStyle,
                 ),
               ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── 審核說明卡片 ──────────────────────────────────────────────────────────────
+//
+// 顯示預計審核時間和通知管道，讓用戶送出前有明確預期
+
+class _ReviewInfoCard extends StatelessWidget {
+  const _ReviewInfoCard({required this.colors, required this.l10n});
+
+  final AppColors colors;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: colors.forestGreenSubtle,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(
+          color: colors.forestGreen.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── 標題列 ─────────────────────────────────────────────
+          Row(
+            children: [
+              Icon(
+                Icons.info_outline_rounded,
+                size: 16,
+                color: colors.forestGreen,
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              Text(
+                l10n.applyConfirmReviewInfoTitle,
+                style: textTheme.labelMedium?.copyWith(
+                  color: colors.forestGreen,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+
+          // ── 審核時間 ──────────────────────────────────────────
+          _ReviewInfoRow(
+            icon: Icons.schedule_rounded,
+            text: l10n.applyConfirmReviewDays,
+            colors: colors,
+          ),
+          const SizedBox(height: AppSpacing.xs),
+
+          // ── 通知方式 ──────────────────────────────────────────
+          _ReviewInfoRow(
+            icon: Icons.notifications_outlined,
+            text: l10n.applyConfirmReviewNotify,
+            colors: colors,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReviewInfoRow extends StatelessWidget {
+  const _ReviewInfoRow({
+    required this.icon,
+    required this.text,
+    required this.colors,
+  });
+
+  final IconData icon;
+  final String text;
+  final AppColors colors;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Icon(icon, size: 14, color: colors.secondaryText),
+        ),
+        const SizedBox(width: AppSpacing.xs),
+        Expanded(
+          child: Text(
+            text,
+            style: textTheme.bodySmall?.copyWith(
+              color: colors.secondaryText,
+              height: 1.4,
             ),
           ),
         ),

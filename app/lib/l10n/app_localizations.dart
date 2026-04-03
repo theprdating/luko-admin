@@ -740,6 +740,24 @@ abstract class AppLocalizations {
   /// **'Submit Application'**
   String get applySubmitButton;
 
+  /// Confirm page review info card title
+  ///
+  /// In en, this message translates to:
+  /// **'Review Info'**
+  String get applyConfirmReviewInfoTitle;
+
+  /// Confirm page review timeline description
+  ///
+  /// In en, this message translates to:
+  /// **'Timeline: Usually completed within 1–3 business days'**
+  String get applyConfirmReviewDays;
+
+  /// Confirm page review notification description
+  ///
+  /// In en, this message translates to:
+  /// **'Notification: We\'ll notify you via app push notification and email'**
+  String get applyConfirmReviewNotify;
+
   /// Terms agreement text
   ///
   /// In en, this message translates to:
@@ -755,7 +773,7 @@ abstract class AppLocalizations {
   /// Review pending screen body text
   ///
   /// In en, this message translates to:
-  /// **'Our team will review your profile within 48 hours. We\'ll notify you via push notification.'**
+  /// **'Our team will complete the review within 1–3 business days. You\'ll be notified via app push notification and email.'**
   String get reviewPendingBody;
 
   /// Pending timeline step 1 label
@@ -779,7 +797,7 @@ abstract class AppLocalizations {
   /// Pending timeline step 2 sublabel
   ///
   /// In en, this message translates to:
-  /// **'Usually completed within 24–48 hours'**
+  /// **'Usually completed within 1–3 business days'**
   String get reviewPendingStep2Sub;
 
   /// Pending timeline step 3 label
@@ -791,7 +809,7 @@ abstract class AppLocalizations {
   /// Pending timeline step 3 sublabel
   ///
   /// In en, this message translates to:
-  /// **'We\'ll notify you via push notification'**
+  /// **'Result sent via app push notification and email'**
   String get reviewPendingStep3Sub;
 
   /// Review rejected screen title (fallback)

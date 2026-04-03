@@ -343,13 +343,23 @@ class AppLocalizationsZh extends AppLocalizations {
   String get applySubmitButton => '送出申請';
 
   @override
+  String get applyConfirmReviewInfoTitle => '審核說明';
+
+  @override
+  String get applyConfirmReviewDays => '審核時間：通常在 1–3 個工作天內完成';
+
+  @override
+  String get applyConfirmReviewNotify => '通知方式：APP 推播通知及 Email 雙管道告知你審核結果';
+
+  @override
   String get applyTermsAgree => '我同意 服務條款 及 隱私權政策';
 
   @override
   String get reviewPendingTitle => '申請已送出';
 
   @override
-  String get reviewPendingBody => '我們的團隊將在 48 小時內審核您的資料，結果將以推播通知告知您。';
+  String get reviewPendingBody =>
+      '我們的團隊將在 1–3 個工作天內完成審核，結果將透過 APP 推播通知及 Email 告知你。';
 
   @override
   String get reviewPendingStep1Label => '申請已送出';
@@ -361,13 +371,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reviewPendingStep2Label => '審核中';
 
   @override
-  String get reviewPendingStep2Sub => '預計 24–48 小時內完成';
+  String get reviewPendingStep2Sub => '通常在 1–3 個工作天內完成';
 
   @override
   String get reviewPendingStep3Label => '通知發送';
 
   @override
-  String get reviewPendingStep3Sub => '結果將以推播通知告知你';
+  String get reviewPendingStep3Sub => '結果將透過 APP 推播通知及 Email 通知你';
 
   @override
   String get reviewRejectedTitle => '暫時未能通過';

@@ -356,6 +356,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get applySubmitButton => 'Submit Application';
 
   @override
+  String get applyConfirmReviewInfoTitle => 'Review Info';
+
+  @override
+  String get applyConfirmReviewDays =>
+      'Timeline: Usually completed within 1–3 business days';
+
+  @override
+  String get applyConfirmReviewNotify =>
+      'Notification: We\'ll notify you via app push notification and email';
+
+  @override
   String get applyTermsAgree =>
       'I agree to the Terms of Service and Privacy Policy';
 
@@ -364,7 +375,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reviewPendingBody =>
-      'Our team will review your profile within 48 hours. We\'ll notify you via push notification.';
+      'Our team will complete the review within 1–3 business days. You\'ll be notified via app push notification and email.';
 
   @override
   String get reviewPendingStep1Label => 'Submitted';
@@ -376,13 +387,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reviewPendingStep2Label => 'Under Review';
 
   @override
-  String get reviewPendingStep2Sub => 'Usually completed within 24–48 hours';
+  String get reviewPendingStep2Sub =>
+      'Usually completed within 1–3 business days';
 
   @override
   String get reviewPendingStep3Label => 'Notification';
 
   @override
-  String get reviewPendingStep3Sub => 'We\'ll notify you via push notification';
+  String get reviewPendingStep3Sub =>
+      'Result sent via app push notification and email';
 
   @override
   String get reviewRejectedTitle => 'Not Quite Yet';

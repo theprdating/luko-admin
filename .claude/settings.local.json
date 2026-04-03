@@ -98,7 +98,17 @@
       "Bash(identify web/favicon.png)",
       "Skill(commit-commands:commit-push-pr)",
       "Skill(commit-commands:commit-push-pr:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "WebFetch(domain:pub.dev)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:fluttercandies.github.io)",
+      "Bash(git -C D:/Startup/Luko diff app/lib/features/auth/presentation/pages/apply/apply_photos_page.dart)",
+      "Skill(commit-commands:commit)",
+      "Skill(commit-commands:commit:*)",
+      "Bash(git -C D:/Startup/Luko add app/lib/features/auth/presentation/pages/apply/apply_confirm_page.dart app/lib/features/auth/presentation/pages/apply/apply_info_page.dart app/lib/features/auth/presentation/pages/apply/apply_photos_page.dart app/lib/l10n/app_en.arb app/lib/l10n/app_localizations.dart app/lib/l10n/app_localizations_en.dart app/lib/l10n/app_localizations_zh.dart app/lib/l10n/app_zh.arb .claude/settings.local.json)",
+      "Bash(git -C:*)"
     ]
   }
 }

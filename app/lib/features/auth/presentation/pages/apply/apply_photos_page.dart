@@ -61,8 +61,10 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage> {
   /// 已壓縮的本機 JPEG 暫存路徑（順序 = display_order）
   List<String> _localPaths = [];
 
-  /// wechat_assets_picker 上次選取的 AssetEntity（用於再次開啟時 scroll 回原位）
-  List<AssetEntity> _lastSelectedEntities = [];
+  /// 持久化的 picker provider / delegate，讓 keepScrollOffset 真正跨次呼叫生效。
+  /// pickAssetsWithDelegate() 不會 dispose delegate，捲動位置因此得以保留。
+  DefaultAssetPickerProvider? _pickerProvider;
+  DefaultAssetPickerBuilderDelegate? _pickerDelegate;
 
   bool _isProcessing = false; // 壓縮 / 裁切中
   bool _isUploading = false;  // 上傳中
@@ -74,33 +76,74 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage> {
     _localPaths = List.from(ref.read(applyFormProvider).localPhotoPaths);
   }
 
-  // ── 從相簿選取（wechat_assets_picker，多選，記憶位置）──────────────────────
+  @override
+  void dispose() {
+    _pickerProvider?.dispose();
+    super.dispose();
+  }
+
+  // ── 從相簿選取（wechat_assets_picker，持久 delegate，記憶捲動位置）──────────
 
   Future<void> _pickFromGallery() async {
     final colors = Theme.of(context).extension<AppColors>()!;
-    final remaining = _maxPhotos - _localPaths.length;
-    if (remaining <= 0) return;
+    final locale = Localizations.localeOf(context); // context 在 await 前擷取
+    if (_localPaths.length >= _maxPhotos) return;
 
-    // AssetPicker 內部已處理系統原生權限請求，不需預先 requestPermissionExtend()。
-    // 只在永久拒絕時（StateError）才攔截，引導用戶前往設定。
+    // 每次開啟前都重新確認權限狀態：
+    // 若用戶在設定中從 limited → authorized，delegate 需要以新狀態重建，
+    // 否則 wechat_assets_picker 的「部分存取」橫幅會持續顯示。
+    final ps = await PhotoManager.requestPermissionExtend();
+    if (!mounted) return;
+
+    // 明確被永久拒絕才顯示引導 Dialog；同時清除快取，讓用戶改設定後可重試。
+    if (ps == PermissionState.denied || ps == PermissionState.restricted) {
+      _pickerDelegate = null;
+      _pickerProvider = null;
+      await MediaPermissionHelper.showPhotoDenied(context);
+      return;
+    }
+
+    // 首次建立，或 delegate 尚未初始化
+    if (_pickerDelegate == null) {
+      _pickerProvider = DefaultAssetPickerProvider(
+        maxAssets: 1,
+        requestType: RequestType.image,
+      );
+      _pickerDelegate = DefaultAssetPickerBuilderDelegate(
+        provider: _pickerProvider!,
+        // limited 和 authorized 都傳 authorized：
+        // 隱藏 picker 內建的「部分存取」橫幅（用戶已能選照片，橫幅只會造成混淆）
+        initialPermission: ps.hasAccess
+            ? PermissionState.authorized
+            : ps,
+        keepScrollOffset: true,
+        pickerTheme: AssetPicker.themeData(colors.forestGreen),
+        textDelegate: locale.languageCode == 'zh'
+            ? const TraditionalChineseAssetPickerTextDelegate()
+            : const EnglishAssetPickerTextDelegate(),
+      );
+    } else {
+      // 再次開啟：清除上次選取，讓挑選器以無勾選狀態開啟
+      _pickerProvider!.selectedAssets = [];
+    }
+
+    if (!mounted) return;
     List<AssetEntity>? result;
     try {
-      result = await AssetPicker.pickAssets(
+      result = await AssetPicker.pickAssetsWithDelegate(
         context,
-        pickerConfig: AssetPickerConfig(
-          maxAssets: 1,
-          selectedAssets: _lastSelectedEntities,
-          requestType: RequestType.image,
-          themeColor: colors.forestGreen,
-          textDelegate: Localizations.localeOf(context).languageCode == 'zh'
-              ? const TraditionalChineseAssetPickerTextDelegate()
-              : const EnglishAssetPickerTextDelegate(),
-          keepScrollOffset: true,
-          dragToSelect: false,
-        ),
+        delegate: _pickerDelegate!,
       );
     } on StateError {
+      // StateError = picker 偵測到權限被拒，清除 delegate 讓下次重新請求
+      _pickerDelegate = null;
+      _pickerProvider = null;
       if (mounted) await MediaPermissionHelper.showPhotoDenied(context);
+      return;
+    } catch (_) {
+      // 其他例外（delegate 已 disposed 等），重置讓用戶可以重試
+      _pickerDelegate = null;
+      _pickerProvider = null;
       return;
     }
     if (result == null || !mounted) return;
@@ -115,14 +158,10 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage> {
         final compressed = await _compressToJpeg(file.path);
         if (compressed == null || !mounted) continue;
 
-        // 單張時提供裁切，多張批次跳過裁切
-        final finalPath = result.length == 1
-            ? (await _cropImage(compressed)) ?? compressed
-            : compressed;
+        final finalPath = (await _cropImage(compressed)) ?? compressed;
 
         setState(() => _localPaths.add(finalPath));
       }
-      _lastSelectedEntities = result;
       ref.read(applyFormProvider.notifier).setLocalPhotos(List.from(_localPaths));
     } catch (_) {
       if (mounted) setState(() => _error = AppLocalizations.of(context)!.commonError);
@@ -316,7 +355,8 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage> {
       ref.read(applyFormProvider.notifier).setUploadedPhotos(uploadedPaths);
       if (!mounted) return;
       context.go('/apply/verify');
-    } catch (_) {
+    } catch (e, st) {
+      debugPrint('Photo upload error: $e\n$st');
       if (!mounted) return;
       setState(() {
         _isUploading = false;

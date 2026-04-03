@@ -150,7 +150,7 @@ class _ApplyInfoPageState extends ConsumerState<ApplyInfoPage> {
         centerTitle: true,
       ),
       body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
         behavior: HitTestBehavior.translucent,
         child: SafeArea(
         child: SingleChildScrollView(
@@ -299,7 +299,11 @@ class _BirthDateField extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.xs),
         GestureDetector(
-          onTap: onTap,
+          onTap: () {
+            // 先收鍵盤焦點，再開日期選擇器
+            FocusManager.instance.primaryFocus?.unfocus();
+            onTap();
+          },
           child: Container(
             height: 50,
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -440,7 +444,11 @@ class _SelectionButton extends StatelessWidget {
             : colors.divider;
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        // 收鍵盤焦點後再觸發選取
+        FocusManager.instance.primaryFocus?.unfocus();
+        onTap();
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         height: 48,

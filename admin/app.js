@@ -35,6 +35,22 @@ async function signOut() {
   window.location.href = 'index.html'
 }
 
+// Returns a fresh access token, refreshing the session if needed.
+// Redirects to login if the session cannot be recovered.
+async function getFreshToken() {
+  // First try to refresh (forces a new JWT from the server)
+  const { data: refreshed } = await db.auth.refreshSession()
+  if (refreshed?.session?.access_token) return refreshed.session.access_token
+
+  // Fallback: use existing session (covers cases where refresh is redundant)
+  const { data: { session } } = await db.auth.getSession()
+  if (session?.access_token) return session.access_token
+
+  // Session is gone — redirect to login
+  window.location.href = 'index.html?error=session_expired'
+  throw new Error('Session expired')
+}
+
 // ── XSS protection ───────────────────────────────────────────────────────────
 //
 // Always use escapeHtml() before inserting user-controlled data into innerHTML.

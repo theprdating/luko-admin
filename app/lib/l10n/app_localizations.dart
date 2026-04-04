@@ -638,12 +638,6 @@ abstract class AppLocalizations {
   /// **'Smile at the camera'**
   String get verifyActionSmile;
 
-  /// Verification action: blink
-  ///
-  /// In en, this message translates to:
-  /// **'Slowly blink once'**
-  String get verifyActionBlink;
-
   /// Verification action: open mouth
   ///
   /// In en, this message translates to:
@@ -680,17 +674,35 @@ abstract class AppLocalizations {
   /// **'Touch your nose with your finger'**
   String get verifyActionTouchNose;
 
-  /// Verification action: cross arms
-  ///
-  /// In en, this message translates to:
-  /// **'Cross your arms over your chest'**
-  String get verifyActionCrossArms;
-
   /// Verification action: tilt head
   ///
   /// In en, this message translates to:
   /// **'Tilt your head toward your right shoulder'**
   String get verifyActionTiltHead;
+
+  /// Verification action: show number 6 (thumb and pinky extended)
+  ///
+  /// In en, this message translates to:
+  /// **'Show the number 6 with your hand'**
+  String get verifyActionShowSix;
+
+  /// Verification action: show number 7 (index, middle, ring fingers extended)
+  ///
+  /// In en, this message translates to:
+  /// **'Show the number 7 with your hand'**
+  String get verifyActionShowSeven;
+
+  /// Verification action: show number 8 (thumb and index finger in L shape)
+  ///
+  /// In en, this message translates to:
+  /// **'Show the number 8 with your hand'**
+  String get verifyActionShowEight;
+
+  /// Verification action: show number 9 (index finger curled)
+  ///
+  /// In en, this message translates to:
+  /// **'Show the number 9 with your hand'**
+  String get verifyActionShowNine;
 
   /// Apply Step 5 title
   ///

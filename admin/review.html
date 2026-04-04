@@ -413,12 +413,12 @@
       btn.textContent = '送出中...'
       btn.disabled = true
 
-      const { data: { session } } = await db.auth.getSession()
+      const token = await getFreshToken()
       const res = await fetch(`${SUPABASE_URL}/functions/v1/review-application`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
           application_id:   selectedId,
@@ -430,6 +430,13 @@
       })
 
       const result = await res.json().catch(() => ({}))
+
+      if (res.status === 401) {
+        showToast('登入已過期，請重新登入', 'error')
+        setTimeout(() => window.location.href = 'index.html', 1500)
+        isSubmitting = false
+        return
+      }
 
       if (!res.ok) {
         showToast('審核送出失敗：' + (result.error || res.statusText), 'error')
@@ -475,12 +482,12 @@
       btn.textContent = '送出中...'
       btn.disabled = true
 
-      const { data: { session } } = await db.auth.getSession()
+      const token = await getFreshToken()
       const res = await fetch(`${SUPABASE_URL}/functions/v1/review-application`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
           application_id:   selectedId,
@@ -492,6 +499,13 @@
       })
 
       const result = await res.json().catch(() => ({}))
+
+      if (res.status === 401) {
+        showToast('登入已過期，請重新登入', 'error')
+        setTimeout(() => window.location.href = 'index.html', 1500)
+        isSubmitting = false
+        return
+      }
 
       if (!res.ok) {
         showToast('審核送出失敗：' + (result.error || res.statusText), 'error')

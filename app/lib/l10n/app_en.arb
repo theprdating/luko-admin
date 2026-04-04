@@ -292,9 +292,6 @@
   "verifyActionSmile": "Smile at the camera",
   "@verifyActionSmile": { "description": "Verification action: smile" },
 
-  "verifyActionBlink": "Slowly blink once",
-  "@verifyActionBlink": { "description": "Verification action: blink" },
-
   "verifyActionOpenMouth": "Open your mouth",
   "@verifyActionOpenMouth": { "description": "Verification action: open mouth" },
 
@@ -313,11 +310,20 @@
   "verifyActionTouchNose": "Touch your nose with your finger",
   "@verifyActionTouchNose": { "description": "Verification action: touch nose" },
 
-  "verifyActionCrossArms": "Cross your arms over your chest",
-  "@verifyActionCrossArms": { "description": "Verification action: cross arms" },
-
   "verifyActionTiltHead": "Tilt your head toward your right shoulder",
   "@verifyActionTiltHead": { "description": "Verification action: tilt head" },
+
+  "verifyActionShowSix": "Show the number 6 with your hand",
+  "@verifyActionShowSix": { "description": "Verification action: show number 6 (thumb and pinky extended)" },
+
+  "verifyActionShowSeven": "Show the number 7 with your hand",
+  "@verifyActionShowSeven": { "description": "Verification action: show number 7 (index, middle, ring fingers extended)" },
+
+  "verifyActionShowEight": "Show the number 8 with your hand",
+  "@verifyActionShowEight": { "description": "Verification action: show number 8 (thumb and index finger in L shape)" },
+
+  "verifyActionShowNine": "Show the number 9 with your hand",
+  "@verifyActionShowNine": { "description": "Verification action: show number 9 (index finger curled)" },
 
   "applyBioTitle": "About You",
   "@applyBioTitle": { "description": "Apply Step 5 title" },

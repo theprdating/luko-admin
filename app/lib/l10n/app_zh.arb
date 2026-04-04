@@ -292,9 +292,6 @@
   "verifyActionSmile": "對鏡頭微笑",
   "@verifyActionSmile": { "description": "認證動作：微笑" },
 
-  "verifyActionBlink": "慢慢眨一次眼",
-  "@verifyActionBlink": { "description": "認證動作：眨眼" },
-
   "verifyActionOpenMouth": "張開嘴巴",
   "@verifyActionOpenMouth": { "description": "認證動作：張嘴" },
 
@@ -313,11 +310,20 @@
   "verifyActionTouchNose": "用手指摸鼻子",
   "@verifyActionTouchNose": { "description": "認證動作：摸鼻子" },
 
-  "verifyActionCrossArms": "雙手交叉抱胸",
-  "@verifyActionCrossArms": { "description": "認證動作：交叉抱胸" },
-
   "verifyActionTiltHead": "頭歪向右肩",
   "@verifyActionTiltHead": { "description": "認證動作：頭歪向右肩" },
+
+  "verifyActionShowSix": "用手比出數字 6",
+  "@verifyActionShowSix": { "description": "認證動作：比數字 6（拇指與小指伸出）" },
+
+  "verifyActionShowSeven": "用手比出數字 7",
+  "@verifyActionShowSeven": { "description": "認證動作：比數字 7（食指、中指、無名指伸出）" },
+
+  "verifyActionShowEight": "用手比出數字 8",
+  "@verifyActionShowEight": { "description": "認證動作：比數字 8（拇指、食指呈 L 形）" },
+
+  "verifyActionShowNine": "用手比出數字 9",
+  "@verifyActionShowNine": { "description": "認證動作：比數字 9（食指彎曲鉤起）" },
 
   "applyBioTitle": "自我介紹",
   "@applyBioTitle": { "description": "申請 Step 5 標題" },

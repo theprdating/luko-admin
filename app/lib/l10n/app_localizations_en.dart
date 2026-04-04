@@ -302,9 +302,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get verifyActionSmile => 'Smile at the camera';
 
   @override
-  String get verifyActionBlink => 'Slowly blink once';
-
-  @override
   String get verifyActionOpenMouth => 'Open your mouth';
 
   @override
@@ -323,11 +320,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get verifyActionTouchNose => 'Touch your nose with your finger';
 
   @override
-  String get verifyActionCrossArms => 'Cross your arms over your chest';
-
-  @override
   String get verifyActionTiltHead =>
       'Tilt your head toward your right shoulder';
+
+  @override
+  String get verifyActionShowSix => 'Show the number 6 with your hand';
+
+  @override
+  String get verifyActionShowSeven => 'Show the number 7 with your hand';
+
+  @override
+  String get verifyActionShowEight => 'Show the number 8 with your hand';
+
+  @override
+  String get verifyActionShowNine => 'Show the number 9 with your hand';
 
   @override
   String get applyBioTitle => 'About You';

@@ -183,17 +183,30 @@ async function sendFcmNotification(
   }
 }
 
+// ── CORS ──────────────────────────────────────────────────────────────────────
+
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+}
+
 // ── Main handler ──────────────────────────────────────────────────────────────
 
 serve(async (req) => {
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: CORS_HEADERS })
+  }
+
   if (req.method !== 'POST') {
-    return new Response('Method Not Allowed', { status: 405 })
+    return new Response('Method Not Allowed', { status: 405, headers: CORS_HEADERS })
   }
 
   // ── 1. Validate admin ───────────────────────────────────────────────────────
 
   const authHeader = req.headers.get('Authorization')
-  if (!authHeader) return new Response('Missing Authorization', { status: 401 })
+  if (!authHeader) return new Response('Missing Authorization', { status: 401, headers: CORS_HEADERS })
 
   const callerToken = authHeader.replace('Bearer ', '')
 
@@ -205,11 +218,11 @@ serve(async (req) => {
   const { data: { user: callerUser }, error: authError } = await anonClient.auth.getUser(callerToken)
 
   if (authError || !callerUser) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
   }
 
   if (callerUser.user_metadata?.user_role !== 'admin') {
-    return new Response(JSON.stringify({ error: 'Admin access required' }), { status: 403 })
+    return new Response(JSON.stringify({ error: 'Admin access required' }), { status: 403, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
   }
 
   // ── 2. Parse body ───────────────────────────────────────────────────────────
@@ -218,19 +231,19 @@ serve(async (req) => {
   try {
     body = await req.json()
   } catch {
-    return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400 })
+    return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
   }
 
   const { application_id, action, quality_tier, rejection_type, review_note, review_started_at } = body
 
   if (!application_id || !action) {
-    return new Response(JSON.stringify({ error: 'Missing application_id or action' }), { status: 400 })
+    return new Response(JSON.stringify({ error: 'Missing application_id or action' }), { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
   }
   if (action === 'approve' && !quality_tier) {
-    return new Response(JSON.stringify({ error: 'quality_tier required for approve' }), { status: 400 })
+    return new Response(JSON.stringify({ error: 'quality_tier required for approve' }), { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
   }
   if (action === 'reject' && !rejection_type) {
-    return new Response(JSON.stringify({ error: 'rejection_type required for reject' }), { status: 400 })
+    return new Response(JSON.stringify({ error: 'rejection_type required for reject' }), { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
   }
 
   // ── 3. Service-role client for DB operations ────────────────────────────────
@@ -250,7 +263,7 @@ serve(async (req) => {
     .single()
 
   if (appError || !app) {
-    return new Response(JSON.stringify({ error: 'Application not found or not pending' }), { status: 404 })
+    return new Response(JSON.stringify({ error: 'Application not found or not pending' }), { status: 404, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
   }
 
   const now = new Date().toISOString()
@@ -285,7 +298,7 @@ serve(async (req) => {
     }).eq('id', application_id)
 
     if (updateErr) {
-      return new Response(JSON.stringify({ error: updateErr.message }), { status: 500 })
+      return new Response(JSON.stringify({ error: updateErr.message }), { status: 500, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
     }
 
     // b) Copy application photos to profile-photos bucket
@@ -370,7 +383,7 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ success: true, action: 'approved', quality_tier }),
-      { headers: { 'Content-Type': 'application/json' } },
+      { headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } },
     )
   }
 
@@ -389,7 +402,7 @@ serve(async (req) => {
     }).eq('id', application_id)
 
     if (updateErr) {
-      return new Response(JSON.stringify({ error: updateErr.message }), { status: 500 })
+      return new Response(JSON.stringify({ error: updateErr.message }), { status: 500, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
     }
 
     // FCM notification
@@ -413,9 +426,9 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ success: true, action: 'rejected', rejection_type }),
-      { headers: { 'Content-Type': 'application/json' } },
+      { headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } },
     )
   }
 
-  return new Response(JSON.stringify({ error: 'Unknown action' }), { status: 400 })
+  return new Response(JSON.stringify({ error: 'Unknown action' }), { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
 })

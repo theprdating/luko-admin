@@ -292,9 +292,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get verifyActionSmile => '對鏡頭微笑';
 
   @override
-  String get verifyActionBlink => '慢慢眨一次眼';
-
-  @override
   String get verifyActionOpenMouth => '張開嘴巴';
 
   @override
@@ -313,10 +310,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get verifyActionTouchNose => '用手指摸鼻子';
 
   @override
-  String get verifyActionCrossArms => '雙手交叉抱胸';
+  String get verifyActionTiltHead => '頭歪向右肩';
 
   @override
-  String get verifyActionTiltHead => '頭歪向右肩';
+  String get verifyActionShowSix => '用手比出數字 6';
+
+  @override
+  String get verifyActionShowSeven => '用手比出數字 7';
+
+  @override
+  String get verifyActionShowEight => '用手比出數字 8';
+
+  @override
+  String get verifyActionShowNine => '用手比出數字 9';
 
   @override
   String get applyBioTitle => '自我介紹';

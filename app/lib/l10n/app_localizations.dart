@@ -620,6 +620,12 @@ abstract class AppLocalizations {
   /// **'Continue'**
   String get applyVerifyNextStep;
 
+  /// Complete button on the last verification step
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get applyVerifyDone;
+
   /// Verification photo upload loading text
   ///
   /// In en, this message translates to:

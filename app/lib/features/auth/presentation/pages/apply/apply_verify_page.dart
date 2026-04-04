@@ -7,11 +7,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../../core/constants/app_radius.dart';
 import '../../../../../core/constants/app_spacing.dart';
-import '../../../../../core/supabase/supabase_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/luko_button.dart';
 import '../../../../../core/widgets/luko_loading_overlay.dart';
@@ -61,7 +59,7 @@ class _ApplyVerifyPageState extends ConsumerState<ApplyVerifyPage> {
   String? _action1Path;
   String? _action2Path;
 
-  bool _isUploading = false;
+  bool _isUploading = false; // 保留供 LukoLoadingOverlay 使用（confirm 頁送出時設為 true）
 
   @override
   void initState() {
@@ -187,82 +185,25 @@ class _ApplyVerifyPageState extends ConsumerState<ApplyVerifyPage> {
     }
   }
 
-  // ── 上傳認證照片並寫入 DB ─────────────────────────────────────────────────────
+  // ── 儲存認證資料到 provider，前往下一步 ──────────────────────────────────────
+  //
+  // 上傳動作已移至 Step 6（confirm 頁）統一處理：
+  // - 避免用戶中途放棄留下孤兒檔案
+  // - 網路錯誤集中在最後一步，不會卡在流程中途
+  // - 修復 storage_client 2.5.0 uploadBinary bug 影響範圍
 
   Future<void> _uploadAndProceed() async {
-    if (widget.isDevMode) {
-      // Dev 模式：存路徑到 provider，直接前往 bio
-      ref.read(applyFormProvider.notifier).setVerification(
-        frontPath:   _frontFacePath ?? '',
-        sidePath:    _sideFacePath  ?? '',
-        action1:     _randomActions[0].name,
-        action1Path: _action1Path   ?? '',
-        action2:     _randomActions[1].name,
-        action2Path: _action2Path   ?? '',
-      );
-      if (mounted) context.go('/dev/apply-bio');
-      return;
-    }
+    ref.read(applyFormProvider.notifier).setVerification(
+      frontPath:   _frontFacePath ?? '',
+      sidePath:    _sideFacePath  ?? '',
+      action1:     _randomActions[0].name,
+      action1Path: _action1Path   ?? '',
+      action2:     _randomActions[1].name,
+      action2Path: _action2Path   ?? '',
+    );
 
-    setState(() => _isUploading = true);
-    try {
-      final supabase = ref.read(supabaseProvider);
-      final userId = supabase.auth.currentUser!.id;
-      final ts = DateTime.now().millisecondsSinceEpoch;
-
-      // 上傳四張照片至 verification-photos bucket
-      Future<String> upload(String localPath, String label) async {
-        final bytes = await File(localPath).readAsBytes();
-        final storagePath = '$userId/${ts}_$label.jpg';
-        await supabase.storage
-            .from('verification-photos')
-            .uploadBinary(
-              storagePath,
-              bytes,
-              fileOptions: const FileOptions(contentType: 'image/jpeg'),
-            );
-        return storagePath;
-      }
-
-      final frontPath   = await upload(_frontFacePath!, 'front');
-      final sidePath    = await upload(_sideFacePath!,  'side');
-      final action1Path = await upload(_action1Path!,   'action1');
-      final action2Path = await upload(_action2Path!,   'action2');
-
-      // 寫入 identity_verifications table
-      await supabase.from('identity_verifications').insert({
-        'user_id':        userId,
-        'front_face_path': frontPath,
-        'side_face_path':  sidePath,
-        'action1_code':    _randomActions[0].name,
-        'action1_path':    action1Path,
-        'action2_code':    _randomActions[1].name,
-        'action2_path':    action2Path,
-        'status':          'pending',
-      });
-
-      // 儲存至 provider（供 confirm 頁顯示，以及返回時復原狀態）
-      ref.read(applyFormProvider.notifier).setVerification(
-        frontPath:   _frontFacePath!,
-        sidePath:    _sideFacePath!,
-        action1:     _randomActions[0].name,
-        action1Path: _action1Path!,
-        action2:     _randomActions[1].name,
-        action2Path: _action2Path!,
-      );
-
-      if (!mounted) return;
-      context.go('/apply/bio');
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _isUploading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context)!.commonError),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
+    if (!mounted) return;
+    context.go(widget.isDevMode ? '/dev/apply-bio' : '/apply/bio');
   }
 
   // ── 返回鍵處理 ───────────────────────────────────────────────────────────────
@@ -316,21 +257,21 @@ class _ApplyVerifyPageState extends ConsumerState<ApplyVerifyPage> {
         body: SafeArea(
           child: _step == _VerifyStep.intro
               ? _IntroView(
-                  colors: colors,
-                  l10n: l10n,
-                  alreadyDone: _frontFacePath != null,
-                  onStart: _onNext,
-                )
+            colors: colors,
+            l10n: l10n,
+            alreadyDone: _frontFacePath != null,
+            onStart: _onNext,
+          )
               : _CaptureView(
-                  step: _step,
-                  colors: colors,
-                  l10n: l10n,
-                  randomActions: _randomActions,
-                  capturedPath: _currentPath,
-                  onTakePhoto: _takePhoto,
-                  onRetake: _retake,
-                  onNext: _currentPath != null ? _onNext : null,
-                ),
+            step: _step,
+            colors: colors,
+            l10n: l10n,
+            randomActions: _randomActions,
+            capturedPath: _currentPath,
+            onTakePhoto: _takePhoto,
+            onRetake: _retake,
+            onNext: _currentPath != null ? _onNext : null,
+          ),
         ),
       ),
     );
@@ -641,7 +582,7 @@ class _CaptureView extends StatelessWidget {
                 Expanded(
                   child: LukoButton.primary(
                     label: step == _VerifyStep.action2
-                        ? l10n.applyVerifyUploading.replaceFirst('...', '')
+                        ? l10n.applyVerifyDone
                         : l10n.applyVerifyNextStep,
                     onPressed: onNext,
                   ),

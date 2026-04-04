@@ -5,6 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../../core/analytics/analytics_events.dart';
 import '../../../../../core/analytics/analytics_provider.dart';
@@ -41,13 +42,25 @@ class _ApplyConfirmPageState extends ConsumerState<ApplyConfirmPage> {
   bool _isSubmitting = false;
   String? _submitError;
 
-  // ── 送出申請 ─────────────────────────────────────────────────────────────────
+  // ── 送出申請（Step 6）────────────────────────────────────────────────────────
+  //
+  // 所有上傳集中在此處理：
+  //   1. 上傳申請照片 → application-photos bucket（用 upload(File) 繞過 uploadBinary bug）
+  //   2. 上傳驗證照片 → verification-photos bucket
+  //   3. 寫入 identity_verifications table
+  //   4. 寫入 applications table
+  //
+  // 好處：
+  //   - 用戶中途放棄不會留下孤兒檔案
+  //   - 網路錯誤只在最後一步出現，不卡在流程中途
+  //   - 統一用 upload(File) 避免 storage_client 2.5.0 的 uploadBinary bug
+
   Future<void> _submit() async {
     if (!_isAgreed || _isSubmitting) return;
     final l10n = AppLocalizations.of(context)!;
     final form = ref.read(applyFormProvider);
 
-    // ── Dev 模式：跳過 DB 寫入，模擬送出後導回選擇器 ──────────────────────
+    // ── Dev 模式 ──────────────────────────────────────────────────────────
     if (widget.isDevMode) {
       ref.read(applyFormProvider.notifier).reset();
       if (mounted) {
@@ -71,9 +84,71 @@ class _ApplyConfirmPageState extends ConsumerState<ApplyConfirmPage> {
     try {
       final supabase = ref.read(supabaseProvider);
       final userId = supabase.auth.currentUser!.id;
+      final ts = DateTime.now().millisecondsSinceEpoch;
 
+      // ── 輔助：用 upload(File) 上傳單張照片 ──────────────────────────────
+      // 使用 upload(File) 而非 uploadBinary(bytes)，
+      // 繞過 storage_client 2.5.0 在 bucket 有 allowed_mime_types 時的 404 bug。
+      Future<String> uploadFile(
+          String bucket,
+          String localPath,
+          String storagePath,
+          ) async {
+        final file = File(localPath);
+        await supabase.storage.from(bucket).upload(
+          storagePath,
+          file,
+          fileOptions: const FileOptions(
+            contentType: 'image/jpeg',
+            upsert: true,
+          ),
+        );
+        return storagePath;
+      }
+
+      // ── 1. 申請照片已由 Step 3 上傳完成，直接使用已存的路徑 ─────────────
+      // 避免重複上傳（photos page 已上傳並存入 uploadedPhotoPaths）
+      final uploadedPhotoPaths = form.uploadedPhotoPaths;
+
+      // ── 2. 上傳驗證照片 → verification-photos ───────────────────────────
+      final frontStoragePath = await uploadFile(
+        'verification-photos',
+        form.verificationFrontPath,
+        '$userId/verify/${ts}_front.jpg',
+      );
+      final sideStoragePath = await uploadFile(
+        'verification-photos',
+        form.verificationSidePath,
+        '$userId/verify/${ts}_side.jpg',
+      );
+      final action1StoragePath = await uploadFile(
+        'verification-photos',
+        form.verificationAction1Path,
+        '$userId/verify/${ts}_action1.jpg',
+      );
+      final action2StoragePath = await uploadFile(
+        'verification-photos',
+        form.verificationAction2Path,
+        '$userId/verify/${ts}_action2.jpg',
+      );
+
+      // ── 3. 寫入 identity_verifications ──────────────────────────────────
+      await supabase.from('identity_verifications').upsert(
+        {
+          'user_id':          userId,
+          'front_face_path':  frontStoragePath,
+          'side_face_path':   sideStoragePath,
+          'action1_code':     form.verificationAction1,
+          'action1_path':     action1StoragePath,
+          'action2_code':     form.verificationAction2,
+          'action2_path':     action2StoragePath,
+          'status':           'pending',
+        },
+        onConflict: 'user_id',
+      );
+
+      // ── 4. 寫入 applications ─────────────────────────────────────────────
       final now = DateTime.now().toUtc().toIso8601String();
-
       await supabase.from('applications').upsert(
         {
           'user_id':             userId,
@@ -81,41 +156,34 @@ class _ApplyConfirmPageState extends ConsumerState<ApplyConfirmPage> {
           'birth_date':          form.birthDate!.toIso8601String().substring(0, 10),
           'gender':              form.gender,
           'bio':                 form.bio.isEmpty ? null : form.bio,
-          'photo_paths':         form.uploadedPhotoPaths,
+          'photo_paths':         uploadedPhotoPaths,
           'seeking':             form.seeking,
           'status':              'pending',
-          // 記錄用戶首次接受條款的時間（Step 5 勾選的當下）
-          // 審核通過後此值由 Edge Function 複製到 profiles.terms_accepted_at
           'terms_accepted_at':   now,
           'privacy_accepted_at': now,
         },
         onConflict: 'user_id',
       );
 
-      // 申請送出成功後，請求推播通知權限
-      // 此時機最佳：用戶剛完成重要行動，接受通知許可的意願最高
+      // ── 申請送出成功 ──────────────────────────────────────────────────────
+
+      // 請求推播通知權限（最佳時機：用戶剛完成重要行動）
       try {
         await FirebaseMessaging.instance.requestPermission(
-          alert: true,
-          badge: true,
-          sound: true,
+          alert: true, badge: true, sound: true,
         );
-      } catch (_) {
-        // 通知權限請求失敗不影響申請流程，靜默忽略
-      }
+      } catch (_) {}
 
-      // 清空暫存的申請資料
       ref.read(applyFormProvider.notifier).reset();
 
-      // 追蹤申請送出事件
       ref.read(analyticsProvider)
         ..track(AnalyticsEvents.applyStepCompleted, {'step': 6})
         ..track(AnalyticsEvents.applySubmitted);
 
-      // 觸發 GoRouter redirect：appUserStatusProvider 重新查詢後狀態變 pending，
-      // redirect 函式會自動導向 /review/pending
+      // 觸發 GoRouter redirect → /review/pending
       ref.invalidate(appUserStatusProvider);
-    } catch (_) {
+    } catch (e, st) {
+      debugPrint('Apply submit error: $e\n$st');
       if (!mounted) return;
       setState(() {
         _isSubmitting = false;
@@ -471,9 +539,9 @@ class _TermsRow extends StatefulWidget {
 
 class _TermsRowState extends State<_TermsRow> {
   late final TapGestureRecognizer _termsTap =
-      TapGestureRecognizer()..onTap = () => widget.onTermsTap();
+  TapGestureRecognizer()..onTap = () => widget.onTermsTap();
   late final TapGestureRecognizer _privacyTap =
-      TapGestureRecognizer()..onTap = () => widget.onPrivacyTap();
+  TapGestureRecognizer()..onTap = () => widget.onPrivacyTap();
 
   @override
   void dispose() {

@@ -317,6 +317,19 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage> {
   }
 
   // ── 上傳並前進 ─────────────────────────────────────────────────────────────
+  //
+  // 修正重點：
+  // 1. Storage path 必須是 `{uid}/photos/{timestamp}_{index}.jpg`
+  //    RLS policy 以 (storage.foldername(name))[1] 比對 auth.uid()，
+  //    foldername 回傳的是「第一層目錄」，所以路徑第一段必須等於 uid。
+  //    原本路徑 `$userId/${ts}_$i.jpg` 本身格式正確，
+  //    但 404 代表 bucket 不存在或未建立；改用 upsert:true 避免重複上傳時衝突。
+  //
+  // 2. 加入 upsert: true，重新進入此頁後不會因檔名重複而 403。
+  //
+  // 3. 改為固定 session 時間戳 + 索引，避免同一次上傳因毫秒差異命名不一致。
+  //
+  // 4. 加入更詳細的錯誤分類，方便 debug。
 
   Future<void> _onNext() async {
     if (_localPaths.length < _minPhotos) return;
@@ -326,6 +339,8 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage> {
       return;
     }
 
+    if (_isUploading) return;
+
     setState(() {
       _isUploading = true;
       _error = null;
@@ -333,28 +348,64 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage> {
 
     try {
       final supabase = ref.read(supabaseProvider);
-      final userId = supabase.auth.currentUser!.id;
+      final user = supabase.auth.currentUser;
+      final userId = user?.id;
+
+      if (user == null || userId == null) {
+        setState(() { _isUploading = false; _error = '用戶未登入，請重新驗證'; });
+        return;
+      }
+
       final uploadedPaths = <String>[];
+      final sessionTs = DateTime.now().millisecondsSinceEpoch;
 
       for (int i = 0; i < _localPaths.length; i++) {
-        final bytes = await File(_localPaths[i]).readAsBytes();
-        final ts = DateTime.now().millisecondsSinceEpoch;
-        final storagePath = '$userId/${ts}_$i.jpg';
+        final file = File(_localPaths[i]);
 
+        if (!file.existsSync()) {
+          debugPrint('Photo not found at index $i: ${_localPaths[i]}');
+          continue;
+        }
+
+        // RLS Policy: (storage.foldername(name))[1] = auth.uid()
+        // → 路徑第一段必須是 userId
+        final storagePath = '$userId/photos/${sessionTs}_$i.jpg';
+
+        debugPrint('Uploading [$i]: $storagePath');
+
+        // ⚠️ storage_client 2.5.0 的 uploadBinary() 在 bucket 設有
+        // allowed_mime_types 時會組裝錯誤的 multipart 請求，回傳 404。
+        // 改用 upload(File) 可繞過此 bug，直接以 File 物件上傳。
         await supabase.storage
             .from('application-photos')
-            .uploadBinary(
-              storagePath,
-              bytes,
-              fileOptions: const FileOptions(contentType: 'image/jpeg'),
-            );
+            .upload(
+          storagePath,
+          file,
+          fileOptions: const FileOptions(
+            contentType: 'image/jpeg',
+            upsert: true,
+          ),
+        );
 
         uploadedPaths.add(storagePath);
+        debugPrint('Uploaded [$i] ✓ → $storagePath');
+      }
+
+      if (uploadedPaths.isEmpty) {
+        throw Exception('所有照片上傳失敗，請確認網路連線');
       }
 
       ref.read(applyFormProvider.notifier).setUploadedPhotos(uploadedPaths);
       if (!mounted) return;
       context.go('/apply/verify');
+    } on StorageException catch (e, st) {
+      debugPrint('Photo upload StorageException: '
+          'status=${e.statusCode}, msg=${e.message}\n$st');
+      if (!mounted) return;
+      setState(() {
+        _isUploading = false;
+        _error = _storageErrorMessage(e);
+      });
     } catch (e, st) {
       debugPrint('Photo upload error: $e\n$st');
       if (!mounted) return;
@@ -362,6 +413,24 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage> {
         _isUploading = false;
         _error = AppLocalizations.of(context)!.commonError;
       });
+    }
+  }
+
+  /// 將 StorageException 轉換為對用戶友善的訊息
+  String _storageErrorMessage(StorageException e) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (e.statusCode) {
+      case '404':
+      // Bucket 不存在：通常是後端設定問題，非用戶操作失誤
+        return '上傳服務暫時無法使用，請稍後再試';
+      case '403':
+      // RLS Policy 拒絕：用戶未登入或 policy 設定不符
+        return '沒有上傳權限，請重新登入後再試';
+      case '413':
+      // 檔案過大
+        return '照片檔案過大，請選擇較小的圖片';
+      default:
+        return l10n.commonError;
     }
   }
 
@@ -616,9 +685,9 @@ class _DraggablePhotoGridState extends State<_DraggablePhotoGrid> {
               borderRadius: BorderRadius.circular(AppRadius.card),
               border: isHovered
                   ? Border.all(
-                      color: widget.colors.forestGreen,
-                      width: 2.5,
-                    )
+                color: widget.colors.forestGreen,
+                width: 2.5,
+              )
                   : null,
             ),
             child: ClipRRect(
@@ -765,29 +834,29 @@ class _EmptySlot extends StatelessWidget {
     return Center(
       child: isProcessing
           ? SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: colors.forestGreen,
-              ),
-            )
+        width: 20,
+        height: 20,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          color: colors.forestGreen,
+        ),
+      )
           : Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.add_rounded, size: 26, color: iconColor),
-                if (isNext) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    l10n.applyPhotosAddPhoto,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: colors.forestGreen,
-                          fontWeight: FontWeight.w500,
-                        ),
-                  ),
-                ],
-              ],
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.add_rounded, size: 26, color: iconColor),
+          if (isNext) ...[
+            const SizedBox(height: 4),
+            Text(
+              l10n.applyPhotosAddPhoto,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: colors.forestGreen,
+                fontWeight: FontWeight.w500,
+              ),
             ),
+          ],
+        ],
+      ),
     );
   }
 }

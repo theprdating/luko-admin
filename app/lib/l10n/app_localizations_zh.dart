@@ -283,6 +283,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get applyVerifyNextStep => '繼續';
 
   @override
+  String get applyVerifyDone => '完成';
+
+  @override
   String get applyVerifyUploading => '上傳認證照片中...';
 
   @override

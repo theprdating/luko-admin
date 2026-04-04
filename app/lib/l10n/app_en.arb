@@ -283,6 +283,9 @@
   "applyVerifyNextStep": "Continue",
   "@applyVerifyNextStep": { "description": "Continue to next step button" },
 
+  "applyVerifyDone": "Done",
+  "@applyVerifyDone": { "description": "Complete button on the last verification step" },
+
   "applyVerifyUploading": "Uploading verification photos...",
   "@applyVerifyUploading": { "description": "Verification photo upload loading text" },
 

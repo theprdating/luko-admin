@@ -293,6 +293,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get applyVerifyNextStep => 'Continue';
 
   @override
+  String get applyVerifyDone => 'Done';
+
+  @override
   String get applyVerifyUploading => 'Uploading verification photos...';
 
   @override

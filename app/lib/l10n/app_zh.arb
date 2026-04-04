@@ -283,6 +283,9 @@
   "applyVerifyNextStep": "繼續",
   "@applyVerifyNextStep": { "description": "繼續下一步按鈕" },
 
+  "applyVerifyDone": "完成",
+  "@applyVerifyDone": { "description": "認證最後一步完成按鈕" },
+
   "applyVerifyUploading": "上傳認證照片中...",
   "@applyVerifyUploading": { "description": "認證照片上傳載入文字" },
 

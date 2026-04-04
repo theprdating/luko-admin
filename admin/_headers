@@ -17,4 +17,4 @@
   # — img-src: 允許 Supabase Storage 的 signed URL 圖片
   # — style-src: 允許 inline style（我們的 CSS 用到）
   # — frame-ancestors: 禁止被嵌入（比 X-Frame-Options 更現代）
-  Content-Security-Policy: default-src 'none'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://xzqwzpwpjofpkbewkwzx.supabase.co; connect-src 'self' https://xzqwzpwpjofpkbewkwzx.supabase.co wss://xzqwzpwpjofpkbewkwzx.supabase.co https://xzqwzpwpjofpkbewkwzx.supabase.in; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://xzqwzpwpjofpkbewkwzx.supabase.co; connect-src 'self' https://xzqwzpwpjofpkbewkwzx.supabase.co wss://xzqwzpwpjofpkbewkwzx.supabase.co https://xzqwzpwpjofpkbewkwzx.supabase.in; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';

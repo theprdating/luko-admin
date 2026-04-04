@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Luko Admin — 儀表板</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <span class="navbar-brand">LUKO ADMIN</span>
+    <div class="navbar-nav">
+      <a href="dashboard.html" class="nav-link">儀表板</a>
+      <a href="review.html" class="nav-link">審核</a>
+      <a href="history.html" class="nav-link">紀錄</a>
+      <button onclick="signOut()" class="btn-ghost" style="font-size:12px;padding:6px 12px;margin-left:8px;">登出</button>
+    </div>
+  </nav>
+
+  <div id="toast-container"></div>
+
+  <div class="page-content">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+      <h1>儀表板</h1>
+      <span id="last-updated" style="font-size:12px;color:var(--text-second);"></span>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="section-title">待審核</div>
+        <div class="stat-value" id="stat-pending">
+          <div class="loading-spinner"></div>
+        </div>
+        <div class="stat-label">筆申請等待審核</div>
+      </div>
+      <div class="stat-card">
+        <div class="section-title">今日完成</div>
+        <div class="stat-value" id="stat-today" style="color:var(--text-primary);">—</div>
+        <div class="stat-label">筆已審核</div>
+      </div>
+      <div class="stat-card">
+        <div class="section-title">今日通過</div>
+        <div class="stat-value text-green" id="stat-approved-today">—</div>
+        <div class="stat-label">筆通過審核</div>
+      </div>
+      <div class="stat-card">
+        <div class="section-title">累計會員</div>
+        <div class="stat-value text-gold" id="stat-total">—</div>
+        <div class="stat-label">位已通過用戶</div>
+      </div>
+    </div>
+
+    <!-- Approval rate bar -->
+    <div class="stat-card" style="margin-bottom:32px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div class="section-title">今日通過率</div>
+        <span id="approval-rate-text" style="font-size:13px;color:var(--text-second);">—</span>
+      </div>
+      <div style="height:6px;background:var(--bg-elevated);border-radius:3px;overflow:hidden;">
+        <div id="approval-rate-bar" style="height:100%;background:var(--green);border-radius:3px;width:0%;transition:width 0.6s ease;"></div>
+      </div>
+    </div>
+
+    <!-- Pending queue preview -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <h2>待審核佇列</h2>
+      <a href="review.html" class="btn-primary"
+        style="font-size:13px;padding:8px 16px;text-decoration:none;border-radius:6px;color:#000;font-weight:600;">
+        開始審核 →
+      </a>
+    </div>
+
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+      <div id="pending-table">
+        <div class="loading-state">
+          <div class="loading-spinner"></div>
+          載入中...
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+  <script>
+    setActiveNavLink()
+
+    async function loadDashboard() {
+      await requireAdmin()
+
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const todayIso = today.toISOString()
+
+      const [pendingRes, todayAllRes, todayApprovedRes, totalApprovedRes] = await Promise.all([
+        db.from('applications').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+        db.from('applications').select('*', { count: 'exact', head: true })
+          .neq('status', 'pending').gte('reviewed_at', todayIso),
+        db.from('applications').select('*', { count: 'exact', head: true })
+          .eq('status', 'approved').gte('reviewed_at', todayIso),
+        db.from('applications').select('*', { count: 'exact', head: true }).eq('status', 'approved'),
+      ])
+
+      const pending      = pendingRes.count ?? 0
+      const todayAll     = todayAllRes.count ?? 0
+      const todayApproved = todayApprovedRes.count ?? 0
+      const total        = totalApprovedRes.count ?? 0
+
+      document.getElementById('stat-pending').textContent      = pending
+      document.getElementById('stat-today').textContent        = todayAll
+      document.getElementById('stat-approved-today').textContent = todayApproved
+      document.getElementById('stat-total').textContent        = total
+
+      // Approval rate bar
+      if (todayAll > 0) {
+        const rate = Math.round(todayApproved / todayAll * 100)
+        document.getElementById('approval-rate-text').textContent = `${todayApproved} / ${todayAll}（${rate}%）`
+        document.getElementById('approval-rate-bar').style.width = `${rate}%`
+      } else {
+        document.getElementById('approval-rate-text').textContent = '今日尚未審核'
+      }
+
+      // Last updated
+      document.getElementById('last-updated').textContent = '更新於 ' + formatDate(new Date().toISOString())
+
+      // Pending table
+      const { data: apps } = await db
+        .from('applications')
+        .select('id, display_name, birth_date, gender, created_at, application_count')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: true })
+        .limit(10)
+
+      const tableEl = document.getElementById('pending-table')
+
+      if (!apps || apps.length === 0) {
+        tableEl.innerHTML = `
+          <div style="text-align:center;color:var(--text-second);padding:40px 20px;font-size:14px;">
+            ✓ 目前沒有待審核的申請
+          </div>
+        `
+        return
+      }
+
+      tableEl.innerHTML = `
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>姓名</th>
+              <th>年齡</th>
+              <th>性別</th>
+              <th>等待時間</th>
+              <th>申請次數</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${apps.map(a => `
+              <tr>
+                <td style="font-weight:600;">${escapeHtml(a.display_name)}</td>
+                <td>${calcAge(a.birth_date)} 歲</td>
+                <td>${GENDER_LABELS[a.gender] || a.gender}</td>
+                <td style="color:var(--text-second);">${timeAgo(a.created_at)}</td>
+                <td>
+                  ${a.application_count > 1
+                    ? `<span class="status-badge s-pending">第 ${a.application_count} 次</span>`
+                    : '<span style="color:var(--text-second);">首次</span>'
+                  }
+                </td>
+                <td style="text-align:right;">
+                  <a href="review.html" style="color:var(--gold);text-decoration:none;font-size:12px;font-weight:500;">審核 →</a>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        ${apps.length === 10 ? `
+          <div style="padding:12px 16px;text-align:center;border-top:1px solid var(--border);">
+            <a href="review.html" style="color:var(--gold);text-decoration:none;font-size:13px;">查看全部 →</a>
+          </div>
+        ` : ''}
+      `
+    }
+
+    loadDashboard()
+  </script>
+</body>
+</html>

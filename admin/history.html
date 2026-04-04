@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Luko Admin — 審核紀錄</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <span class="navbar-brand">LUKO ADMIN</span>
+    <div class="navbar-nav">
+      <a href="dashboard.html" class="nav-link">儀表板</a>
+      <a href="review.html" class="nav-link">審核</a>
+      <a href="history.html" class="nav-link">紀錄</a>
+      <button onclick="signOut()" class="btn-ghost" style="font-size:12px;padding:6px 12px;margin-left:8px;">登出</button>
+    </div>
+  </nav>
+
+  <div id="toast-container"></div>
+
+  <div class="page-content">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <h1>審核紀錄</h1>
+      <span id="record-count" style="font-size:13px;color:var(--text-second);"></span>
+    </div>
+
+    <!-- Filters -->
+    <div class="history-filters">
+      <select class="filter-select" id="filter-status" onchange="loadHistory()">
+        <option value="">全部狀態</option>
+        <option value="approved">✓ 通過</option>
+        <option value="rejected">✗ 拒絕</option>
+      </select>
+
+      <select class="filter-select" id="filter-date" onchange="loadHistory()">
+        <option value="">全部時間</option>
+        <option value="today">今天</option>
+        <option value="week">近 7 天</option>
+        <option value="month">近 30 天</option>
+      </select>
+
+      <select class="filter-select" id="filter-gender" onchange="loadHistory()">
+        <option value="">全部性別</option>
+        <option value="male">男</option>
+        <option value="female">女</option>
+        <option value="other">其他</option>
+      </select>
+
+      <select class="filter-select" id="filter-tier" onchange="loadHistory()">
+        <option value="">全部評級</option>
+        <option value="S">S 頂標</option>
+        <option value="A">A 前標</option>
+        <option value="B">B 均標</option>
+      </select>
+
+      <select class="filter-select" id="filter-rejection" onchange="loadHistory()">
+        <option value="">全部拒絕類型</option>
+        <option value="potential">潛力可等</option>
+        <option value="soft">暫不通過</option>
+        <option value="hard">不符合</option>
+      </select>
+    </div>
+
+    <!-- Table -->
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+      <div id="history-container">
+        <div class="loading-state">
+          <div class="loading-spinner"></div>
+          載入中...
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div id="pagination" style="display:flex;justify-content:center;gap:8px;margin-top:20px;"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+  <script>
+    setActiveNavLink()
+
+    const PAGE_SIZE = 30
+    let currentPage = 0
+
+    async function loadHistory(page = 0) {
+      currentPage = page
+      await requireAdmin()
+
+      const status    = document.getElementById('filter-status').value
+      const dateRange = document.getElementById('filter-date').value
+      const gender    = document.getElementById('filter-gender').value
+      const tier      = document.getElementById('filter-tier').value
+      const rejType   = document.getElementById('filter-rejection').value
+
+      document.getElementById('history-container').innerHTML = `
+        <div class="loading-state">
+          <div class="loading-spinner"></div>
+          載入中...
+        </div>
+      `
+
+      let query = db
+        .from('applications')
+        .select('id, display_name, birth_date, gender, status, quality_tier, rejection_type, reviewed_at, review_note, application_count, review_duration_seconds', { count: 'exact' })
+        .neq('status', 'pending')
+        .order('reviewed_at', { ascending: false })
+        .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
+
+      if (status)   query = query.eq('status', status)
+      if (gender)   query = query.eq('gender', gender)
+      if (tier)     query = query.eq('quality_tier', tier)
+      if (rejType)  query = query.eq('rejection_type', rejType)
+
+      if (dateRange) {
+        const now = new Date()
+        let from = new Date()
+        if (dateRange === 'today') {
+          from.setHours(0, 0, 0, 0)
+        } else if (dateRange === 'week') {
+          from.setDate(now.getDate() - 7)
+        } else if (dateRange === 'month') {
+          from.setDate(now.getDate() - 30)
+        }
+        query = query.gte('reviewed_at', from.toISOString())
+      }
+
+      const { data, count, error } = await query
+
+      if (error) {
+        showToast('載入失敗：' + error.message, 'error')
+        document.getElementById('history-container').innerHTML =
+          `<div style="padding:40px;text-align:center;color:var(--text-second);">載入失敗</div>`
+        return
+      }
+
+      document.getElementById('record-count').textContent =
+        count != null ? `共 ${count} 筆` : ''
+
+      if (!data || data.length === 0) {
+        document.getElementById('history-container').innerHTML = `
+          <div style="padding:48px;text-align:center;color:var(--text-second);font-size:14px;">
+            沒有符合條件的紀錄
+          </div>
+        `
+        document.getElementById('pagination').innerHTML = ''
+        return
+      }
+
+      // Table
+      document.getElementById('history-container').innerHTML = `
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>姓名</th>
+              <th>年齡</th>
+              <th>性別</th>
+              <th>結果</th>
+              <th>評級 / 類型</th>
+              <th>審核時間</th>
+              <th>耗時</th>
+              <th>備註</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.map(a => {
+              const statusBadge = a.status === 'approved'
+                ? `<span class="status-badge s-approved">✓ 通過</span>`
+                : `<span class="status-badge s-rejected">✗ 拒絕</span>`
+
+              const tierOrType = a.status === 'approved' && a.quality_tier
+                ? `<span class="tier-badge tier-${a.quality_tier}">${a.quality_tier}</span>`
+                : a.status === 'rejected' && a.rejection_type
+                ? `<span class="rejection-type-badge">${REJECTION_TYPE_LABELS[a.rejection_type] || a.rejection_type}</span>`
+                : '—'
+
+              const duration = a.review_duration_seconds != null
+                ? a.review_duration_seconds < 60
+                  ? `${a.review_duration_seconds}s`
+                  : `${Math.round(a.review_duration_seconds / 60)}m`
+                : '—'
+
+              const note = a.review_note
+                ? `<span style="color:var(--text-second);font-size:12px;" title="${escapeHtml(a.review_note)}">
+                    ${escapeHtml(a.review_note.length > 20 ? a.review_note.slice(0, 20) + '…' : a.review_note)}
+                   </span>`
+                : '<span style="color:var(--border);">—</span>'
+
+              return `
+                <tr>
+                  <td style="font-weight:600;">
+                    ${escapeHtml(a.display_name)}
+                    ${a.application_count > 1
+                      ? `<span style="font-size:10px;color:var(--text-second);margin-left:4px;">#${a.application_count}</span>`
+                      : ''
+                    }
+                  </td>
+                  <td>${calcAge(a.birth_date)} 歲</td>
+                  <td>${GENDER_LABELS[a.gender] || a.gender}</td>
+                  <td>${statusBadge}</td>
+                  <td>${tierOrType}</td>
+                  <td style="color:var(--text-second);white-space:nowrap;">${formatDate(a.reviewed_at)}</td>
+                  <td style="color:var(--text-second);">${duration}</td>
+                  <td>${note}</td>
+                </tr>
+              `
+            }).join('')}
+          </tbody>
+        </table>
+      `
+
+      // Pagination
+      const totalPages = Math.ceil((count || 0) / PAGE_SIZE)
+      const pagEl = document.getElementById('pagination')
+
+      if (totalPages <= 1) {
+        pagEl.innerHTML = ''
+        return
+      }
+
+      let pagHtml = ''
+      if (page > 0) {
+        pagHtml += `<button class="btn-ghost" style="padding:6px 14px;font-size:13px;"
+          onclick="loadHistory(${page - 1})">← 上一頁</button>`
+      }
+      pagHtml += `<span style="font-size:13px;color:var(--text-second);padding:6px 12px;">
+        第 ${page + 1} / ${totalPages} 頁
+      </span>`
+      if (page < totalPages - 1) {
+        pagHtml += `<button class="btn-ghost" style="padding:6px 14px;font-size:13px;"
+          onclick="loadHistory(${page + 1})">下一頁 →</button>`
+      }
+      pagEl.innerHTML = pagHtml
+    }
+
+    loadHistory()
+  </script>
+</body>
+</html>

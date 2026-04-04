@@ -1,0 +1,20 @@
+/*
+  # 禁止任何 iframe 嵌入（防止 clickjacking）
+  X-Frame-Options: DENY
+
+  # 禁止瀏覽器猜測 Content-Type（防止 MIME sniffing 攻擊）
+  X-Content-Type-Options: nosniff
+
+  # 不傳送 Referer header（避免 URL 洩漏給外部服務）
+  Referrer-Policy: no-referrer
+
+  # 禁止非必要的瀏覽器功能
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+
+  # Content Security Policy
+  # — script-src: 只允許同域 + Supabase JS SDK CDN
+  # — connect-src: 只允許 Supabase API / Storage / Realtime
+  # — img-src: 允許 Supabase Storage 的 signed URL 圖片
+  # — style-src: 允許 inline style（我們的 CSS 用到）
+  # — frame-ancestors: 禁止被嵌入（比 X-Frame-Options 更現代）
+  Content-Security-Policy: default-src 'none'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://xzqwzpwpjofpkbewkwzx.supabase.co; connect-src 'self' https://xzqwzpwpjofpkbewkwzx.supabase.co wss://xzqwzpwpjofpkbewkwzx.supabase.co https://xzqwzpwpjofpkbewkwzx.supabase.in; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';

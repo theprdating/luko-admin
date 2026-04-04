@@ -19,5 +19,11 @@
       "runtimeArgs": ["serve", "web", "-l", "8080", "--no-clipboard"],
       "port": 8080
     }
+    ,{
+      "name": "Admin Panel",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "admin", "-l", "8081", "--no-clipboard"],
+      "port": 8081
+    }
   ]
 }

@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Luko Admin — 審核</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <span class="navbar-brand">LUKO ADMIN</span>
+    <div class="navbar-nav">
+      <a href="dashboard.html" class="nav-link">儀表板</a>
+      <a href="review.html" class="nav-link">審核</a>
+      <a href="history.html" class="nav-link">紀錄</a>
+      <button onclick="signOut()" class="btn-ghost" style="font-size:12px;padding:6px 12px;margin-left:8px;">登出</button>
+    </div>
+  </nav>
+
+  <div id="toast-container"></div>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox hidden">
+    <button class="lightbox-close" onclick="closeLightbox()">×</button>
+    <img id="lightbox-img" src="" alt="">
+    <div id="lightbox-caption" class="lightbox-caption"></div>
+  </div>
+
+  <!-- Two-column layout -->
+  <div class="review-layout">
+
+    <!-- ── Queue Panel ─────────────────────────────────────────────────────── -->
+    <aside class="queue-panel">
+      <div class="queue-header">
+        <h2>待審核</h2>
+        <div class="queue-count" id="queue-count">載入中...</div>
+      </div>
+      <ul class="queue-list" id="queue-list">
+        <li class="loading-state">
+          <div class="loading-spinner"></div>
+          載入中...
+        </li>
+      </ul>
+    </aside>
+
+    <!-- ── Detail Panel ────────────────────────────────────────────────────── -->
+    <section class="detail-panel" id="detail-panel">
+      <div class="detail-placeholder">
+        ← 從左側選擇申請者開始審核
+      </div>
+    </section>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+  <script>
+    setActiveNavLink()
+
+    // ── State ──────────────────────────────────────────────────────────────────
+    let queue            = []   // pending applications
+    let selectedId       = null // current application id
+    let currentVerify    = null // identity_verifications row
+    let decisionMode     = null // 'approve' | 'reject'
+    let selectedTier     = null // 'S' | 'A' | 'B'
+    let selectedRejType  = null // 'potential' | 'soft' | 'hard'
+    let reviewStartedAt  = null
+    let isSubmitting     = false
+
+    // ── Init ───────────────────────────────────────────────────────────────────
+    async function init() {
+      await requireAdmin()
+      await loadQueue()
+    }
+
+    // ── Load Queue ─────────────────────────────────────────────────────────────
+    async function loadQueue() {
+      const { data, error } = await db
+        .from('applications')
+        .select('id, user_id, display_name, birth_date, gender, created_at, application_count, photo_paths')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: true })
+
+      if (error) {
+        showToast('無法載入佇列：' + error.message, 'error')
+        return
+      }
+
+      queue = data || []
+      renderQueue()
+
+      if (queue.length > 0 && !selectedId) {
+        await selectApplicant(queue[0].id)
+      } else if (queue.length === 0) {
+        document.getElementById('detail-panel').innerHTML =
+          '<div class="detail-placeholder">✓ 目前沒有待審核的申請</div>'
+      }
+    }
+
+    // ── Render Queue ───────────────────────────────────────────────────────────
+    function renderQueue() {
+      const list  = document.getElementById('queue-list')
+      const count = document.getElementById('queue-count')
+      count.textContent = queue.length === 0 ? '沒有待審核申請' : `${queue.length} 筆等待中`
+
+      if (queue.length === 0) {
+        list.innerHTML = '<li class="queue-empty">✓ 佇列已清空！</li>'
+        return
+      }
+
+      list.innerHTML = queue.map((a, idx) => {
+        const emoji = a.gender === 'female' ? '👩' : a.gender === 'male' ? '👨' : '🧑'
+        const isActive = a.id === selectedId
+        const isReapply = a.application_count > 1
+        return `
+          <li class="queue-item ${isActive ? 'active' : ''}"
+              onclick="selectApplicant('${a.id}')"
+              title="快捷鍵：↑↓ 切換">
+            <div class="queue-avatar-placeholder">${emoji}</div>
+            <div class="queue-info">
+              <div class="queue-name">${escapeHtml(a.display_name)}</div>
+              <div class="queue-meta">${calcAge(a.birth_date)} 歲 · ${escapeHtml(GENDER_LABELS[a.gender] || a.gender)}</div>
+              <div class="queue-meta">${timeAgo(a.created_at)}</div>
+            </div>
+            ${isReapply
+              ? `<span class="queue-badge queue-badge-reapply">第 ${a.application_count} 次</span>`
+              : ''
+            }
+          </li>
+        `
+      }).join('')
+    }
+
+    // ── Select Applicant ───────────────────────────────────────────────────────
+    async function selectApplicant(id) {
+      if (id === selectedId) return
+      selectedId      = id
+      decisionMode    = null
+      selectedTier    = null
+      selectedRejType = null
+      reviewStartedAt = new Date().toISOString()
+
+      renderQueue()
+
+      // Loading state
+      document.getElementById('detail-panel').innerHTML = `
+        <div class="loading-state" style="flex:1;">
+          <div class="loading-spinner"></div>
+          載入申請資料...
+        </div>
+      `
+
+      // Fetch full application data
+      const { data: app, error } = await db
+        .from('applications')
+        .select('*')
+        .eq('id', id)
+        .single()
+
+      if (error || !app) {
+        showToast('載入失敗：' + (error?.message || '未知錯誤'), 'error')
+        return
+      }
+
+      // Fetch identity verification
+      const { data: verify } = await db
+        .from('identity_verifications')
+        .select('*')
+        .eq('user_id', app.user_id)
+        .maybeSingle()
+
+      currentVerify = verify
+
+      // Fetch signed URLs for application photos (parallel)
+      const photoUrlPromises = (app.photo_paths || []).map((path, i) =>
+        getSignedUrl('application-photos', path).then(url => ({ url, path, i }))
+      )
+      const photoResults = await Promise.all(photoUrlPromises)
+
+      // Fetch signed URLs for verification photos (parallel)
+      let verifyUrls = {}
+      if (verify) {
+        const fields = ['front_face_path', 'side_face_path', 'action1_path', 'action2_path']
+        const verifyPromises = fields.map(f =>
+          verify[f] ? getSignedUrl('verification-photos', verify[f]).then(url => [f, url]) : Promise.resolve([f, null])
+        )
+        const verifyResults = await Promise.all(verifyPromises)
+        verifyUrls = Object.fromEntries(verifyResults)
+      }
+
+      renderDetail(app, photoResults, verifyUrls)
+    }
+
+    // ── Render Detail ──────────────────────────────────────────────────────────
+    function renderDetail(app, photoResults, verifyUrls) {
+      const age  = calcAge(app.birth_date)
+      const genderLabel = escapeHtml(GENDER_LABELS[app.gender] || app.gender)
+      const seekingArr  = (app.seeking || []).map(s => escapeHtml(SEEKING_LABELS[s] || s))
+      const seekingText = seekingArr.join('、') || '未設定'
+
+      const photosHtml = photoResults.length > 0
+        ? `<div class="photos-row">
+            ${photoResults.map(({ url, i }) =>
+              url
+                ? `<img class="photo-thumb"
+                        src="${url}"
+                        alt="照片 ${i+1}"
+                        onclick="openLightbox('${url}', '申請照片 ${i+1}')">`
+                : `<div class="photo-placeholder">無法載入</div>`
+            ).join('')}
+           </div>`
+        : `<div style="color:var(--text-second);font-size:13px;padding:8px 0;">無照片</div>`
+
+      const verifyHtml = currentVerify ? `
+        <div class="verify-grid">
+          ${['front_face_path','side_face_path','action1_path','action2_path'].map(field => {
+            const url     = verifyUrls[field]
+            const isAction = field.startsWith('action')
+            const codeField = field.replace('_path', '_code')
+            const label   = field === 'front_face_path' ? '正面'
+              : field === 'side_face_path' ? '側臉'
+              : `動作：${actionLabel(currentVerify[codeField])}`
+
+            return `
+              <div class="verify-photo-wrapper">
+                ${url
+                  ? `<img class="photo-thumb" src="${url}" alt="${label}"
+                          onclick="openLightbox('${url}', '${label}')">`
+                  : `<div class="photo-placeholder" style="height:150px;">無法載入</div>`
+                }
+                <div class="verify-label">${label}</div>
+              </div>
+            `
+          }).join('')}
+        </div>
+      ` : `<div style="color:var(--text-second);font-size:13px;padding:8px 0;">尚未提交認證照片</div>`
+
+      const bioHtml = app.bio
+        ? `<div class="bio-text">${escapeHtml(app.bio).replace(/\n/g,'<br>')}</div>`
+        : `<div class="bio-text bio-empty">（未填寫自我介紹）</div>`
+
+      const prevNoteHtml = app.review_note ? `
+        <div>
+          <div class="section-title" style="margin-bottom:8px;">上次審核備註</div>
+          <div class="bio-text" style="color:var(--text-second);font-size:12px;">
+            ${escapeHtml(app.review_note)}
+          </div>
+        </div>
+      ` : ''
+
+      document.getElementById('detail-panel').innerHTML = `
+
+        <!-- Header -->
+        <div class="applicant-header">
+          <div>
+            <div class="applicant-name">${escapeHtml(app.display_name)}</div>
+            <div class="applicant-tags">
+              <span class="tag">${age} 歲</span>
+              <span class="tag">${genderLabel}</span>
+              <span class="tag">${seekingText}</span>
+              ${app.application_count > 1
+                ? `<span class="tag tag-gold">第 ${app.application_count} 次申請</span>`
+                : ''
+              }
+              <span class="tag" style="color:var(--text-second);">申請於 ${timeAgo(app.created_at)}</span>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--text-second);text-align:right;line-height:1.8;">
+            <div>${formatDate(app.created_at)}</div>
+            <div style="margin-top:2px;">${app.user_id.slice(0,8)}…</div>
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div class="detail-body">
+
+          <!-- Application Photos -->
+          <div>
+            <div class="section-title" style="margin-bottom:10px;">
+              申請照片（${photoResults.length} 張）
+              <span style="font-weight:400;color:var(--text-second);margin-left:6px;">點擊放大</span>
+            </div>
+            ${photosHtml}
+          </div>
+
+          <!-- Verification Photos -->
+          <div>
+            <div class="section-title" style="margin-bottom:10px;">真人認證</div>
+            ${verifyHtml}
+          </div>
+
+          <!-- Bio -->
+          <div>
+            <div class="section-title" style="margin-bottom:8px;">自我介紹</div>
+            ${bioHtml}
+          </div>
+
+          ${prevNoteHtml}
+
+        </div>
+
+        <!-- Decision Panel -->
+        <div class="decision-panel">
+
+          <textarea
+            class="decision-note form-group"
+            id="review-note"
+            placeholder="內部備註（不對用戶顯示，可空白）"
+            style="width:100%;resize:vertical;min-height:52px;max-height:120px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-family:var(--font);font-size:13px;padding:8px 12px;"
+          ></textarea>
+
+          <!-- Main action buttons -->
+          <div class="decision-actions">
+            <button class="btn-approve" id="btn-approve" onclick="startApprove()">
+              ✓ 通過
+            </button>
+            <button class="btn-reject" id="btn-reject" onclick="startReject()">
+              ✗ 拒絕
+            </button>
+          </div>
+
+          <!-- Approve: tier picker (hidden until btn-approve clicked) -->
+          <div id="approve-panel" class="hidden">
+            <div class="option-row">
+              <span class="option-label">評級：</span>
+              <button class="pick-btn pick-btn-approve" data-tier="S"
+                      onclick="selectTier('S')" title="頂標：最佳匹配優先">
+                S　頂標
+              </button>
+              <button class="pick-btn pick-btn-approve" data-tier="A"
+                      onclick="selectTier('A')" title="前標：優先顯示">
+                A　前標
+              </button>
+              <button class="pick-btn pick-btn-approve" data-tier="B"
+                      onclick="selectTier('B')" title="均標：標準池">
+                B　均標
+              </button>
+              <button class="btn-confirm btn-confirm-approve"
+                      id="btn-confirm-approve"
+                      disabled
+                      onclick="confirmApprove()">
+                確認通過 →
+              </button>
+            </div>
+          </div>
+
+          <!-- Reject: type picker (hidden until btn-reject clicked) -->
+          <div id="reject-panel" class="hidden">
+            <div class="option-row">
+              <span class="option-label">類型：</span>
+              <button class="pick-btn pick-btn-reject" data-type="potential"
+                      onclick="selectRejType('potential')"
+                      title="有潛力，語氣溫暖，14 天後可重試">
+                潛力可等
+              </button>
+              <button class="pick-btn pick-btn-reject" data-type="soft"
+                      onclick="selectRejType('soft')"
+                      title="暫不通過，30 天後可重申請">
+                暫不通過
+              </button>
+              <button class="pick-btn pick-btn-reject" data-type="hard"
+                      onclick="selectRejType('hard')"
+                      title="不符合，長期不建議重申請">
+                不符合
+              </button>
+              <button class="btn-confirm btn-confirm-reject"
+                      id="btn-confirm-reject"
+                      disabled
+                      onclick="confirmReject()">
+                確認拒絕 →
+              </button>
+            </div>
+          </div>
+
+          <!-- Keyboard shortcuts hint -->
+          <div class="shortcut-hint">
+            快捷鍵：A 通過 · R 拒絕 · 1/2/3 選擇 · Enter 確認 · ↑↓ 切換申請者
+          </div>
+
+        </div>
+      `
+    }
+
+    // ── Decision: Approve ──────────────────────────────────────────────────────
+    function startApprove() {
+      decisionMode = 'approve'
+      selectedTier = null
+      document.getElementById('btn-approve').classList.add('active')
+      document.getElementById('btn-reject').classList.remove('active')
+      document.getElementById('approve-panel').classList.remove('hidden')
+      document.getElementById('reject-panel').classList.add('hidden')
+      document.querySelectorAll('.pick-btn-approve').forEach(b => b.classList.remove('selected'))
+      document.getElementById('btn-confirm-approve').disabled = true
+    }
+
+    function selectTier(tier) {
+      selectedTier = tier
+      document.querySelectorAll('.pick-btn-approve').forEach(b =>
+        b.classList.toggle('selected', b.dataset.tier === tier)
+      )
+      document.getElementById('btn-confirm-approve').disabled = false
+    }
+
+    async function confirmApprove() {
+      if (!selectedTier || isSubmitting) return
+      isSubmitting = true
+
+      const note = document.getElementById('review-note')?.value.trim()
+      const name = queue.find(a => a.id === selectedId)?.display_name || '用戶'
+      const btn  = document.getElementById('btn-confirm-approve')
+
+      btn.textContent = '送出中...'
+      btn.disabled = true
+
+      const { data: { session } } = await db.auth.getSession()
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/review-application`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          application_id:   selectedId,
+          action:           'approve',
+          quality_tier:     selectedTier,
+          review_note:      note || null,
+          review_started_at: reviewStartedAt,
+        }),
+      })
+
+      const result = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        showToast('審核送出失敗：' + (result.error || res.statusText), 'error')
+        btn.textContent = '確認通過 →'
+        btn.disabled = false
+        isSubmitting = false
+        return
+      }
+
+      showToast(`✓ 已通過 ${name}（${selectedTier} 級），通知已送出`, 'success')
+      isSubmitting = false
+      advanceQueue()
+    }
+
+    // ── Decision: Reject ───────────────────────────────────────────────────────
+    function startReject() {
+      decisionMode = 'reject'
+      selectedRejType = null
+      document.getElementById('btn-reject').classList.add('active')
+      document.getElementById('btn-approve').classList.remove('active')
+      document.getElementById('reject-panel').classList.remove('hidden')
+      document.getElementById('approve-panel').classList.add('hidden')
+      document.querySelectorAll('.pick-btn-reject').forEach(b => b.classList.remove('selected'))
+      document.getElementById('btn-confirm-reject').disabled = true
+    }
+
+    function selectRejType(type) {
+      selectedRejType = type
+      document.querySelectorAll('.pick-btn-reject').forEach(b =>
+        b.classList.toggle('selected', b.dataset.type === type)
+      )
+      document.getElementById('btn-confirm-reject').disabled = false
+    }
+
+    async function confirmReject() {
+      if (!selectedRejType || isSubmitting) return
+      isSubmitting = true
+
+      const note = document.getElementById('review-note')?.value.trim()
+      const name = queue.find(a => a.id === selectedId)?.display_name || '用戶'
+      const btn  = document.getElementById('btn-confirm-reject')
+
+      btn.textContent = '送出中...'
+      btn.disabled = true
+
+      const { data: { session } } = await db.auth.getSession()
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/review-application`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          application_id:   selectedId,
+          action:           'reject',
+          rejection_type:   selectedRejType,
+          review_note:      note || null,
+          review_started_at: reviewStartedAt,
+        }),
+      })
+
+      const result = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        showToast('審核送出失敗：' + (result.error || res.statusText), 'error')
+        btn.textContent = '確認拒絕 →'
+        btn.disabled = false
+        isSubmitting = false
+        return
+      }
+
+      const typeLabel = REJECTION_TYPE_LABELS[selectedRejType] || selectedRejType
+      showToast(`✗ 已拒絕 ${name}（${typeLabel}），通知已送出`, 'error')
+      isSubmitting = false
+      advanceQueue()
+    }
+
+    // ── Advance to next after decision ────────────────────────────────────────
+    function advanceQueue() {
+      const prevIdx = queue.findIndex(a => a.id === selectedId)
+      queue = queue.filter(a => a.id !== selectedId)
+      selectedId = null
+      renderQueue()
+
+      if (queue.length > 0) {
+        // Select the same position (or last if we were at the end)
+        const nextIdx = Math.min(prevIdx, queue.length - 1)
+        selectApplicant(queue[nextIdx].id)
+      } else {
+        document.getElementById('detail-panel').innerHTML =
+          '<div class="detail-placeholder">✓ 所有申請審核完畢！</div>'
+      }
+    }
+
+    // ── Lightbox ───────────────────────────────────────────────────────────────
+    function openLightbox(url, caption) {
+      document.getElementById('lightbox-img').src = url
+      document.getElementById('lightbox-caption').textContent = caption || ''
+      document.getElementById('lightbox').classList.remove('hidden')
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.add('hidden')
+      document.getElementById('lightbox-img').src = ''
+    }
+
+    document.getElementById('lightbox').addEventListener('click', function(e) {
+      if (e.target === this) closeLightbox()
+    })
+
+    // ── Keyboard Shortcuts ─────────────────────────────────────────────────────
+    document.addEventListener('keydown', e => {
+      // Escape closes lightbox
+      if (e.key === 'Escape') { closeLightbox(); return }
+
+      // Don't intercept textarea/input
+      if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return
+
+      // Queue navigation
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+        e.preventDefault()
+        const idx = queue.findIndex(a => a.id === selectedId)
+        if (idx < queue.length - 1) selectApplicant(queue[idx + 1].id)
+        return
+      }
+      if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+        e.preventDefault()
+        const idx = queue.findIndex(a => a.id === selectedId)
+        if (idx > 0) selectApplicant(queue[idx - 1].id)
+        return
+      }
+
+      // Decision mode trigger
+      if ((e.key === 'a' || e.key === 'A') && !decisionMode) {
+        document.getElementById('btn-approve')?.click()
+        return
+      }
+      if ((e.key === 'r' || e.key === 'R') && !decisionMode) {
+        document.getElementById('btn-reject')?.click()
+        return
+      }
+
+      // Tier / type selection
+      if (decisionMode === 'approve') {
+        if (e.key === '1') selectTier('S')
+        if (e.key === '2') selectTier('A')
+        if (e.key === '3') selectTier('B')
+        if (e.key === 'Enter') document.getElementById('btn-confirm-approve')?.click()
+      }
+      if (decisionMode === 'reject') {
+        if (e.key === '1') selectRejType('potential')
+        if (e.key === '2') selectRejType('soft')
+        if (e.key === '3') selectRejType('hard')
+        if (e.key === 'Enter') document.getElementById('btn-confirm-reject')?.click()
+      }
+    })
+
+    init()
+  </script>
+</body>
+</html>

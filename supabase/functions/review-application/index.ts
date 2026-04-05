@@ -212,22 +212,32 @@ serve(async (req) => {
 
   const token = authHeader.slice(7)
 
-  // ── 3. Service-role client for DB operations (declared early for auth use) ──
+  // ── 3. Service-role client for DB operations ────────────────────────────────
   const adminDb = createClient(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   )
 
-  // Verify caller by passing JWT explicitly — required in Deno (no localStorage)
-  const { data: { user: callerUser }, error: authError } = await adminDb.auth.getUser(token)
+  // ── Verify caller: use anon client + explicit token (most compatible in Deno) ─
+  const anonClient = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_ANON_KEY')!,
+  )
+  const { data: { user: callerUser }, error: authError } = await anonClient.auth.getUser(token)
 
   if (authError || !callerUser) {
-    console.error('[review-application] getUser error:', authError?.message)
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
+    console.error('[review-application] getUser error:', authError?.message, '| token prefix:', token.slice(0, 20))
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+    })
   }
 
   if (callerUser.user_metadata?.user_role !== 'admin') {
-    return new Response(JSON.stringify({ error: 'Admin access required' }), { status: 403, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
+    return new Response(JSON.stringify({ error: 'Admin access required' }), {
+      status: 403,
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+    })
   }
 
   // ── 2. Parse body ───────────────────────────────────────────────────────────

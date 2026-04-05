@@ -413,6 +413,14 @@
       btn.textContent = '送出中...'
       btn.disabled = true
 
+      const { data: { session: currentSession } } = await db.auth.getSession()
+      if (!currentSession) {
+        showToast('登入已過期，請重新登入', 'error')
+        setTimeout(() => window.location.href = 'index.html', 1500)
+        isSubmitting = false
+        return
+      }
+
       const { data: result, error: invokeError } = await db.functions.invoke('review-application', {
         body: {
           application_id:    selectedId,
@@ -421,6 +429,7 @@
           review_note:       note || null,
           review_started_at: reviewStartedAt,
         },
+        headers: { Authorization: `Bearer ${currentSession.access_token}` },
       })
 
       if (invokeError) {
@@ -475,6 +484,14 @@
       btn.textContent = '送出中...'
       btn.disabled = true
 
+      const { data: { session: currentSession } } = await db.auth.getSession()
+      if (!currentSession) {
+        showToast('登入已過期，請重新登入', 'error')
+        setTimeout(() => window.location.href = 'index.html', 1500)
+        isSubmitting = false
+        return
+      }
+
       const { data: result, error: invokeError } = await db.functions.invoke('review-application', {
         body: {
           application_id:    selectedId,
@@ -483,6 +500,7 @@
           review_note:       note || null,
           review_started_at: reviewStartedAt,
         },
+        headers: { Authorization: `Bearer ${currentSession.access_token}` },
       })
 
       if (invokeError) {

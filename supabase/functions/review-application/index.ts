@@ -206,18 +206,23 @@ serve(async (req) => {
   // ── 1. Validate admin ───────────────────────────────────────────────────────
 
   const authHeader = req.headers.get('Authorization')
-  if (!authHeader) return new Response('Missing Authorization', { status: 401, headers: CORS_HEADERS })
+  if (!authHeader?.startsWith('Bearer ')) {
+    return new Response(JSON.stringify({ error: 'Missing Authorization' }), { status: 401, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
+  }
 
-  const callerToken = authHeader.replace('Bearer ', '')
+  const token = authHeader.slice(7)
 
-  // Verify caller's session using anon client
-  const anonClient = createClient(
+  // ── 3. Service-role client for DB operations (declared early for auth use) ──
+  const adminDb = createClient(
     Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_ANON_KEY')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   )
-  const { data: { user: callerUser }, error: authError } = await anonClient.auth.getUser(callerToken)
+
+  // Verify caller by passing JWT explicitly — required in Deno (no localStorage)
+  const { data: { user: callerUser }, error: authError } = await adminDb.auth.getUser(token)
 
   if (authError || !callerUser) {
+    console.error('[review-application] getUser error:', authError?.message)
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
   }
 
@@ -245,13 +250,6 @@ serve(async (req) => {
   if (action === 'reject' && !rejection_type) {
     return new Response(JSON.stringify({ error: 'rejection_type required for reject' }), { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
   }
-
-  // ── 3. Service-role client for DB operations ────────────────────────────────
-
-  const adminDb = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-  )
 
   // ── 4. Fetch application ────────────────────────────────────────────────────
 

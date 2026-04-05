@@ -431,7 +431,7 @@
           isSubmitting = false
           return
         }
-        const errMsg = (await invokeError.context?.json().catch(() => null))?.error || invokeError.message
+        const errMsg = invokeError.message || '未知錯誤'
         showToast('審核送出失敗：' + errMsg, 'error')
         btn.textContent = '確認通過 →'
         btn.disabled = false
@@ -493,7 +493,7 @@
           isSubmitting = false
           return
         }
-        const errMsg = (await invokeError.context?.json().catch(() => null))?.error || invokeError.message
+        const errMsg = invokeError.message || '未知錯誤'
         showToast('審核送出失敗：' + errMsg, 'error')
         btn.textContent = '確認拒絕 →'
         btn.disabled = false

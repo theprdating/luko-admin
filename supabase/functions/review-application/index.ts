@@ -188,7 +188,7 @@ async function sendFcmNotification(
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Authorization, Content-Type, apikey',
+  'Access-Control-Allow-Headers': 'Authorization, Content-Type, apikey, x-client-info',
 }
 
 // ── Main handler ──────────────────────────────────────────────────────────────

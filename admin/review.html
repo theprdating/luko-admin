@@ -413,34 +413,26 @@
       btn.textContent = '送出中...'
       btn.disabled = true
 
-      const token = await getFreshToken()
-      const res = await fetch(`${SUPABASE_URL}/functions/v1/review-application`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'apikey': SUPABASE_ANON_KEY,
-        },
-        body: JSON.stringify({
-          application_id:   selectedId,
-          action:           'approve',
-          quality_tier:     selectedTier,
-          review_note:      note || null,
+      const { data: result, error: invokeError } = await db.functions.invoke('review-application', {
+        body: {
+          application_id:    selectedId,
+          action:            'approve',
+          quality_tier:      selectedTier,
+          review_note:       note || null,
           review_started_at: reviewStartedAt,
-        }),
+        },
       })
 
-      const result = await res.json().catch(() => ({}))
-
-      if (res.status === 401) {
-        showToast('登入已過期，請重新登入', 'error')
-        setTimeout(() => window.location.href = 'index.html', 1500)
-        isSubmitting = false
-        return
-      }
-
-      if (!res.ok) {
-        showToast('審核送出失敗：' + (result.error || res.statusText), 'error')
+      if (invokeError) {
+        const status = invokeError.context?.status
+        if (status === 401) {
+          showToast('登入已過期，請重新登入', 'error')
+          setTimeout(() => window.location.href = 'index.html', 1500)
+          isSubmitting = false
+          return
+        }
+        const errMsg = (await invokeError.context?.json().catch(() => null))?.error || invokeError.message
+        showToast('審核送出失敗：' + errMsg, 'error')
         btn.textContent = '確認通過 →'
         btn.disabled = false
         isSubmitting = false
@@ -483,34 +475,26 @@
       btn.textContent = '送出中...'
       btn.disabled = true
 
-      const token = await getFreshToken()
-      const res = await fetch(`${SUPABASE_URL}/functions/v1/review-application`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'apikey': SUPABASE_ANON_KEY,
-        },
-        body: JSON.stringify({
-          application_id:   selectedId,
-          action:           'reject',
-          rejection_type:   selectedRejType,
-          review_note:      note || null,
+      const { data: result, error: invokeError } = await db.functions.invoke('review-application', {
+        body: {
+          application_id:    selectedId,
+          action:            'reject',
+          rejection_type:    selectedRejType,
+          review_note:       note || null,
           review_started_at: reviewStartedAt,
-        }),
+        },
       })
 
-      const result = await res.json().catch(() => ({}))
-
-      if (res.status === 401) {
-        showToast('登入已過期，請重新登入', 'error')
-        setTimeout(() => window.location.href = 'index.html', 1500)
-        isSubmitting = false
-        return
-      }
-
-      if (!res.ok) {
-        showToast('審核送出失敗：' + (result.error || res.statusText), 'error')
+      if (invokeError) {
+        const status = invokeError.context?.status
+        if (status === 401) {
+          showToast('登入已過期，請重新登入', 'error')
+          setTimeout(() => window.location.href = 'index.html', 1500)
+          isSubmitting = false
+          return
+        }
+        const errMsg = (await invokeError.context?.json().catch(() => null))?.error || invokeError.message
+        showToast('審核送出失敗：' + errMsg, 'error')
         btn.textContent = '確認拒絕 →'
         btn.disabled = false
         isSubmitting = false

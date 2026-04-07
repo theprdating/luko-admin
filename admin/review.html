@@ -58,13 +58,16 @@
   <script>
     setActiveNavLink()
 
+    // ── Constants ──────────────────────────────────────────────────────────────
+    const MAX_ATTEMPTS = 3
+
     // ── State ──────────────────────────────────────────────────────────────────
     let queue            = []   // pending applications
     let selectedId       = null // current application id
     let currentVerify    = null // identity_verifications row
     let decisionMode     = null // 'approve' | 'reject'
     let selectedTier     = null // 'top' | 'standard'
-    let selectedRejType  = null // 'potential' | 'soft' | 'hard'
+    let selectedRejType  = null // 'soft' | 'hard'
     let reviewStartedAt  = null
     let isSubmitting     = false
 
@@ -151,7 +154,8 @@
       list.innerHTML = queue.map((a, idx) => {
         const emoji = a.gender === 'female' ? '👩' : a.gender === 'male' ? '👨' : '🧑'
         const isActive = a.id === selectedId
-        const isReapply = a.application_count > 1
+        const isReapply   = a.application_count > 1
+        const isFinalAttempt = a.application_count >= MAX_ATTEMPTS
         return `
           <li class="queue-item ${isActive ? 'active' : ''}"
               onclick="selectApplicant('${a.id}')"
@@ -163,7 +167,7 @@
               <div class="queue-meta">${timeAgo(a.created_at)}</div>
             </div>
             ${isReapply
-              ? `<span class="queue-badge queue-badge-reapply">第 ${a.application_count} 次</span>`
+              ? `<span class="queue-badge ${isFinalAttempt ? 'queue-badge-final' : 'queue-badge-reapply'}">${a.application_count} / ${MAX_ATTEMPTS}</span>`
               : ''
             }
           </li>
@@ -280,25 +284,29 @@
         ? `<div class="bio-text">${escapeHtml(app.bio).replace(/\n/g,'<br>')}</div>`
         : `<div class="bio-text bio-empty">（未填寫自我介紹）</div>`
 
-      const prevNoteHtml = app.review_note ? `
-        <div>
-          <div class="section-title" style="margin-bottom:8px;">上次審核備註</div>
-          <div class="bio-text" style="color:var(--text-second);font-size:12px;">
-            ${escapeHtml(app.review_note)}
-          </div>
-        </div>
-      ` : ''
+      // 上次備註已整合進 reapplyBanner，此處不重複顯示
+      const prevNoteHtml = ''
 
       // ── Re-applicant context banner（第 2 次以上申請才顯示）
+      const isLastAttempt = app.application_count >= MAX_ATTEMPTS
       const reapplyBanner = app.application_count > 1 ? `
-        <div class="reapply-banner">
-          <span class="reapply-banner-icon">↩</span>
-          <div>
-            <div class="reapply-banner-title">第 ${app.application_count} 次申請</div>
-            ${app.review_note
-              ? `<div class="reapply-banner-note">上次備註：${escapeHtml(app.review_note)}</div>`
-              : '<div class="reapply-banner-note" style="opacity:0.5;">上次無備註</div>'
+        <div class="reapply-banner ${isLastAttempt ? 'reapply-banner-final' : ''}">
+          <div class="reapply-count-badge ${isLastAttempt ? 'reapply-count-final' : ''}">
+            第 ${app.application_count} / ${MAX_ATTEMPTS} 次
+          </div>
+          <div class="reapply-context">
+            ${app.rejection_type
+              ? `<div class="reapply-type-badge reapply-type-${app.rejection_type}">
+                   上次：${REJECTION_TYPE_LABELS[app.rejection_type] || app.rejection_type}
+                 </div>`
+              : ''
             }
+            <div class="reapply-prev-note">
+              ${app.review_note
+                ? escapeHtml(app.review_note)
+                : '<span style="opacity:0.4;">上次無備註</span>'
+              }
+            </div>
           </div>
         </div>
       ` : ''
@@ -360,70 +368,50 @@
         <div class="decision-panel">
 
           <textarea
-            class="decision-note form-group"
+            class="decision-note"
             id="review-note"
-            placeholder="內部備註（不對用戶顯示，可空白）"
-            style="width:100%;resize:vertical;min-height:52px;max-height:120px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-family:var(--font);font-size:13px;padding:8px 12px;"
+            placeholder="內部備註（不對用戶顯示）"
           ></textarea>
 
           <!-- Main action buttons -->
           <div class="decision-actions">
-            <button class="btn-approve" id="btn-approve" onclick="startApprove()">
-              ✓ 通過
-            </button>
-            <button class="btn-reject" id="btn-reject" onclick="startReject()">
-              ✗ 拒絕
-            </button>
+            <button class="btn-approve" id="btn-approve" onclick="startApprove()">✓ 通過</button>
+            <button class="btn-reject"  id="btn-reject"  onclick="startReject()">✗ 拒絕</button>
           </div>
 
-          <!-- Approve: tier picker (hidden until btn-approve clicked) -->
-          <div id="approve-panel" class="hidden">
-            <div class="option-row">
-              <span class="option-label">評級：</span>
-              <button class="pick-btn pick-btn-approve" data-tier="top"
-                      onclick="selectTier('top')" title="前 85%：優先出現在探索池">
-                前 85%
+          <!-- Approve: tier picker -->
+          <div id="approve-panel" class="pick-panel hidden">
+            <div class="pick-cards">
+              <button class="pick-btn pick-btn-approve" data-tier="top" onclick="selectTier('top')">
+                <span class="pick-main">前 85%</span>
+                <span class="pick-sub">優先出現在探索池</span>
               </button>
-              <button class="pick-btn pick-btn-approve" data-tier="standard"
-                      onclick="selectTier('standard')" title="85% 以外：標準池">
-                85% 以外
-              </button>
-              <button class="btn-confirm btn-confirm-approve"
-                      id="btn-confirm-approve"
-                      disabled
-                      onclick="confirmApprove()">
-                確認通過 →
+              <button class="pick-btn pick-btn-approve" data-tier="standard" onclick="selectTier('standard')">
+                <span class="pick-main">85% 以外</span>
+                <span class="pick-sub">標準池</span>
               </button>
             </div>
+            <button class="btn-confirm btn-confirm-approve" id="btn-confirm-approve"
+                    disabled onclick="confirmApprove()">確認通過</button>
           </div>
 
-          <!-- Reject: type picker (hidden until btn-reject clicked) -->
-          <div id="reject-panel" class="hidden">
-            <div class="option-row">
-              <span class="option-label">類型：</span>
-              <button class="pick-btn pick-btn-reject" data-type="soft"
-                      onclick="selectRejType('soft')"
-                      title="暫不通過，30 天後可重申請">
-                暫不通過
+          <!-- Reject: type picker -->
+          <div id="reject-panel" class="pick-panel hidden">
+            <div class="pick-cards">
+              <button class="pick-btn pick-btn-reject" data-type="soft" onclick="selectRejType('soft')">
+                <span class="pick-main">暫不通過</span>
+                <span class="pick-sub">30 天後可重申請</span>
               </button>
-              <button class="pick-btn pick-btn-reject" data-type="hard"
-                      onclick="selectRejType('hard')"
-                      title="不符合，不建議重申請">
-                不符合
-              </button>
-              <button class="btn-confirm btn-confirm-reject"
-                      id="btn-confirm-reject"
-                      disabled
-                      onclick="confirmReject()">
-                確認拒絕 →
+              <button class="pick-btn pick-btn-reject" data-type="hard" onclick="selectRejType('hard')">
+                <span class="pick-main">不符合</span>
+                <span class="pick-sub">不建議重申請</span>
               </button>
             </div>
+            <button class="btn-confirm btn-confirm-reject" id="btn-confirm-reject"
+                    disabled onclick="confirmReject()">確認拒絕</button>
           </div>
 
-          <!-- Keyboard shortcuts hint -->
-          <div class="shortcut-hint">
-            快捷鍵：A 通過 · R 拒絕 · 1/2 選擇 · Enter 確認 · ↑↓ 切換申請者
-          </div>
+          <div class="shortcut-hint">A 通過 · R 拒絕 · 1/2 選擇 · Enter 確認 · ↑↓ 切換</div>
 
         </div>
       `

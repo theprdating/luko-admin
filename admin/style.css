@@ -276,6 +276,11 @@ button, .btn {
   color: var(--gold);
   border: 1px solid rgba(201,169,110,0.3);
 }
+.queue-badge-final {
+  background: rgba(220,68,68,0.15);
+  color: #F99;
+  border: 1px solid rgba(220,68,68,0.3);
+}
 
 .queue-empty {
   padding: 40px 16px;
@@ -388,32 +393,63 @@ button, .btn {
 .reapply-banner {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  padding: 10px 24px;
-  background: rgba(201,169,110,0.07);
+  gap: 12px;
+  padding: 11px 24px;
+  background: rgba(201,169,110,0.06);
   border-bottom: 1px solid rgba(201,169,110,0.18);
   flex-shrink: 0;
 }
+.reapply-banner-final {
+  background: rgba(220,68,68,0.07);
+  border-bottom-color: rgba(220,68,68,0.25);
+}
 
-.reapply-banner-icon {
-  font-size: 14px;
+.reapply-count-badge {
+  background: rgba(201,169,110,0.13);
+  border: 1px solid rgba(201,169,110,0.35);
   color: var(--gold);
-  margin-top: 1px;
+  border-radius: 6px;
+  padding: 3px 9px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
   flex-shrink: 0;
+  margin-top: 1px;
+  letter-spacing: 0.02em;
+}
+.reapply-count-final {
+  background: rgba(220,68,68,0.13);
+  border-color: rgba(220,68,68,0.4);
+  color: #F99;
 }
 
-.reapply-banner-title {
-  font-size: 12px;
+.reapply-context { flex: 1; min-width: 0; }
+
+.reapply-type-badge {
+  display: inline-block;
+  font-size: 10px;
   font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+}
+.reapply-type-soft {
+  background: rgba(201,169,110,0.1);
   color: var(--gold);
-  line-height: 1.4;
+  border: 1px solid rgba(201,169,110,0.3);
+}
+.reapply-type-hard {
+  background: var(--red-sub);
+  color: #F99;
+  border: 1px solid rgba(220,68,68,0.3);
 }
 
-.reapply-banner-note {
+.reapply-prev-note {
   font-size: 12px;
   color: var(--text-second);
-  margin-top: 2px;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 /* Decision Panel */
@@ -429,91 +465,99 @@ button, .btn {
 
 .decision-note {
   resize: vertical;
-  min-height: 56px;
-  max-height: 120px;
+  min-height: 48px;
+  max-height: 110px;
 }
-
 .decision-note:focus { outline: none; border-color: var(--gold); }
 
 .decision-actions { display: flex; gap: 10px; }
 
 .btn-approve {
-  flex: 1;
-  padding: 11px;
-  font-size: 15px;
-  background: var(--green);
-  color: #fff;
-  border-radius: var(--radius);
-  letter-spacing: 0.02em;
+  flex: 1; padding: 11px; font-size: 15px; font-weight: 600;
+  background: var(--green); color: #fff;
+  border-radius: var(--radius); letter-spacing: 0.02em;
 }
-.btn-approve:hover   { background: #347A5A; }
-.btn-approve.active  { outline: 2px solid #6FCFA4; outline-offset: 2px; }
+.btn-approve:hover  { background: #347A5A; }
+.btn-approve.active { box-shadow: 0 0 0 2px #6FCFA4; }
 
 .btn-reject {
-  flex: 1;
-  padding: 11px;
-  font-size: 15px;
-  background: var(--red);
-  color: #fff;
-  border-radius: var(--radius);
-  letter-spacing: 0.02em;
+  flex: 1; padding: 11px; font-size: 15px; font-weight: 600;
+  background: var(--red); color: #fff;
+  border-radius: var(--radius); letter-spacing: 0.02em;
 }
 .btn-reject:hover  { background: #E85555; }
-.btn-reject.active { outline: 2px solid #F99; outline-offset: 2px; }
+.btn-reject.active { box-shadow: 0 0 0 2px #F99; }
 
-/* Tier / rejection type pickers */
-.option-row {
+/* Pick panel — slides in when approve/reject is chosen */
+.pick-panel {
   display: flex;
+  flex-direction: column;
   gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
+  animation: slide-in 0.14s ease;
+}
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.option-label {
-  font-size: 11px;
-  color: var(--text-second);
-  font-weight: 600;
-  white-space: nowrap;
-}
+/* Card-style pick buttons */
+.pick-cards { display: flex; gap: 8px; }
 
 .pick-btn {
-  padding: 7px 14px;
-  border-radius: var(--radius-sm);
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: var(--radius);
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   color: var(--text-primary);
-  font-size: 13px;
   transition: all 0.12s;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  cursor: pointer;
+  text-align: left;
 }
 
-.pick-btn-approve:hover { border-color: var(--green); color: #6FCFA4; }
-.pick-btn-approve.selected { background: var(--green-sub); border-color: var(--green); color: #6FCFA4; }
+.pick-main { font-size: 14px; font-weight: 600; }
+.pick-sub  { font-size: 11px; color: var(--text-second); line-height: 1.3; }
 
-.pick-btn-reject:hover  { border-color: var(--red); color: #F99; }
-.pick-btn-reject.selected { background: var(--red-sub); border-color: var(--red); color: #F99; }
+.pick-btn-approve:hover              { border-color: var(--green); }
+.pick-btn-approve:hover .pick-sub    { color: rgba(111,207,164,0.65); }
+.pick-btn-approve.selected           { background: var(--green-sub); border-color: var(--green); }
+.pick-btn-approve.selected .pick-main{ color: #6FCFA4; }
+.pick-btn-approve.selected .pick-sub { color: rgba(111,207,164,0.65); }
 
+.pick-btn-reject:hover               { border-color: var(--red); }
+.pick-btn-reject:hover .pick-sub     { color: rgba(255,153,153,0.65); }
+.pick-btn-reject.selected            { background: var(--red-sub); border-color: var(--red); }
+.pick-btn-reject.selected .pick-main { color: #F99; }
+.pick-btn-reject.selected .pick-sub  { color: rgba(255,153,153,0.65); }
+
+/* Full-width confirm button */
 .btn-confirm {
-  padding: 9px 20px;
+  width: 100%;
+  padding: 11px;
   border-radius: var(--radius);
   font-weight: 600;
-  font-size: 13px;
-  margin-left: auto;
+  font-size: 14px;
+  letter-spacing: 0.02em;
 }
+.btn-confirm-approve                { background: var(--green); color: #fff; }
+.btn-confirm-approve:hover:not(:disabled) { background: #347A5A; }
+.btn-confirm-approve:disabled       { opacity: 0.3; cursor: not-allowed; }
 
-.btn-confirm-approve { background: var(--green); color: #fff; }
-.btn-confirm-approve:hover { background: #347A5A; }
-.btn-confirm-approve:disabled { opacity: 0.35; cursor: not-allowed; }
-
-.btn-confirm-reject { background: var(--red); color: #fff; }
-.btn-confirm-reject:hover { background: #E85555; }
-.btn-confirm-reject:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn-confirm-reject                 { background: var(--red); color: #fff; }
+.btn-confirm-reject:hover:not(:disabled)  { background: #E85555; }
+.btn-confirm-reject:disabled        { opacity: 0.3; cursor: not-allowed; }
 
 /* Shortcut hint */
 .shortcut-hint {
   font-size: 10px;
   color: var(--text-second);
   text-align: right;
-  opacity: 0.6;
+  opacity: 0.55;
+  padding-top: 2px;
 }
 
 /* ── Lightbox ────────────────────────────────────────────────────────────── */

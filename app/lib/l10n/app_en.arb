@@ -64,6 +64,21 @@
     "placeholders": { "privacy": { "type": "String" } }
   },
 
+  "approvedGateBadge": "REVIEW COMPLETE",
+  "@approvedGateBadge": { "description": "Approval gate page badge text" },
+
+  "approvedGateTitle": "You're In",
+  "@approvedGateTitle": { "description": "Approval gate page main title" },
+
+  "approvedGateBody": "Congratulations! You've passed the Luko review.\nOne last step — link your phone number to finish setting up your account.",
+  "@approvedGateBody": { "description": "Approval gate page body text" },
+
+  "approvedGateCta": "Link Phone Number",
+  "@approvedGateCta": { "description": "Approval gate page CTA button" },
+
+  "approvedGateNote": "Your number is only used for verification and won't appear on your profile",
+  "@approvedGateNote": { "description": "Approval gate page phone number disclaimer" },
+
   "verifyPhoneTitle": "Link Your Phone",
   "@verifyPhoneTitle": { "description": "Post-approval phone linking page title" },
 

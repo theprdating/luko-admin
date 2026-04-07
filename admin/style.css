@@ -384,6 +384,38 @@ button, .btn {
 }
 .bio-empty { color: var(--text-second); font-style: italic; }
 
+/* Re-applicant Banner */
+.reapply-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 24px;
+  background: rgba(201,169,110,0.07);
+  border-bottom: 1px solid rgba(201,169,110,0.18);
+  flex-shrink: 0;
+}
+
+.reapply-banner-icon {
+  font-size: 14px;
+  color: var(--gold);
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+.reapply-banner-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gold);
+  line-height: 1.4;
+}
+
+.reapply-banner-note {
+  font-size: 12px;
+  color: var(--text-second);
+  margin-top: 2px;
+  line-height: 1.5;
+}
+
 /* Decision Panel */
 .decision-panel {
   background: var(--bg-card);

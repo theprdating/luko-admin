@@ -218,6 +218,36 @@ abstract class AppLocalizations {
   /// **' and {privacy}'**
   String authConsentSuffix(String privacy);
 
+  /// Approval gate page badge text
+  ///
+  /// In en, this message translates to:
+  /// **'REVIEW COMPLETE'**
+  String get approvedGateBadge;
+
+  /// Approval gate page main title
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re In'**
+  String get approvedGateTitle;
+
+  /// Approval gate page body text
+  ///
+  /// In en, this message translates to:
+  /// **'Congratulations! You\'ve passed the Luko review.\nOne last step — link your phone number to finish setting up your account.'**
+  String get approvedGateBody;
+
+  /// Approval gate page CTA button
+  ///
+  /// In en, this message translates to:
+  /// **'Link Phone Number'**
+  String get approvedGateCta;
+
+  /// Approval gate page phone number disclaimer
+  ///
+  /// In en, this message translates to:
+  /// **'Your number is only used for verification and won\'t appear on your profile'**
+  String get approvedGateNote;
+
   /// Post-approval phone linking page title
   ///
   /// In en, this message translates to:

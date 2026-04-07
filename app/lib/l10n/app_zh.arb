@@ -64,6 +64,21 @@
     "placeholders": { "privacy": { "type": "String" } }
   },
 
+  "approvedGateBadge": "審核完成",
+  "@approvedGateBadge": { "description": "審核通過頁徽章文字" },
+
+  "approvedGateTitle": "申請通過",
+  "@approvedGateTitle": { "description": "審核通過頁主標題" },
+
+  "approvedGateBody": "恭喜！你已通過 Luko 的資格審核。\n接下來，綁定手機號碼以完成帳號設置。",
+  "@approvedGateBody": { "description": "審核通過頁說明文字" },
+
+  "approvedGateCta": "綁定手機號碼",
+  "@approvedGateCta": { "description": "審核通過頁 CTA 按鈕" },
+
+  "approvedGateNote": "此號碼僅用於帳號驗證，不會顯示於個人檔案",
+  "@approvedGateNote": { "description": "審核通過頁手機號碼說明備註" },
+
   "verifyPhoneTitle": "綁定手機號碼",
   "@verifyPhoneTitle": { "description": "審核通過後手機綁定頁標題" },
 

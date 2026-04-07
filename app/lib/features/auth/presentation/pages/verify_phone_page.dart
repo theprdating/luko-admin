@@ -197,7 +197,7 @@ class _VerifyPhonePageState extends ConsumerState<VerifyPhonePage> {
     final bottom = MediaQuery.paddingOf(context).bottom;
 
     return Scaffold(
-      backgroundColor: colors.brandBg,
+      backgroundColor: colors.backgroundWarm,
       body: SafeArea(
         bottom: false,
         child: _step == _Step.phoneInput
@@ -226,7 +226,7 @@ class _VerifyPhonePageState extends ConsumerState<VerifyPhonePage> {
             style: GoogleFonts.dmSans(
               fontSize: 26,
               fontWeight: FontWeight.w600,
-              color: colors.brandOnDark,
+              color: colors.primaryText,
               height: 1.2,
             ),
           ),
@@ -235,7 +235,7 @@ class _VerifyPhonePageState extends ConsumerState<VerifyPhonePage> {
             l10n.verifyPhoneSubtitle,
             style: GoogleFonts.dmSans(
               fontSize: 14,
-              color: colors.brandOnDark.withValues(alpha: 0.6),
+              color: colors.secondaryText,
               height: 1.5,
             ),
           ),
@@ -244,7 +244,7 @@ class _VerifyPhonePageState extends ConsumerState<VerifyPhonePage> {
             l10n.verifyPhoneUniqueNote,
             style: GoogleFonts.dmSans(
               fontSize: 12,
-              color: colors.brandGold.withValues(alpha: 0.8),
+              color: colors.forestGreen,
             ),
           ),
           const SizedBox(height: 40),
@@ -253,7 +253,7 @@ class _VerifyPhonePageState extends ConsumerState<VerifyPhonePage> {
             style: GoogleFonts.dmSans(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: colors.brandOnDark.withValues(alpha: 0.5),
+              color: colors.secondaryText,
               letterSpacing: 0.5,
             ),
           ),
@@ -264,37 +264,33 @@ class _VerifyPhonePageState extends ConsumerState<VerifyPhonePage> {
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             style: GoogleFonts.dmSans(
               fontSize: 18,
-              color: colors.brandOnDark,
+              color: colors.primaryText,
               fontWeight: FontWeight.w500,
             ),
             decoration: InputDecoration(
               hintText: l10n.authPhoneHint,
               hintStyle: GoogleFonts.dmSans(
-                color: colors.brandOnDark.withValues(alpha: 0.25),
+                color: colors.secondaryText.withValues(alpha: 0.6),
               ),
               prefixText: '+886  ',
               prefixStyle: GoogleFonts.dmSans(
                 fontSize: 18,
-                color: colors.brandOnDark.withValues(alpha: 0.5),
+                color: colors.secondaryText,
               ),
               errorText: _phoneError,
               filled: true,
-              fillColor: Colors.white.withValues(alpha: 0.05),
+              fillColor: colors.cardSurface,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppRadius.input),
-                borderSide: BorderSide(
-                  color: Colors.white.withValues(alpha: 0.12),
-                ),
+                borderSide: BorderSide(color: colors.divider),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppRadius.input),
-                borderSide: BorderSide(
-                  color: Colors.white.withValues(alpha: 0.12),
-                ),
+                borderSide: BorderSide(color: colors.divider),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppRadius.input),
-                borderSide: BorderSide(color: colors.brandGold),
+                borderSide: BorderSide(color: colors.forestGreen, width: 1.5),
               ),
             ),
             onSubmitted: (_) => _sendOtp(),
@@ -336,7 +332,7 @@ class _VerifyPhonePageState extends ConsumerState<VerifyPhonePage> {
             child: Icon(
               Icons.arrow_back_ios_new_rounded,
               size: 20,
-              color: colors.brandOnDark.withValues(alpha: 0.6),
+              color: colors.secondaryText,
             ),
           ),
           const SizedBox(height: 24),
@@ -345,7 +341,7 @@ class _VerifyPhonePageState extends ConsumerState<VerifyPhonePage> {
             style: GoogleFonts.dmSans(
               fontSize: 26,
               fontWeight: FontWeight.w600,
-              color: colors.brandOnDark,
+              color: colors.primaryText,
               height: 1.2,
             ),
           ),
@@ -354,7 +350,7 @@ class _VerifyPhonePageState extends ConsumerState<VerifyPhonePage> {
             l10n.authOtpSentTo(_phoneDisplay),
             style: GoogleFonts.dmSans(
               fontSize: 14,
-              color: colors.brandOnDark.withValues(alpha: 0.6),
+              color: colors.secondaryText,
               height: 1.5,
             ),
           ),
@@ -368,29 +364,25 @@ class _VerifyPhonePageState extends ConsumerState<VerifyPhonePage> {
             style: GoogleFonts.dmSans(
               fontSize: 28,
               fontWeight: FontWeight.w600,
-              color: colors.brandOnDark,
+              color: colors.primaryText,
               letterSpacing: 8,
             ),
             decoration: InputDecoration(
               counterText: '',
               errorText: _otpError,
               filled: true,
-              fillColor: Colors.white.withValues(alpha: 0.05),
+              fillColor: colors.cardSurface,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppRadius.input),
-                borderSide: BorderSide(
-                  color: Colors.white.withValues(alpha: 0.12),
-                ),
+                borderSide: BorderSide(color: colors.divider),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppRadius.input),
-                borderSide: BorderSide(
-                  color: Colors.white.withValues(alpha: 0.12),
-                ),
+                borderSide: BorderSide(color: colors.divider),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppRadius.input),
-                borderSide: BorderSide(color: colors.brandGold),
+                borderSide: BorderSide(color: colors.forestGreen, width: 1.5),
               ),
             ),
             onChanged: (val) {
@@ -406,7 +398,7 @@ class _VerifyPhonePageState extends ConsumerState<VerifyPhonePage> {
                     l10n.authOtpResendIn(_resendSeconds),
                     style: GoogleFonts.dmSans(
                       fontSize: 13,
-                      color: colors.brandOnDark.withValues(alpha: 0.4),
+                      color: colors.secondaryText,
                     ),
                   )
                 : GestureDetector(
@@ -415,9 +407,9 @@ class _VerifyPhonePageState extends ConsumerState<VerifyPhonePage> {
                       l10n.authOtpResend,
                       style: GoogleFonts.dmSans(
                         fontSize: 13,
-                        color: colors.brandGold,
+                        color: colors.forestGreen,
                         decoration: TextDecoration.underline,
-                        decorationColor: colors.brandGold,
+                        decorationColor: colors.forestGreen,
                       ),
                     ),
                   ),
@@ -462,7 +454,7 @@ class _PrimaryButton extends StatelessWidget {
         height: 54,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: colors.brandButtonBg,
+          color: colors.forestGreen,
           borderRadius: BorderRadius.circular(14),
         ),
         child: isLoading
@@ -471,7 +463,7 @@ class _PrimaryButton extends StatelessWidget {
                 height: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: colors.brandBg,
+                  color: colors.brandOnDark,
                 ),
               )
             : Text(
@@ -479,7 +471,7 @@ class _PrimaryButton extends StatelessWidget {
                 style: GoogleFonts.dmSans(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: colors.brandBg,
+                  color: colors.brandOnDark,
                 ),
               ),
       ),

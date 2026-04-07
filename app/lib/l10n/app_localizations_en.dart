@@ -72,6 +72,23 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get approvedGateBadge => 'REVIEW COMPLETE';
+
+  @override
+  String get approvedGateTitle => 'You\'re In';
+
+  @override
+  String get approvedGateBody =>
+      'Congratulations! You\'ve passed the Luko review.\nOne last step — link your phone number to finish setting up your account.';
+
+  @override
+  String get approvedGateCta => 'Link Phone Number';
+
+  @override
+  String get approvedGateNote =>
+      'Your number is only used for verification and won\'t appear on your profile';
+
+  @override
   String get verifyPhoneTitle => 'Link Your Phone';
 
   @override

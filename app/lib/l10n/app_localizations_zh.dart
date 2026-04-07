@@ -71,6 +71,21 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get approvedGateBadge => '審核完成';
+
+  @override
+  String get approvedGateTitle => '申請通過';
+
+  @override
+  String get approvedGateBody => '恭喜！你已通過 Luko 的資格審核。\n接下來，綁定手機號碼以完成帳號設置。';
+
+  @override
+  String get approvedGateCta => '綁定手機號碼';
+
+  @override
+  String get approvedGateNote => '此號碼僅用於帳號驗證，不會顯示於個人檔案';
+
+  @override
   String get verifyPhoneTitle => '綁定手機號碼';
 
   @override

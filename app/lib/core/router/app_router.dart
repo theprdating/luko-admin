@@ -8,10 +8,12 @@ import '../../features/auth/presentation/pages/apply/apply_bio_page.dart';
 import '../../features/auth/presentation/pages/apply/apply_verify_page.dart';
 import '../../features/auth/presentation/pages/apply/apply_confirm_page.dart';
 import '../../features/auth/presentation/pages/apply/apply_info_page.dart';
+import '../../features/auth/presentation/pages/apply/apply_phone_page.dart';
 import '../../features/auth/presentation/pages/apply/apply_photos_page.dart';
 import '../../features/auth/presentation/pages/onboarding_page.dart';
 import '../../features/auth/presentation/pages/verify_phone_page.dart';
 import '../../features/auth/presentation/pages/dev_state_picker_page.dart';
+import '../../features/auth/presentation/pages/approved_gate_page.dart';
 import '../../features/auth/presentation/pages/pending_page.dart';
 import '../../features/auth/presentation/pages/rejected_page.dart';
 import '../../features/auth/presentation/pages/terms_page.dart';
@@ -39,12 +41,14 @@ abstract class AppRoutes {
   static const welcome         = 'welcome';
   static const termsUpdate     = 'terms-update';
   static const verifyPhone     = 'verify-phone';
+  static const applyPhone      = 'apply-phone';
   static const applyInfo       = 'apply-info';
   static const applyPhotos     = 'apply-photos';
   static const applyVerify     = 'apply-verify';
   static const applyBio        = 'apply-bio';
   static const applyConfirm    = 'apply-confirm';
   static const reviewPending   = 'review-pending';
+  static const reviewApproved  = 'review-approved';
   static const reviewRejected  = 'review-rejected';
   static const welcomeIn       = 'welcome-in';
   static const discover        = 'discover';
@@ -60,6 +64,7 @@ abstract class AppRoutes {
   static const privacy            = 'privacy';
   static const devStatePicker       = 'dev-state-picker';
   static const devPending           = 'dev-pending';
+  static const devApproved          = 'dev-approved';
   static const devRejectedSoft      = 'dev-rejected-soft';
   static const devRejectedPotential = 'dev-rejected-potential';
   static const devApplyInfo         = 'dev-apply-info';
@@ -120,8 +125,12 @@ class _RouterNotifier extends ChangeNotifier {
       AppUserStatus.onboarding => path.startsWith('/apply') ? null : '/apply/info',
 
       // 審核通過，手機尚未綁定（一次性儀式）
-      AppUserStatus.phoneVerificationRequired =>
-        path == '/verify/phone' ? null : '/verify/phone',
+      // 先顯示告知頁（/review/approved），用戶點 CTA 後才進 /verify/phone
+      AppUserStatus.phoneVerificationRequired => switch (path) {
+        '/review/approved' => null,
+        '/verify/phone'    => null,
+        _ => '/review/approved',
+      },
 
       // 等待審核：只允許停在 /review/pending
       AppUserStatus.pending => path == '/review/pending' ? null : '/review/pending',
@@ -207,6 +216,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: '/apply/phone',
+        name: AppRoutes.applyPhone,
+        builder: (_, __) => const ApplyPhonePage(),
+      ),
+      GoRoute(
         path: '/apply/info',
         name: AppRoutes.applyInfo,
         builder: (_, __) => const ApplyInfoPage(),
@@ -235,6 +249,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/review/pending',
         name: AppRoutes.reviewPending,
         builder: (_, __) => const PendingPage(),
+      ),
+      GoRoute(
+        path: '/review/approved',
+        name: AppRoutes.reviewApproved,
+        pageBuilder: (_, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const ApprovedGatePage(),
+          transitionsBuilder: (_, animation, __, child) =>
+              DecoratedBox(
+                decoration: const BoxDecoration(color: Color(0xFF0F1E15)),
+                child: FadeTransition(opacity: animation, child: child),
+              ),
+          transitionDuration: const Duration(milliseconds: 500),
+        ),
       ),
       GoRoute(
         path: '/review/rejected',
@@ -338,6 +366,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/dev/pending',
         name: AppRoutes.devPending,
         builder: (_, __) => const PendingPage(isDevMode: true),
+      ),
+      GoRoute(
+        path: '/dev/approved',
+        name: AppRoutes.devApproved,
+        builder: (_, __) => const ApprovedGatePage(),
       ),
       GoRoute(
         path: '/dev/rejected-soft',

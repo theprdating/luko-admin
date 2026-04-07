@@ -28,7 +28,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 interface ReviewBody {
   application_id: string
   action: 'approve' | 'reject'
-  quality_tier?: 'S' | 'A' | 'B'
+  quality_tier?: 'top' | 'standard'
   rejection_type?: 'potential' | 'soft' | 'hard'
   review_note?: string
   review_started_at?: string
@@ -55,19 +55,25 @@ function reapplyAfter(rejectionType: string): string | null {
 
 function buildApproveEmail(displayName: string): { subject: string; html: string } {
   return {
-    subject: '🎉 恭喜！您已通過 Luko 資格審核',
-    html: `
-      <div style="font-family:-apple-system,sans-serif;max-width:480px;margin:0 auto;padding:32px 20px;color:#1a1a1a;">
-        <h2 style="color:#C9A96E;margin-bottom:8px;">LUKO</h2>
-        <h1 style="font-size:22px;margin-bottom:16px;">恭喜，${displayName}！</h1>
-        <p style="line-height:1.7;color:#444;">您的申請已通過我們的資格審核。<br>
-        現在可以開啟 App 開始探索了。</p>
-        <p style="margin-top:24px;font-size:12px;color:#999;">
-          Luko 是一個精選制約會社群，每位成員都經過人工審核。<br>
-          感謝您成為我們社群的一員。
-        </p>
-      </div>
-    `,
+    subject: '恭喜！您已通過 Luko 資格審核',
+    html: `<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+<body style="margin:0;padding:0;background:#f9f9f9;">
+  <div style="font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;max-width:480px;margin:0 auto;padding:40px 24px;color:#1a1a1a;">
+    <p style="font-size:20px;font-weight:600;color:#C9A96E;margin:0 0 24px;">LUKO</p>
+    <h1 style="font-size:22px;font-weight:700;margin:0 0 16px;">恭喜，${displayName}！</h1>
+    <p style="line-height:1.8;color:#444;margin:0 0 16px;">您的申請已通過我們的資格審核。<br>現在可以開啟 App 開始探索了。</p>
+    <p style="font-size:12px;color:#999;margin:32px 0 0;line-height:1.7;">
+      Luko 是一個精選制約會社群，每位成員都經過人工審核。<br>
+      感謝您成為我們社群的一員。
+    </p>
+  </div>
+</body>
+</html>`,
   }
 }
 
@@ -100,16 +106,21 @@ function buildRejectEmail(
 
   return {
     subject: '關於您的 Luko 申請',
-    html: `
-      <div style="font-family:-apple-system,sans-serif;max-width:480px;margin:0 auto;padding:32px 20px;color:#1a1a1a;">
-        <h2 style="color:#C9A96E;margin-bottom:8px;">LUKO</h2>
-        <h1 style="font-size:20px;margin-bottom:16px;">${msg.title}</h1>
-        <p style="line-height:1.8;color:#444;">${msg.body}</p>
-        <p style="margin-top:24px;font-size:12px;color:#999;">
-          如有疑問，請聯繫 support@luko.app
-        </p>
-      </div>
-    `,
+    html: `<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+<body style="margin:0;padding:0;background:#f9f9f9;">
+  <div style="font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;max-width:480px;margin:0 auto;padding:40px 24px;color:#1a1a1a;">
+    <p style="font-size:20px;font-weight:600;color:#C9A96E;margin:0 0 24px;">LUKO</p>
+    <h1 style="font-size:20px;font-weight:700;margin:0 0 16px;">${msg.title}</h1>
+    <p style="line-height:1.8;color:#444;margin:0 0 16px;">${msg.body}</p>
+    <p style="font-size:12px;color:#999;margin:32px 0 0;">如有疑問，請聯繫 support@luko.app</p>
+  </div>
+</body>
+</html>`,
   }
 }
 
@@ -372,7 +383,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: 'Missing application_id or action' }), { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
   }
   if (action === 'approve' && !quality_tier) {
-    return new Response(JSON.stringify({ error: 'quality_tier required for approve' }), { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
+    return new Response(JSON.stringify({ error: "quality_tier required for approve, must be 'top' or 'standard'" }), { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
   }
   if (action === 'reject' && !rejection_type) {
     return new Response(JSON.stringify({ error: 'rejection_type required for reject' }), { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })

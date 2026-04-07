@@ -63,7 +63,7 @@
     let selectedId       = null // current application id
     let currentVerify    = null // identity_verifications row
     let decisionMode     = null // 'approve' | 'reject'
-    let selectedTier     = null // 'S' | 'A' | 'B'
+    let selectedTier     = null // 'top' | 'standard'
     let selectedRejType  = null // 'potential' | 'soft' | 'hard'
     let reviewStartedAt  = null
     let isSubmitting     = false
@@ -380,17 +380,13 @@
           <div id="approve-panel" class="hidden">
             <div class="option-row">
               <span class="option-label">評級：</span>
-              <button class="pick-btn pick-btn-approve" data-tier="S"
-                      onclick="selectTier('S')" title="頂標：最佳匹配優先">
-                S　頂標
+              <button class="pick-btn pick-btn-approve" data-tier="top"
+                      onclick="selectTier('top')" title="前 85%：優先出現在探索池">
+                前 85%
               </button>
-              <button class="pick-btn pick-btn-approve" data-tier="A"
-                      onclick="selectTier('A')" title="前標：優先顯示">
-                A　前標
-              </button>
-              <button class="pick-btn pick-btn-approve" data-tier="B"
-                      onclick="selectTier('B')" title="均標：標準池">
-                B　均標
+              <button class="pick-btn pick-btn-approve" data-tier="standard"
+                      onclick="selectTier('standard')" title="85% 以外：標準池">
+                85% 以外
               </button>
               <button class="btn-confirm btn-confirm-approve"
                       id="btn-confirm-approve"
@@ -431,7 +427,7 @@
 
           <!-- Keyboard shortcuts hint -->
           <div class="shortcut-hint">
-            快捷鍵：A 通過 · R 拒絕 · 1/2/3 選擇 · Enter 確認 · ↑↓ 切換申請者
+            快捷鍵：A 通過 · R 拒絕 · 1/2 選擇 · Enter 確認 · ↑↓ 切換申請者
           </div>
 
         </div>
@@ -499,7 +495,8 @@
         return
       }
 
-      showToast(`✓ 已通過 ${name}（${selectedTier} 級），通知已送出`, 'success')
+      const tierLabel = selectedTier === 'top' ? '前85%' : '85%以外'
+      showToast(`✓ 已通過 ${name}（${tierLabel}），通知已送出`, 'success')
       isSubmitting = false
       advanceQueue()
     }
@@ -639,9 +636,8 @@
 
       // Tier / type selection
       if (decisionMode === 'approve') {
-        if (e.key === '1') selectTier('S')
-        if (e.key === '2') selectTier('A')
-        if (e.key === '3') selectTier('B')
+        if (e.key === '1') selectTier('top')
+        if (e.key === '2') selectTier('standard')
         if (e.key === 'Enter') document.getElementById('btn-confirm-approve')?.click()
       }
       if (decisionMode === 'reject') {

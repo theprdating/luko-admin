@@ -68,6 +68,45 @@
     let reviewStartedAt  = null
     let isSubmitting     = false
 
+    // ── Live Review Timer ──────────────────────────────────────────────────────
+    let _timerInterval   = null
+
+    function startReviewTimer() {
+      stopReviewTimer()
+      _timerInterval = setInterval(() => {
+        const el = document.getElementById('review-timer')
+        if (!el || !reviewStartedAt) return
+        const secs = Math.floor((Date.now() - new Date(reviewStartedAt).getTime()) / 1000)
+        const mm = String(Math.floor(secs / 60)).padStart(2, '0')
+        const ss = String(secs % 60).padStart(2, '0')
+        el.textContent = `${mm}:${ss}`
+        // 超過 2 分鐘變黃色提醒
+        el.style.color = secs >= 120 ? 'var(--gold)' : 'var(--text-second)'
+      }, 1000)
+    }
+
+    function stopReviewTimer() {
+      if (_timerInterval) { clearInterval(_timerInterval); _timerInterval = null }
+    }
+
+    // ── Queue Auto-Refresh（每 45 秒靜默更新隊列數字）───────────────────────────
+    setInterval(async () => {
+      const { data } = await db
+        .from('applications')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'pending')
+      if (data !== null) {
+        // 只更新數字，不重新 render 完整 queue（避免打斷審核中的操作）
+        const count = document.getElementById('queue-count')
+        if (count) {
+          const cur = queue.length
+          // 如果後台有新增申請，重新 loadQueue
+          const serverCount = data.length ?? 0
+          if (serverCount > cur) loadQueue()
+        }
+      }
+    }, 45000)
+
     // ── Init ───────────────────────────────────────────────────────────────────
     async function init() {
       await requireAdmin()
@@ -140,6 +179,7 @@
       selectedTier    = null
       selectedRejType = null
       reviewStartedAt = new Date().toISOString()
+      startReviewTimer()
 
       renderQueue()
 
@@ -249,7 +289,23 @@
         </div>
       ` : ''
 
+      // ── Re-applicant context banner（第 2 次以上申請才顯示）
+      const reapplyBanner = app.application_count > 1 ? `
+        <div class="reapply-banner">
+          <span class="reapply-banner-icon">↩</span>
+          <div>
+            <div class="reapply-banner-title">第 ${app.application_count} 次申請</div>
+            ${app.review_note
+              ? `<div class="reapply-banner-note">上次備註：${escapeHtml(app.review_note)}</div>`
+              : '<div class="reapply-banner-note" style="opacity:0.5;">上次無備註</div>'
+            }
+          </div>
+        </div>
+      ` : ''
+
       document.getElementById('detail-panel').innerHTML = `
+
+        ${reapplyBanner}
 
         <!-- Header -->
         <div class="applicant-header">
@@ -259,16 +315,16 @@
               <span class="tag">${age} 歲</span>
               <span class="tag">${genderLabel}</span>
               <span class="tag">${seekingText}</span>
-              ${app.application_count > 1
-                ? `<span class="tag tag-gold">第 ${app.application_count} 次申請</span>`
-                : ''
-              }
               <span class="tag" style="color:var(--text-second);">申請於 ${timeAgo(app.created_at)}</span>
             </div>
           </div>
           <div style="font-size:11px;color:var(--text-second);text-align:right;line-height:1.8;">
             <div>${formatDate(app.created_at)}</div>
-            <div style="margin-top:2px;">${app.user_id.slice(0,8)}…</div>
+            <div style="margin-top:4px;">${app.user_id.slice(0,8)}…</div>
+            <div style="margin-top:6px;display:flex;align-items:center;gap:4px;justify-content:flex-end;">
+              <span style="opacity:0.45;">⏱</span>
+              <span id="review-timer" style="font-size:12px;font-variant-numeric:tabular-nums;color:var(--text-second);">00:00</span>
+            </div>
           </div>
         </div>
 
@@ -413,13 +469,8 @@
       btn.textContent = '送出中...'
       btn.disabled = true
 
-      const { data: { session: currentSession } } = await db.auth.getSession()
-      if (!currentSession) {
-        showToast('登入已過期，請重新登入', 'error')
-        setTimeout(() => window.location.href = 'index.html', 1500)
-        isSubmitting = false
-        return
-      }
+      let freshToken
+      try { freshToken = await getFreshToken() } catch { isSubmitting = false; return }
 
       const { data: result, error: invokeError } = await db.functions.invoke('review-application', {
         body: {
@@ -429,7 +480,7 @@
           review_note:       note || null,
           review_started_at: reviewStartedAt,
         },
-        headers: { Authorization: `Bearer ${currentSession.access_token}` },
+        headers: { Authorization: `Bearer ${freshToken}` },
       })
 
       if (invokeError) {
@@ -484,13 +535,8 @@
       btn.textContent = '送出中...'
       btn.disabled = true
 
-      const { data: { session: currentSession } } = await db.auth.getSession()
-      if (!currentSession) {
-        showToast('登入已過期，請重新登入', 'error')
-        setTimeout(() => window.location.href = 'index.html', 1500)
-        isSubmitting = false
-        return
-      }
+      let freshToken
+      try { freshToken = await getFreshToken() } catch { isSubmitting = false; return }
 
       const { data: result, error: invokeError } = await db.functions.invoke('review-application', {
         body: {
@@ -500,7 +546,7 @@
           review_note:       note || null,
           review_started_at: reviewStartedAt,
         },
-        headers: { Authorization: `Bearer ${currentSession.access_token}` },
+        headers: { Authorization: `Bearer ${freshToken}` },
       })
 
       if (invokeError) {
@@ -527,6 +573,7 @@
 
     // ── Advance to next after decision ────────────────────────────────────────
     function advanceQueue() {
+      stopReviewTimer()
       const prevIdx = queue.findIndex(a => a.id === selectedId)
       queue = queue.filter(a => a.id !== selectedId)
       selectedId = null

@@ -113,7 +113,7 @@ function buildRejectEmail(
   }
 }
 
-// ── Gmail SMTP via deno-smtp ──────────────────────────────────────────────────
+// ── Gmail SMTP via denomailer ─────────────────────────────────────────────────
 //
 // 需要設定的 Supabase Secrets:
 //   GMAIL_USER=your-gmail@gmail.com
@@ -121,7 +121,7 @@ function buildRejectEmail(
 //
 // 取得 App 密碼：Google 帳號 → 安全性 → 兩步驟驗證開啟後 → 應用程式密碼 → 建立
 
-import { SmtpClient } from 'https://deno.land/x/smtp@v0.7.0/mod.ts'
+import { SMTPClient } from 'https://deno.land/x/denomailer@1.6.0/mod.ts'
 
 async function sendEmail(
   to: string,
@@ -136,20 +136,23 @@ async function sendEmail(
     return
   }
 
-  const client = new SmtpClient()
-  try {
-    await client.connectTLS({
+  const client = new SMTPClient({
+    connection: {
       hostname: 'smtp.gmail.com',
       port: 465,
-      username: gmailUser,
-      password: gmailPass,
-    })
+      tls: true,
+      auth: {
+        username: gmailUser,
+        password: gmailPass,
+      },
+    },
+  })
 
+  try {
     await client.send({
       from: `Luko <${gmailUser}>`,
       to,
       subject,
-      content: 'text/html',
       html,
     })
   } catch (e) {
@@ -159,27 +162,141 @@ async function sendEmail(
   }
 }
 
+// ── FCM v1 — inlined to avoid function-to-function auth issues ────────────────
+
+interface ServiceAccount {
+  client_email: string
+  private_key: string
+}
+
+async function getFcmAccessToken(serviceAccount: ServiceAccount): Promise<string> {
+  const now = Math.floor(Date.now() / 1000)
+
+  const encode = (obj: unknown) =>
+    btoa(JSON.stringify(obj)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+
+  const signingInput = `${encode({ alg: 'RS256', typ: 'JWT' })}.${encode({
+    iss: serviceAccount.client_email,
+    sub: serviceAccount.client_email,
+    aud: 'https://oauth2.googleapis.com/token',
+    iat: now,
+    exp: now + 3600,
+    scope: 'https://www.googleapis.com/auth/firebase.messaging',
+  })}`
+
+  const pemContents = serviceAccount.private_key
+    .replace(/-----BEGIN PRIVATE KEY-----/, '')
+    .replace(/-----END PRIVATE KEY-----/, '')
+    .replace(/\s/g, '')
+
+  const binaryKey = Uint8Array.from(atob(pemContents), (c) => c.charCodeAt(0))
+
+  const cryptoKey = await crypto.subtle.importKey(
+    'pkcs8',
+    binaryKey,
+    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  )
+
+  const signatureBuffer = await crypto.subtle.sign(
+    'RSASSA-PKCS1-v1_5',
+    cryptoKey,
+    new TextEncoder().encode(signingInput),
+  )
+
+  // Convert ArrayBuffer to base64url without spread (avoids stack overflow for large buffers)
+  const sigBytes = new Uint8Array(signatureBuffer)
+  let sigBinary = ''
+  for (let i = 0; i < sigBytes.length; i++) sigBinary += String.fromCharCode(sigBytes[i])
+  const sigB64 = btoa(sigBinary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+
+  const jwt = `${signingInput}.${sigB64}`
+
+  const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+      assertion: jwt,
+    }),
+  })
+
+  const { access_token, error } = await tokenRes.json()
+  if (error) throw new Error(`OAuth2 token error: ${error}`)
+  return access_token
+}
+
 async function sendFcmNotification(
   userId: string,
   title: string,
   body: string,
   data?: Record<string, string>,
 ): Promise<void> {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  const projectId = Deno.env.get('FIREBASE_PROJECT_ID')
+  const serviceAccountRaw = Deno.env.get('FIREBASE_SERVICE_ACCOUNT_KEY')
 
-  const res = await fetch(`${supabaseUrl}/functions/v1/send-fcm-notification`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${serviceKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ user_id: userId, title, body, data }),
-  })
+  if (!projectId || !serviceAccountRaw) {
+    console.warn('[review-application] Firebase secrets not set, skipping FCM')
+    return
+  }
 
-  if (!res.ok) {
-    const err = await res.text()
-    console.error('[review-application] FCM send failed:', err)
+  // Look up device tokens for this user
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+  )
+
+  const { data: tokens, error: dbError } = await supabase
+    .from('device_tokens')
+    .select('token')
+    .eq('user_id', userId)
+
+  if (dbError) {
+    console.error('[review-application] FCM: DB error fetching tokens:', dbError.message)
+    return
+  }
+
+  if (!tokens || tokens.length === 0) return
+
+  const serviceAccount: ServiceAccount = JSON.parse(serviceAccountRaw)
+  let accessToken: string
+  try {
+    accessToken = await getFcmAccessToken(serviceAccount)
+  } catch (e) {
+    console.error('[review-application] FCM: access token error:', e)
+    return
+  }
+
+  const results = await Promise.allSettled(
+    tokens.map(async ({ token }: { token: string }) => {
+      const message: Record<string, unknown> = { token, notification: { title, body } }
+      if (data) message.data = data
+
+      const res = await fetch(
+        `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ message }),
+        },
+      )
+
+      if (!res.ok) {
+        const err = await res.json()
+        if (err?.error?.details?.[0]?.errorCode !== 'UNREGISTERED') {
+          throw new Error(`FCM error: ${JSON.stringify(err)}`)
+        }
+      }
+    }),
+  )
+
+  const failed = results.filter((r) => r.status === 'rejected')
+  if (failed.length > 0) {
+    console.error('[review-application] FCM: some sends failed:', failed.map((r) => (r as PromiseRejectedResult).reason))
   }
 }
 

@@ -9,7 +9,7 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
-  String get appName => 'Luko';
+  String get appName => 'PR Dating';
 
   @override
   String get commonConfirm => '確認';
@@ -42,7 +42,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get authWelcomeTitle => '與認真打理自己的人相遇。';
 
   @override
-  String get authWelcomeSubtitle => '申請加入 Luko，每一個帳號都經過人工審核。';
+  String get authWelcomeSubtitle => '申請加入 PR Dating，每一個帳號都經過人工審核。';
 
   @override
   String get welcomeBadge => '申請制';
@@ -77,7 +77,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get approvedGateTitle => '申請通過';
 
   @override
-  String get approvedGateBody => '恭喜！你已通過 Luko 的資格審核。\n接下來，綁定手機號碼以完成帳號設置。';
+  String get approvedGateBody => '恭喜！你已通過 PR Dating 的資格審核。\n接下來，綁定手機號碼以完成帳號設置。';
 
   @override
   String get approvedGateCta => '綁定手機號碼';
@@ -240,13 +240,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get permissionPhotoTitle => '需要相簿權限';
 
   @override
-  String get permissionPhotoBody => 'Luko 需要存取您的相簿才能上傳照片。請前往設定開啟相簿權限。';
+  String get permissionPhotoBody => 'PR Dating 需要存取您的相簿才能上傳照片。請前往設定開啟相簿權限。';
 
   @override
   String get permissionCameraTitle => '需要相機權限';
 
   @override
-  String get permissionCameraBody => 'Luko 需要存取相機才能拍照。請前往設定開啟相機權限。';
+  String get permissionCameraBody => 'PR Dating 需要存取相機才能拍照。請前往設定開啟相機權限。';
 
   @override
   String get permissionOpenSettings => '前往設定';
@@ -413,14 +413,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reviewRejectedTitleSoft => '目前還不是時候';
 
   @override
-  String get reviewRejectedBodySoft => '感謝你申請加入 Luko。\n目前的呈現方式暫時與我們的標準有些距離。';
+  String get reviewRejectedBodySoft =>
+      '感謝你申請加入 PR Dating。\n目前的呈現方式暫時與我們的標準有些距離。';
 
   @override
-  String get reviewRejectedTitlePotential => '你有 Luko 的潛力！';
+  String get reviewRejectedTitlePotential => '差一點點！';
 
   @override
   String get reviewRejectedBodyPotential =>
-      '我們看見你的潛力，但目前的照片還不夠展現你的魅力。\n試試這些建議，讓自己更容易通過審核：';
+      '你與通過標準的距離不遠。\n試試這些建議，讓自己在重新申請時更容易通過：';
+
+  @override
+  String get reviewAdminFeedbackTitle => '審核建議';
 
   @override
   String get reviewRejectedTip1 => '靠近窗戶或在戶外自然光下拍攝';
@@ -522,7 +526,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get onboarding3Body =>
-      '不再是無限滑卡。\n\n每天 Luko 只為你精選幾個人\n讓你把所有的注意力，放在真正值得的人身上。\n\n認真的你，值得一個認真的遇見。';
+      '不再是無限滑卡。\n\n每天 PR Dating 只為你精選幾個人\n讓你把所有的注意力，放在真正值得的人身上。\n\n認真的你，值得一個認真的遇見。';
 
   @override
   String get onboarding1Quote1 => '「連能挑選的照片都這樣，誰還相信見面他會打理好自己」';
@@ -582,7 +586,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get termsUpdateTitle => '條款已更新';
 
   @override
-  String get termsUpdateSubtitle => '我們更新了服務條款與隱私政策，請閱讀後繼續使用 Luko。';
+  String get termsUpdateSubtitle => '我們更新了服務條款與隱私政策，請閱讀後繼續使用 PR Dating。';
 
   @override
   String get termsUpdateAccept => '我已閱讀並同意最新條款';

@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appName => 'Luko';
+  String get appName => 'PR Dating';
 
   @override
   String get commonConfirm => 'Confirm';
@@ -43,7 +43,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authWelcomeSubtitle =>
-      'Apply to join Luko. We review every profile.';
+      'Apply to join PR Dating. We review every profile.';
 
   @override
   String get welcomeBadge => 'BY APPLICATION';
@@ -79,7 +79,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get approvedGateBody =>
-      'Congratulations! You\'ve passed the Luko review.\nOne last step — link your phone number to finish setting up your account.';
+      'Congratulations! You\'ve passed the PR Dating review.\nOne last step — link your phone number to finish setting up your account.';
 
   @override
   String get approvedGateCta => 'Link Phone Number';
@@ -248,14 +248,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get permissionPhotoBody =>
-      'Luko needs access to your photo library to upload photos. Please enable it in Settings.';
+      'PR Dating needs access to your photo library to upload photos. Please enable it in Settings.';
 
   @override
   String get permissionCameraTitle => 'Camera Access Required';
 
   @override
   String get permissionCameraBody =>
-      'Luko needs camera access to take photos. Please enable it in Settings.';
+      'PR Dating needs camera access to take photos. Please enable it in Settings.';
 
   @override
   String get permissionOpenSettings => 'Open Settings';
@@ -435,14 +435,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reviewRejectedBodySoft =>
-      'Thanks for applying to Luko.\nYour current presentation doesn\'t quite meet our standards at this time.';
+      'Thanks for applying to PR Dating.\nYour current presentation doesn\'t quite meet our standards at this time.';
 
   @override
-  String get reviewRejectedTitlePotential => 'You\'re Almost There';
+  String get reviewRejectedTitlePotential => 'Almost There!';
 
   @override
   String get reviewRejectedBodyPotential =>
-      'We see something in you — but your photos aren\'t fully showcasing you yet.\nTry these tips before reapplying:';
+      'You\'re close to our standard — just not quite there yet.\nTry these tips before reapplying:';
+
+  @override
+  String get reviewAdminFeedbackTitle => 'Review Feedback';
 
   @override
   String get reviewRejectedTip1 =>
@@ -541,14 +544,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboarding2Body =>
-      'Not algorithms. Real people.\n\nEvery account on Luko is reviewed by hand — because attitude can\'t be automated.\n';
+      'Not algorithms. Real people.\n\nEvery account on PR Dating is reviewed by hand — because attitude can\'t be automated.\n';
 
   @override
   String get onboarding3Title => 'Good connections\naren\'t luck.';
 
   @override
   String get onboarding3Body =>
-      'No more endless scrolling.\n\nEvery day, Luko curates a small circle of people — each one genuinely worth your time.\n\nYou take yourself seriously.\nYou deserve someone who does too.';
+      'No more endless scrolling.\n\nEvery day, PR Dating curates a small circle of people — each one genuinely worth your time.\n\nYou take yourself seriously.\nYou deserve someone who does too.';
 
   @override
   String get onboarding1Quote1 =>
@@ -617,7 +620,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get termsUpdateSubtitle =>
-      'We\'ve updated our Terms of Service and Privacy Policy. Please review them to continue using Luko.';
+      'We\'ve updated our Terms of Service and Privacy Policy. Please review them to continue using PR Dating.';
 
   @override
   String get termsUpdateAccept => 'I\'ve Read and Agree to the New Terms';

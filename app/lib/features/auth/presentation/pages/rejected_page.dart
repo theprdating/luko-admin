@@ -30,7 +30,8 @@ class RejectedPage extends ConsumerStatefulWidget {
 
 class _RejectedPageState extends ConsumerState<RejectedPage> {
   DateTime? _reapplyAfter;
-  String? _rejectionType; // 'soft' | 'potential' | null
+  String? _rejectionType; // 'soft' | 'hard' | null
+  String? _reviewNote;
   bool _isLoading = true;
 
   @override
@@ -57,7 +58,7 @@ class _RejectedPageState extends ConsumerState<RejectedPage> {
 
       final row = await supabase
           .from('applications')
-          .select('reapply_after, rejection_type')
+          .select('reapply_after, rejection_type, review_note')
           .eq('user_id', userId)
           .maybeSingle();
 
@@ -66,6 +67,7 @@ class _RejectedPageState extends ConsumerState<RejectedPage> {
         final raw = row?['reapply_after'] as String?;
         _reapplyAfter = raw != null ? DateTime.tryParse(raw)?.toLocal() : null;
         _rejectionType = row?['rejection_type'] as String?;
+        _reviewNote    = row?['review_note'] as String?;
         _isLoading = false;
       });
     } catch (_) {
@@ -106,7 +108,7 @@ class _RejectedPageState extends ConsumerState<RejectedPage> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppColors>()!;
     final l10n = AppLocalizations.of(context)!;
-    final isPotential = _rejectionType == 'potential';
+    final isPotential = _rejectionType == 'soft';
 
     return ExitOnDoubleBackScope(
       child: Scaffold(
@@ -169,6 +171,15 @@ class _RejectedPageState extends ConsumerState<RejectedPage> {
               // ── 改善建議（有潛力時顯示）──────────────────────────────
               if (isPotential) ...[
                 const SizedBox(height: AppSpacing.xl),
+                // 審核員個人化建議（若有）優先顯示，再附上通用建議
+                if (_reviewNote != null && _reviewNote!.isNotEmpty) ...[
+                  _AdminFeedbackCard(
+                    reviewNote: _reviewNote!,
+                    colors: colors,
+                    l10n: l10n,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                ],
                 _ImprovementTips(colors: colors, l10n: l10n),
               ],
 
@@ -219,6 +230,59 @@ class _RejectedIcon extends StatelessWidget {
         isPotential ? Icons.auto_awesome_rounded : Icons.schedule_rounded,
         size: 36,
         color: isPotential ? colors.forestGreen : colors.warning,
+      ),
+    );
+  }
+}
+
+// ── 審核員個人化建議卡片 ──────────────────────────────────────────────────────
+
+class _AdminFeedbackCard extends StatelessWidget {
+  const _AdminFeedbackCard({
+    required this.reviewNote,
+    required this.colors,
+    required this.l10n,
+  });
+
+  final String reviewNote;
+  final AppColors colors;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: colors.forestGreenSubtle,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colors.forestGreen.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.rate_review_rounded, size: 16, color: colors.forestGreen),
+              const SizedBox(width: 6),
+              Text(
+                l10n.reviewAdminFeedbackTitle,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: colors.forestGreen,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            reviewNote,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: colors.primaryText,
+              height: 1.65,
+            ),
+          ),
+        ],
       ),
     );
   }

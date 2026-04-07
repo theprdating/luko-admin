@@ -1,7 +1,7 @@
 {
   "@@locale": "zh",
 
-  "appName": "Luko",
+  "appName": "PR Dating",
   "@appName": { "description": "App 名稱" },
 
   "commonConfirm": "確認",
@@ -34,7 +34,7 @@
   "authWelcomeTitle": "與認真打理自己的人相遇。",
   "@authWelcomeTitle": { "description": "歡迎頁主標題" },
 
-  "authWelcomeSubtitle": "申請加入 Luko，每一個帳號都經過人工審核。",
+  "authWelcomeSubtitle": "申請加入 PR Dating，每一個帳號都經過人工審核。",
   "@authWelcomeSubtitle": { "description": "歡迎頁副標題" },
 
   "welcomeBadge": "申請制",
@@ -70,7 +70,7 @@
   "approvedGateTitle": "申請通過",
   "@approvedGateTitle": { "description": "審核通過頁主標題" },
 
-  "approvedGateBody": "恭喜！你已通過 Luko 的資格審核。\n接下來，綁定手機號碼以完成帳號設置。",
+  "approvedGateBody": "恭喜！你已通過 PR Dating 的資格審核。\n接下來，綁定手機號碼以完成帳號設置。",
   "@approvedGateBody": { "description": "審核通過頁說明文字" },
 
   "approvedGateCta": "綁定手機號碼",
@@ -241,13 +241,13 @@
   "permissionPhotoTitle": "需要相簿權限",
   "@permissionPhotoTitle": { "description": "相簿權限被拒 Dialog 標題" },
 
-  "permissionPhotoBody": "Luko 需要存取您的相簿才能上傳照片。請前往設定開啟相簿權限。",
+  "permissionPhotoBody": "PR Dating 需要存取您的相簿才能上傳照片。請前往設定開啟相簿權限。",
   "@permissionPhotoBody": { "description": "相簿權限被拒 Dialog 內文" },
 
   "permissionCameraTitle": "需要相機權限",
   "@permissionCameraTitle": { "description": "相機權限被拒 Dialog 標題" },
 
-  "permissionCameraBody": "Luko 需要存取相機才能拍照。請前往設定開啟相機權限。",
+  "permissionCameraBody": "PR Dating 需要存取相機才能拍照。請前往設定開啟相機權限。",
   "@permissionCameraBody": { "description": "相機權限被拒 Dialog 內文" },
 
   "permissionOpenSettings": "前往設定",
@@ -412,14 +412,17 @@
   "reviewRejectedTitleSoft": "目前還不是時候",
   "@reviewRejectedTitleSoft": { "description": "拒絕頁面標題 — 一般拒絕" },
 
-  "reviewRejectedBodySoft": "感謝你申請加入 Luko。\n目前的呈現方式暫時與我們的標準有些距離。",
+  "reviewRejectedBodySoft": "感謝你申請加入 PR Dating。\n目前的呈現方式暫時與我們的標準有些距離。",
   "@reviewRejectedBodySoft": { "description": "拒絕頁面說明 — 一般拒絕" },
 
-  "reviewRejectedTitlePotential": "你有 Luko 的潛力！",
+  "reviewRejectedTitlePotential": "差一點點！",
   "@reviewRejectedTitlePotential": { "description": "拒絕頁面標題 — 有潛力" },
 
-  "reviewRejectedBodyPotential": "我們看見你的潛力，但目前的照片還不夠展現你的魅力。\n試試這些建議，讓自己更容易通過審核：",
+  "reviewRejectedBodyPotential": "你與通過標準的距離不遠。\n試試這些建議，讓自己在重新申請時更容易通過：",
   "@reviewRejectedBodyPotential": { "description": "拒絕頁面說明 — 有潛力" },
+
+  "reviewAdminFeedbackTitle": "審核建議",
+  "@reviewAdminFeedbackTitle": { "description": "差一點拒絕頁面：審核員給用戶的建議卡片標題" },
 
   "reviewRejectedTip1": "靠近窗戶或在戶外自然光下拍攝",
   "@reviewRejectedTip1": { "description": "改善建議 1" },
@@ -520,7 +523,7 @@
   "onboarding3Title": "好的相遇，\n不是在人堆碰運氣",
   "@onboarding3Title": { "description": "Onboarding 第 3 頁標題" },
 
-  "onboarding3Body": "不再是無限滑卡。\n\n每天 Luko 只為你精選幾個人\n讓你把所有的注意力，放在真正值得的人身上。\n\n認真的你，值得一個認真的遇見。",
+  "onboarding3Body": "不再是無限滑卡。\n\n每天 PR Dating 只為你精選幾個人\n讓你把所有的注意力，放在真正值得的人身上。\n\n認真的你，值得一個認真的遇見。",
   "@onboarding3Body": { "description": "Onboarding 第 3 頁內文" },
 
   "onboarding1Quote1": "「連能挑選的照片都這樣，誰還相信見面他會打理好自己」",
@@ -565,7 +568,7 @@
   "termsUpdateTitle": "條款已更新",
   "@termsUpdateTitle": { "description": "條款更新頁標題" },
 
-  "termsUpdateSubtitle": "我們更新了服務條款與隱私政策，請閱讀後繼續使用 Luko。",
+  "termsUpdateSubtitle": "我們更新了服務條款與隱私政策，請閱讀後繼續使用 PR Dating。",
   "@termsUpdateSubtitle": { "description": "條款更新頁說明" },
 
   "termsUpdateAccept": "我已閱讀並同意最新條款",

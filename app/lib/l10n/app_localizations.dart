@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// App name
   ///
   /// In en, this message translates to:
-  /// **'Luko'**
+  /// **'PR Dating'**
   String get appName;
 
   /// Confirm button
@@ -167,7 +167,7 @@ abstract class AppLocalizations {
   /// Welcome screen subtitle
   ///
   /// In en, this message translates to:
-  /// **'Apply to join Luko. We review every profile.'**
+  /// **'Apply to join PR Dating. We review every profile.'**
   String get authWelcomeSubtitle;
 
   /// Welcome page badge label (exclusivity marker)
@@ -233,7 +233,7 @@ abstract class AppLocalizations {
   /// Approval gate page body text
   ///
   /// In en, this message translates to:
-  /// **'Congratulations! You\'ve passed the Luko review.\nOne last step — link your phone number to finish setting up your account.'**
+  /// **'Congratulations! You\'ve passed the PR Dating review.\nOne last step — link your phone number to finish setting up your account.'**
   String get approvedGateBody;
 
   /// Approval gate page CTA button
@@ -539,7 +539,7 @@ abstract class AppLocalizations {
   /// Gallery permission denied dialog body
   ///
   /// In en, this message translates to:
-  /// **'Luko needs access to your photo library to upload photos. Please enable it in Settings.'**
+  /// **'PR Dating needs access to your photo library to upload photos. Please enable it in Settings.'**
   String get permissionPhotoBody;
 
   /// Camera permission denied dialog title
@@ -551,7 +551,7 @@ abstract class AppLocalizations {
   /// Camera permission denied dialog body
   ///
   /// In en, this message translates to:
-  /// **'Luko needs camera access to take photos. Please enable it in Settings.'**
+  /// **'PR Dating needs camera access to take photos. Please enable it in Settings.'**
   String get permissionCameraBody;
 
   /// Open system settings button
@@ -881,20 +881,26 @@ abstract class AppLocalizations {
   /// Rejected screen body — soft rejection
   ///
   /// In en, this message translates to:
-  /// **'Thanks for applying to Luko.\nYour current presentation doesn\'t quite meet our standards at this time.'**
+  /// **'Thanks for applying to PR Dating.\nYour current presentation doesn\'t quite meet our standards at this time.'**
   String get reviewRejectedBodySoft;
 
   /// Rejected screen title — potential tier
   ///
   /// In en, this message translates to:
-  /// **'You\'re Almost There'**
+  /// **'Almost There!'**
   String get reviewRejectedTitlePotential;
 
   /// Rejected screen body — potential tier
   ///
   /// In en, this message translates to:
-  /// **'We see something in you — but your photos aren\'t fully showcasing you yet.\nTry these tips before reapplying:'**
+  /// **'You\'re close to our standard — just not quite there yet.\nTry these tips before reapplying:'**
   String get reviewRejectedBodyPotential;
+
+  /// Soft-rejected page: admin feedback card title
+  ///
+  /// In en, this message translates to:
+  /// **'Review Feedback'**
+  String get reviewAdminFeedbackTitle;
 
   /// Improvement tip 1
   ///
@@ -1073,7 +1079,7 @@ abstract class AppLocalizations {
   /// Onboarding page 2 body
   ///
   /// In en, this message translates to:
-  /// **'Not algorithms. Real people.\n\nEvery account on Luko is reviewed by hand — because attitude can\'t be automated.\n'**
+  /// **'Not algorithms. Real people.\n\nEvery account on PR Dating is reviewed by hand — because attitude can\'t be automated.\n'**
   String get onboarding2Body;
 
   /// Onboarding page 3 title
@@ -1085,7 +1091,7 @@ abstract class AppLocalizations {
   /// Onboarding page 3 body
   ///
   /// In en, this message translates to:
-  /// **'No more endless scrolling.\n\nEvery day, Luko curates a small circle of people — each one genuinely worth your time.\n\nYou take yourself seriously.\nYou deserve someone who does too.'**
+  /// **'No more endless scrolling.\n\nEvery day, PR Dating curates a small circle of people — each one genuinely worth your time.\n\nYou take yourself seriously.\nYou deserve someone who does too.'**
   String get onboarding3Body;
 
   /// Onboarding page 1 background quote 1
@@ -1205,7 +1211,7 @@ abstract class AppLocalizations {
   /// Terms update page subtitle
   ///
   /// In en, this message translates to:
-  /// **'We\'ve updated our Terms of Service and Privacy Policy. Please review them to continue using Luko.'**
+  /// **'We\'ve updated our Terms of Service and Privacy Policy. Please review them to continue using PR Dating.'**
   String get termsUpdateSubtitle;
 
   /// Terms update accept button

@@ -340,23 +340,34 @@ button, .btn {
 }
 
 /* Photos */
-.photos-row { display: flex; gap: 8px; }
+.photos-row {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.photos-row::-webkit-scrollbar { height: 4px; }
+.photos-row::-webkit-scrollbar-track { background: transparent; }
+.photos-row::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
 .photo-thumb {
-  height: 200px;
-  flex: 1;
+  width: 240px;
+  height: 360px;
+  flex: 0 0 240px;
   border-radius: var(--radius);
-  object-fit: cover;
+  object-fit: contain;
   cursor: zoom-in;
-  transition: opacity 0.15s, transform 0.15s;
-  background: var(--bg-elevated);
+  transition: opacity 0.15s;
+  background: #111;
   display: block;
+  border: 1px solid var(--border);
 }
-.photo-thumb:hover { opacity: 0.88; transform: scale(1.01); }
+.photo-thumb:hover { opacity: 0.88; }
 
 .photo-placeholder {
-  height: 200px;
-  flex: 1;
+  width: 240px;
+  height: 360px;
+  flex: 0 0 240px;
   border-radius: var(--radius);
   background: var(--bg-elevated);
   display: flex;
@@ -364,12 +375,58 @@ button, .btn {
   justify-content: center;
   color: var(--text-second);
   font-size: 12px;
+  border: 1px solid var(--border);
 }
 
 .verify-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 
 .verify-photo-wrapper { display: flex; flex-direction: column; gap: 4px; }
-.verify-photo-wrapper .photo-thumb { height: 150px; }
+.verify-photo-wrapper .photo-thumb { width: 100%; flex: none; height: 180px; }
+
+/* Queue Tabs */
+.queue-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.queue-tab {
+  flex: 1;
+  padding: 8px 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-second);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+}
+.queue-tab:hover { color: var(--text-primary); }
+.queue-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+.queue-tab-count {
+  display: inline-block;
+  background: var(--bg-elevated);
+  border-radius: 8px;
+  padding: 0 5px;
+  font-size: 10px;
+  margin-left: 3px;
+  vertical-align: middle;
+}
+
+/* Note label + user-visible note highlight */
+.review-note-label {
+  font-size: 11px;
+  color: var(--text-second);
+  margin-bottom: 6px;
+  display: block;
+  transition: color 0.2s;
+}
+.review-note-label.user-visible { color: var(--gold); font-weight: 600; }
+.decision-note.note-user-visible {
+  border-color: rgba(201,169,110,0.5);
+  background: rgba(201,169,110,0.04);
+}
 
 .verify-label {
   font-size: 11px;

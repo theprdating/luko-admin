@@ -139,8 +139,8 @@ const ACTION_LABELS = {
 
 const REJECTION_TYPE_LABELS = {
   potential: '潛力可等',
-  soft:      '暫不通過',
-  hard:      '不符合',
+  soft:      '差一點',
+  hard:      '不通過',
 }
 
 function actionLabel(code) {

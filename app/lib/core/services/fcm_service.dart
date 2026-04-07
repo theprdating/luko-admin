@@ -19,6 +19,21 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 class FcmService {
   FcmService._();
 
+  /// 當收到 application_approved / application_rejected 類型通知時呼叫
+  /// 由 LukoApp.build() 設定，確保每次 rebuild 都持有最新的 ref
+  static VoidCallback? _onApplicationStatusChange;
+
+  static void setStatusChangeCallback(VoidCallback callback) {
+    _onApplicationStatusChange = callback;
+  }
+
+  static void _handleStatusChange(RemoteMessage message) {
+    final type = message.data['type'] as String?;
+    if (type == 'application_approved' || type == 'application_rejected') {
+      _onApplicationStatusChange?.call();
+    }
+  }
+
   static Future<void> init() async {
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
@@ -44,11 +59,21 @@ class FcmService {
       await _saveToken(token);
     });
 
-    // ── Foreground 訊息處理 ─────────────────────────────────────────────
+    // ── Foreground 訊息：審核結果 → 刷新 App 狀態 ──────────────────────
     FirebaseMessaging.onMessage.listen((message) {
       debugPrint('[FCM] foreground message: ${message.notification?.title}');
-      // TODO: 使用 flutter_local_notifications 顯示 in-app 通知
+      _handleStatusChange(message);
     });
+
+    // ── 點擊通知開啟 App（背景 → 前景）→ 刷新 App 狀態 ─────────────────
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      debugPrint('[FCM] opened from notification: ${message.notification?.title}');
+      _handleStatusChange(message);
+    });
+
+    // ── 冷啟動：App 被通知喚醒時刷新狀態 ──────────────────────────────
+    final initial = await messaging.getInitialMessage();
+    if (initial != null) _handleStatusChange(initial);
   }
 
   static Future<void> _registerToken(FirebaseMessaging messaging) async {

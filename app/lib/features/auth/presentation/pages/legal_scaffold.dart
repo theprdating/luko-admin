@@ -294,7 +294,7 @@ class _StickyHeader extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'LUKO',
+                  'PR Dating',
                   style: GoogleFonts.dmSans(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,

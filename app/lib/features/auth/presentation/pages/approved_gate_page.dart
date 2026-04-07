@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_spacing.dart';
+import '../../../../core/supabase/supabase_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../l10n/app_localizations.dart';
 
@@ -15,14 +17,14 @@ import '../../../../l10n/app_localizations.dart';
 ///
 /// 設計：深色品牌底（brandBg #0F1E15）+ 金色徽章，呈現「入選時刻」的儀式感。
 /// 背景色刻意沿用 /verify/phone 的 brandBg，讓整段手機綁定流程視覺連貫。
-class ApprovedGatePage extends StatefulWidget {
+class ApprovedGatePage extends ConsumerStatefulWidget {
   const ApprovedGatePage({super.key});
 
   @override
-  State<ApprovedGatePage> createState() => _ApprovedGatePageState();
+  ConsumerState<ApprovedGatePage> createState() => _ApprovedGatePageState();
 }
 
-class _ApprovedGatePageState extends State<ApprovedGatePage>
+class _ApprovedGatePageState extends ConsumerState<ApprovedGatePage>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
   late final Animation<double> _badgeFade;
@@ -30,6 +32,8 @@ class _ApprovedGatePageState extends State<ApprovedGatePage>
   late final Animation<double> _contentFade;
   late final Animation<Offset> _contentSlide;
   late final Animation<double> _buttonFade;
+
+  String? _qualityTier; // 'top' | 'standard' | null（載入中或未知）
 
   @override
   void initState() {
@@ -65,6 +69,28 @@ class _ApprovedGatePageState extends State<ApprovedGatePage>
       parent: _ctrl,
       curve: const Interval(0.65, 1.0, curve: Curves.easeOut),
     );
+
+    _loadTier();
+  }
+
+  Future<void> _loadTier() async {
+    try {
+      final supabase = ref.read(supabaseProvider);
+      final userId = supabase.auth.currentUser?.id;
+      if (userId == null) return;
+
+      final row = await supabase
+          .from('applications')
+          .select('quality_tier')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+      if (mounted) {
+        setState(() => _qualityTier = row?['quality_tier'] as String?);
+      }
+    } catch (_) {
+      // 靜默失敗，保持 null → 顯示通用說明文字
+    }
   }
 
   @override
@@ -80,8 +106,15 @@ class _ApprovedGatePageState extends State<ApprovedGatePage>
     final l10n    = AppLocalizations.of(context)!;
     final bottom  = MediaQuery.paddingOf(context).bottom;
 
+    // 根據 quality_tier 選擇說明文字
+    final bodyText = switch (_qualityTier) {
+      'top'      => l10n.approvedGateBodyTop,
+      'standard' => l10n.approvedGateBodyStandard,
+      _          => l10n.approvedGateBody,
+    };
+
     return Scaffold(
-      backgroundColor: colors.brandBg,
+      backgroundColor: colors.backgroundWarm,
       body: SafeArea(
         bottom: false,
         child: Padding(
@@ -96,7 +129,7 @@ class _ApprovedGatePageState extends State<ApprovedGatePage>
             children: [
               const Spacer(flex: 3),
 
-              // ── 金色徽章 ─────────────────────────────────────────
+              // ── 徽章 ─────────────────────────────────────────────
               FadeTransition(
                 opacity: _badgeFade,
                 child: ScaleTransition(
@@ -115,15 +148,16 @@ class _ApprovedGatePageState extends State<ApprovedGatePage>
                   position: _contentSlide,
                   child: Column(
                     children: [
-                      // 金框小徽章
+                      // 小徽章標籤
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 14,
                           vertical: 5,
                         ),
                         decoration: BoxDecoration(
+                          color: colors.forestGreenSubtle,
                           border: Border.all(
-                            color: colors.brandGold.withValues(alpha: 0.45),
+                            color: colors.forestGreen.withValues(alpha: 0.35),
                           ),
                           borderRadius: BorderRadius.circular(20),
                         ),
@@ -132,7 +166,7 @@ class _ApprovedGatePageState extends State<ApprovedGatePage>
                           style: GoogleFonts.dmSans(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
-                            color: colors.brandGold,
+                            color: colors.forestGreen,
                             letterSpacing: 1.2,
                           ),
                         ),
@@ -145,7 +179,7 @@ class _ApprovedGatePageState extends State<ApprovedGatePage>
                         style: GoogleFonts.dmSans(
                           fontSize: 36,
                           fontWeight: FontWeight.w700,
-                          color: colors.brandOnDark,
+                          color: colors.primaryText,
                           height: 1.1,
                           letterSpacing: -0.5,
                         ),
@@ -153,15 +187,21 @@ class _ApprovedGatePageState extends State<ApprovedGatePage>
                       ),
                       const SizedBox(height: AppSpacing.md),
 
-                      // 說明文字
+                      // 說明文字（依 quality_tier 顯示不同內容）
                       Text(
-                        l10n.approvedGateBody,
+                        bodyText,
                         style: textTheme.bodyMedium?.copyWith(
-                          color: colors.brandOnDark.withValues(alpha: 0.58),
+                          color: colors.secondaryText,
                           height: 1.7,
                         ),
                         textAlign: TextAlign.center,
                       ),
+
+                      // ── 方案標籤（有 tier 時才顯示）──────────────
+                      if (_qualityTier != null) ...[
+                        const SizedBox(height: AppSpacing.md),
+                        _TierBadge(qualityTier: _qualityTier!, colors: colors, l10n: l10n),
+                      ],
                     ],
                   ),
                 ),
@@ -181,7 +221,7 @@ class _ApprovedGatePageState extends State<ApprovedGatePage>
                         height: 54,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: colors.brandButtonBg,
+                          color: colors.forestGreen,
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Text(
@@ -189,7 +229,7 @@ class _ApprovedGatePageState extends State<ApprovedGatePage>
                           style: GoogleFonts.dmSans(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
-                            color: colors.brandBg,
+                            color: colors.brandOnDark,
                           ),
                         ),
                       ),
@@ -199,7 +239,7 @@ class _ApprovedGatePageState extends State<ApprovedGatePage>
                       l10n.approvedGateNote,
                       style: GoogleFonts.dmSans(
                         fontSize: 12,
-                        color: colors.brandCaption,
+                        color: colors.secondaryText,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -210,6 +250,57 @@ class _ApprovedGatePageState extends State<ApprovedGatePage>
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ── 方案標籤 ─────────────────────────────────────────────────────────────────
+//
+// top     → 綠色 badge「創始成員 · 終生免費」
+// standard → 琥珀色 badge「5 天免費體驗」
+
+class _TierBadge extends StatelessWidget {
+  const _TierBadge({
+    required this.qualityTier,
+    required this.colors,
+    required this.l10n,
+  });
+
+  final String qualityTier;
+  final AppColors colors;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    final isTop = qualityTier == 'top';
+    final bgColor = isTop
+        ? colors.forestGreenSubtle
+        : colors.warning.withValues(alpha: 0.1);
+    final borderColor = isTop
+        ? colors.forestGreen.withValues(alpha: 0.35)
+        : colors.warning.withValues(alpha: 0.4);
+    final textColor = isTop ? colors.forestGreen : colors.warning;
+    final label = isTop
+        ? l10n.approvedGateTierLabelTop
+        : l10n.approvedGateTierLabelStandard;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+      decoration: BoxDecoration(
+        color: bgColor,
+        border: Border.all(color: borderColor),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.dmSans(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: textColor,
+          letterSpacing: 0.3,
+        ),
+        textAlign: TextAlign.center,
       ),
     );
   }
@@ -235,9 +326,9 @@ class _ApprovalBadge extends StatelessWidget {
           height: 116,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: colors.brandGold.withValues(alpha: 0.07),
+            color: colors.forestGreen.withValues(alpha: 0.07),
             border: Border.all(
-              color: colors.brandGold.withValues(alpha: 0.15),
+              color: colors.forestGreen.withValues(alpha: 0.18),
               width: 1,
             ),
           ),
@@ -248,16 +339,16 @@ class _ApprovalBadge extends StatelessWidget {
           height: 88,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: colors.brandGold.withValues(alpha: 0.11),
+            color: colors.forestGreenSubtle,
             border: Border.all(
-              color: colors.brandGold.withValues(alpha: 0.5),
+              color: colors.forestGreen.withValues(alpha: 0.45),
               width: 1.5,
             ),
           ),
           child: Icon(
             Icons.check_rounded,
             size: 40,
-            color: colors.brandGold,
+            color: colors.forestGreen,
           ),
         ),
       ],

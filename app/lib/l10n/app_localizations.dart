@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// App name
   ///
   /// In en, this message translates to:
-  /// **'Luko'**
+  /// **'PR Dating'**
   String get appName;
 
   /// Confirm button
@@ -167,7 +167,7 @@ abstract class AppLocalizations {
   /// Welcome screen subtitle
   ///
   /// In en, this message translates to:
-  /// **'Apply to join Luko. We review every profile.'**
+  /// **'Apply to join PR Dating. We review every profile.'**
   String get authWelcomeSubtitle;
 
   /// Welcome page badge label (exclusivity marker)
@@ -230,11 +230,35 @@ abstract class AppLocalizations {
   /// **'You\'re In'**
   String get approvedGateTitle;
 
-  /// Approval gate page body text
+  /// Approval gate page body text (generic fallback)
   ///
   /// In en, this message translates to:
-  /// **'Congratulations! You\'ve passed the Luko review.\nOne last step — link your phone number to finish setting up your account.'**
+  /// **'Congratulations! You\'ve passed the PR Dating review.\nOne last step — link your phone number to finish setting up your account.'**
   String get approvedGateBody;
+
+  /// Approval gate page body — top tier (lifetime free)
+  ///
+  /// In en, this message translates to:
+  /// **'Congratulations! You\'ve passed the PR Dating review.\nAs a founding member (top 85%), you\'ll have free access to all features for life.\nOne last step — link your phone number to finish setting up your account.'**
+  String get approvedGateBodyTop;
+
+  /// Approval gate page body — standard tier (5-day free)
+  ///
+  /// In en, this message translates to:
+  /// **'Congratulations! You\'ve passed the PR Dating review.\nYou\'ll enjoy a 5-day free trial, after which you can subscribe to continue.\nOne last step — link your phone number to finish setting up your account.'**
+  String get approvedGateBodyStandard;
+
+  /// Approval gate page — top tier label
+  ///
+  /// In en, this message translates to:
+  /// **'Founding Member · Free Forever'**
+  String get approvedGateTierLabelTop;
+
+  /// Approval gate page — standard tier label
+  ///
+  /// In en, this message translates to:
+  /// **'5-Day Free Trial'**
+  String get approvedGateTierLabelStandard;
 
   /// Approval gate page CTA button
   ///
@@ -343,6 +367,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please enter a valid phone number'**
   String get authPhoneInvalid;
+
+  /// Shown when user selects an unsupported country code
+  ///
+  /// In en, this message translates to:
+  /// **'This country/region is not yet supported. Stay tuned!'**
+  String get phoneCountryUnsupported;
 
   /// Login page title
   ///
@@ -530,6 +560,18 @@ abstract class AppLocalizations {
   /// **'At least {min} photos required'**
   String applyPhotosMinRequired(int min);
 
+  /// iOS limited photo access hint text
+  ///
+  /// In en, this message translates to:
+  /// **'Limited access — some photos are hidden'**
+  String get applyPhotosLimitedHint;
+
+  /// iOS limited access: button to open system photo selection panel
+  ///
+  /// In en, this message translates to:
+  /// **'Add Photos'**
+  String get applyPhotosManageAccess;
+
   /// Gallery permission denied dialog title
   ///
   /// In en, this message translates to:
@@ -539,7 +581,7 @@ abstract class AppLocalizations {
   /// Gallery permission denied dialog body
   ///
   /// In en, this message translates to:
-  /// **'Luko needs access to your photo library to upload photos. Please enable it in Settings.'**
+  /// **'PR Dating needs access to your photo library to upload photos. Please enable it in Settings.'**
   String get permissionPhotoBody;
 
   /// Camera permission denied dialog title
@@ -551,7 +593,7 @@ abstract class AppLocalizations {
   /// Camera permission denied dialog body
   ///
   /// In en, this message translates to:
-  /// **'Luko needs camera access to take photos. Please enable it in Settings.'**
+  /// **'PR Dating needs camera access to take photos. Please enable it in Settings.'**
   String get permissionCameraBody;
 
   /// Open system settings button
@@ -872,29 +914,35 @@ abstract class AppLocalizations {
   /// **'Your profile doesn\'t meet our community standards at this time. You\'re welcome to reapply in 30 days.'**
   String get reviewRejectedBody;
 
-  /// Rejected screen title — soft rejection
+  /// Rejected screen title — hard rejection
   ///
   /// In en, this message translates to:
-  /// **'Not Quite Yet'**
+  /// **'Thank You for Applying'**
   String get reviewRejectedTitleSoft;
 
-  /// Rejected screen body — soft rejection
+  /// Rejected screen body — hard rejection
   ///
   /// In en, this message translates to:
-  /// **'Thanks for applying to Luko.\nYour current presentation doesn\'t quite meet our standards at this time.'**
+  /// **'Thanks for applying to PR Dating.\nWe reviewed your application carefully and are sorry that we can\'t approve it at this time.\nHere are some general tips that might be helpful:'**
   String get reviewRejectedBodySoft;
 
   /// Rejected screen title — potential tier
   ///
   /// In en, this message translates to:
-  /// **'You\'re Almost There'**
+  /// **'Almost There!'**
   String get reviewRejectedTitlePotential;
 
   /// Rejected screen body — potential tier
   ///
   /// In en, this message translates to:
-  /// **'We see something in you — but your photos aren\'t fully showcasing you yet.\nTry these tips before reapplying:'**
+  /// **'You\'re close to our standard — just not quite there yet.\nTry these tips before reapplying:'**
   String get reviewRejectedBodyPotential;
+
+  /// Soft-rejected page: admin feedback card title
+  ///
+  /// In en, this message translates to:
+  /// **'Review Feedback'**
+  String get reviewAdminFeedbackTitle;
 
   /// Improvement tip 1
   ///
@@ -914,29 +962,29 @@ abstract class AppLocalizations {
   /// **'Add a lifestyle photo that shows your personality'**
   String get reviewRejectedTip3;
 
-  /// Days remaining until reapply is allowed
-  ///
-  /// In en, this message translates to:
-  /// **'Reapply in {days} days'**
-  String reviewReapplyDays(int days);
-
-  /// Label shown when reapply is unlocked
-  ///
-  /// In en, this message translates to:
-  /// **'Ready to Reapply'**
-  String get reviewReapplyAvailable;
-
   /// Reapply CTA button
   ///
   /// In en, this message translates to:
   /// **'Reapply Now'**
   String get reviewReapplyButton;
 
-  /// Hint showing the exact date when reapply becomes available
+  /// Shows how many reapply attempts are left (max 3 total)
   ///
   /// In en, this message translates to:
-  /// **'Available after {date}'**
-  String reviewReapplyDateHint(String date);
+  /// **'{remaining} attempt(s) remaining'**
+  String reviewReapplyAttemptsLeft(int remaining);
+
+  /// Title shown when all application attempts are used up
+  ///
+  /// In en, this message translates to:
+  /// **'No More Attempts'**
+  String get reviewReapplyExhaustedTitle;
+
+  /// Body shown when all application attempts are used up
+  ///
+  /// In en, this message translates to:
+  /// **'Each account is limited to 3 application attempts. This account has reached the limit. Thank you for your interest in PR Dating.'**
+  String get reviewReapplyExhaustedBody;
 
   /// Discover tab title
   ///
@@ -1073,7 +1121,7 @@ abstract class AppLocalizations {
   /// Onboarding page 2 body
   ///
   /// In en, this message translates to:
-  /// **'Not algorithms. Real people.\n\nEvery account on Luko is reviewed by hand — because attitude can\'t be automated.\n'**
+  /// **'Not algorithms. Real people.\n\nEvery account on PR Dating is reviewed by hand — because attitude can\'t be automated.\n'**
   String get onboarding2Body;
 
   /// Onboarding page 3 title
@@ -1085,7 +1133,7 @@ abstract class AppLocalizations {
   /// Onboarding page 3 body
   ///
   /// In en, this message translates to:
-  /// **'No more endless scrolling.\n\nEvery day, Luko curates a small circle of people — each one genuinely worth your time.\n\nYou take yourself seriously.\nYou deserve someone who does too.'**
+  /// **'No more endless scrolling.\n\nEvery day, PR Dating curates a small circle of people — each one genuinely worth your time.\n\nYou take yourself seriously.\nYou deserve someone who does too.'**
   String get onboarding3Body;
 
   /// Onboarding page 1 background quote 1
@@ -1205,7 +1253,7 @@ abstract class AppLocalizations {
   /// Terms update page subtitle
   ///
   /// In en, this message translates to:
-  /// **'We\'ve updated our Terms of Service and Privacy Policy. Please review them to continue using Luko.'**
+  /// **'We\'ve updated our Terms of Service and Privacy Policy. Please review them to continue using PR Dating.'**
   String get termsUpdateSubtitle;
 
   /// Terms update accept button
@@ -1279,6 +1327,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'By continuing, you agree to our '**
   String get authConsentPrefix;
+
+  /// Hard rejection tip 1 (neutral, no appearance judgement)
+  ///
+  /// In en, this message translates to:
+  /// **'Authentic photos that show your true self tend to resonate best'**
+  String get reviewRejectedHardTip1;
+
+  /// Hard rejection tip 2
+  ///
+  /// In en, this message translates to:
+  /// **'A personal bio helps others get to know you in a more complete way'**
+  String get reviewRejectedHardTip2;
+
+  /// Hard rejection tip 3
+  ///
+  /// In en, this message translates to:
+  /// **'A variety of photos can show different sides of who you are'**
+  String get reviewRejectedHardTip3;
 }
 
 class _AppLocalizationsDelegate

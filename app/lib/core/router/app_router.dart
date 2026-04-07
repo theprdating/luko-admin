@@ -111,8 +111,11 @@ class _RouterNotifier extends ChangeNotifier {
     final status = _status;
 
     return switch (status) {
-      // 仍在確認 session，停在空白頁（與 native splash 同色，使用者看不到）
-      AppUserStatus.loading => path == '/' ? null : '/',
+      // 仍在確認 session，停在當前路徑。
+      // initialLocation 為 '/'，冷啟動自然停在空白頁。
+      // ⚠️ 不可 redirect 到 '/'：mid-flow 操作（updateUser / signInWithOtp）也會
+      //    觸發 auth event → loading 狀態，若此時 redirect 到 '/' 會打斷進行中的流程。
+      AppUserStatus.loading => null,
 
       // 未登入：同步判斷 onboarding 是否已看過，直接導向正確頁面
       AppUserStatus.unauthenticated => switch (path) {

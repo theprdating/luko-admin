@@ -50,9 +50,19 @@ function reapplyAfter(rejectionType: string): string | null {
   }
 }
 
-function buildApproveEmail(displayName: string): { subject: string; html: string } {
+function buildApproveEmail(displayName: string, qualityTier: string): { subject: string; html: string } {
+  const isTop = qualityTier === 'top'
+  const tierBlockHtml = isTop
+    ? `<div style="background:#eef7f1;border-radius:10px;padding:14px 16px;margin:20px 0;border:1px solid #b8ddc8;">
+         <p style="font-size:13px;font-weight:700;color:#2d6a4f;margin:0 0 6px;">創始成員 · 終生免費</p>
+         <p style="line-height:1.8;color:#444;margin:0;font-size:14px;">作為本批前 85% 的創始成員，您可<strong>終生免費</strong>使用 PR Dating 的所有功能。感謝您的早期支持！</p>
+       </div>`
+    : `<div style="background:#f5f0e8;border-radius:10px;padding:14px 16px;margin:20px 0;border:1px solid #e0c99a;">
+         <p style="font-size:13px;font-weight:700;color:#8a5c1a;margin:0 0 6px;">5 天免費體驗</p>
+         <p style="line-height:1.8;color:#444;margin:0;font-size:14px;">您可享有 <strong>5 天免費體驗</strong>，之後可訂閱方案繼續使用完整功能。</p>
+       </div>`
   return {
-    subject: '恭喜！您已通過 Luko 資格審核',
+    subject: '恭喜！您已通過 PR Dating 資格審核',
     html: `<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -61,11 +71,12 @@ function buildApproveEmail(displayName: string): { subject: string; html: string
 </head>
 <body style="margin:0;padding:0;background:#f9f9f9;">
   <div style="font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;max-width:480px;margin:0 auto;padding:40px 24px;color:#1a1a1a;">
-    <p style="font-size:20px;font-weight:600;color:#C9A96E;margin:0 0 24px;">LUKO</p>
+    <p style="font-size:20px;font-weight:600;color:#C9A96E;margin:0 0 24px;">PR DATING</p>
     <h1 style="font-size:22px;font-weight:700;margin:0 0 16px;">恭喜，${displayName}！</h1>
-    <p style="line-height:1.8;color:#444;margin:0 0 16px;">您的申請已通過我們的資格審核。<br>現在可以開啟 App 開始探索了。</p>
+    <p style="line-height:1.8;color:#444;margin:0 0 4px;">您的申請已通過我們的資格審核。<br>現在可以開啟 App 開始探索了。</p>
+    ${tierBlockHtml}
     <p style="font-size:12px;color:#999;margin:32px 0 0;line-height:1.7;">
-      Luko 是一個精選制約會社群，每位成員都經過人工審核。<br>
+      PR Dating 是一個精選制約會社群，每位成員都經過人工審核。<br>
       感謝您成為我們社群的一員。
     </p>
   </div>
@@ -77,25 +88,42 @@ function buildApproveEmail(displayName: string): { subject: string; html: string
 function buildRejectEmail(
   displayName: string,
   rejectionType: string,
+  reviewNote?: string,
 ): { subject: string; html: string } {
-  const messages: Record<string, { title: string; body: string }> = {
-    soft: {
-      title: '感謝您的申請',
-      body: `${displayName}，感謝您申請 Luko。<br><br>
-        很遺憾，目前暫時無法通過您的審核。<br>
-        您可以在 <strong>30 天後</strong>重新提交申請。`,
-    },
-    hard: {
-      title: '感謝您的申請',
-      body: `${displayName}，感謝您申請 Luko。<br><br>
-        很遺憾，您的申請目前無法通過審核。`,
-    },
+  if (rejectionType === 'soft') {
+    const noteHtml = reviewNote
+      ? `<div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
+           <p style="font-size:13px;font-weight:600;color:#1a1a1a;margin:0 0 8px;">審核建議</p>
+           <p style="line-height:1.8;color:#444;margin:0;font-size:14px;">${reviewNote}</p>
+         </div>`
+      : `<p style="line-height:1.8;color:#444;margin:0 0 16px;">
+           建議您留意照片的清晰度與自然感，並讓個人簡介真實呈現自己。<br>
+           <strong>30 天後</strong>可重新提交申請。
+         </p>`
+    return {
+      subject: '關於您的 PR Dating 申請',
+      html: `<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+<body style="margin:0;padding:0;background:#f9f9f9;">
+  <div style="font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;max-width:480px;margin:0 auto;padding:40px 24px;color:#1a1a1a;">
+    <p style="font-size:20px;font-weight:600;color:#C9A96E;margin:0 0 24px;">PR DATING</p>
+    <h1 style="font-size:20px;font-weight:700;margin:0 0 16px;">差一點點，${displayName}</h1>
+    <p style="line-height:1.8;color:#444;margin:0 0 16px;">感謝您申請 PR Dating。<br>您與通過標準的距離不遠，以下是一些建議，幫助您在重新申請時提高通過機會。</p>
+    ${noteHtml}
+    <p style="font-size:12px;color:#999;margin:32px 0 0;">如有疑問，請聯繫 theprdating@gmail.com</p>
+  </div>
+</body>
+</html>`,
+    }
   }
 
-  const msg = messages[rejectionType] ?? messages.soft
-
+  // hard rejection
   return {
-    subject: '關於您的 Luko 申請',
+    subject: '關於您的 PR Dating 申請',
     html: `<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -104,25 +132,95 @@ function buildRejectEmail(
 </head>
 <body style="margin:0;padding:0;background:#f9f9f9;">
   <div style="font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;max-width:480px;margin:0 auto;padding:40px 24px;color:#1a1a1a;">
-    <p style="font-size:20px;font-weight:600;color:#C9A96E;margin:0 0 24px;">LUKO</p>
-    <h1 style="font-size:20px;font-weight:700;margin:0 0 16px;">${msg.title}</h1>
-    <p style="line-height:1.8;color:#444;margin:0 0 16px;">${msg.body}</p>
-    <p style="font-size:12px;color:#999;margin:32px 0 0;">如有疑問，請聯繫 support@luko.app</p>
+    <p style="font-size:20px;font-weight:600;color:#C9A96E;margin:0 0 24px;">PR DATING</p>
+    <h1 style="font-size:20px;font-weight:700;margin:0 0 16px;">感謝您的申請</h1>
+    <p style="line-height:1.8;color:#444;margin:0 0 16px;">${displayName}，感謝您申請 PR Dating。<br>我們仔細審核了您的申請，目前很遺憾無法讓您通過。</p>
+    <p style="font-size:12px;color:#999;margin:32px 0 0;">如有疑問，請聯繫 theprdating@gmail.com</p>
   </div>
 </body>
 </html>`,
   }
 }
 
-// ── Gmail SMTP via denomailer ─────────────────────────────────────────────────
+// ── Gmail SMTP (raw, base64) ──────────────────────────────────────────────────
+//
+// 直接使用 Deno.connectTls 發送原始 MIME 郵件（base64 編碼）
+// 避免 denomailer 的 quoted-printable 中文亂碼問題
 //
 // 需要設定的 Supabase Secrets:
 //   GMAIL_USER=your-gmail@gmail.com
 //   GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx   ← Gmail App 密碼（非登入密碼）
-//
-// 取得 App 密碼：Google 帳號 → 安全性 → 兩步驟驗證開啟後 → 應用程式密碼 → 建立
 
-import { SMTPClient } from 'https://deno.land/x/denomailer@1.6.0/mod.ts'
+function _encodeRFC2047(text: string): string {
+  const bytes = new TextEncoder().encode(text)
+  let binary = ''
+  bytes.forEach((b) => (binary += String.fromCharCode(b)))
+  return `=?utf-8?B?${btoa(binary)}?=`
+}
+
+function _toBase64Lines(text: string): string {
+  const bytes = new TextEncoder().encode(text)
+  let binary = ''
+  bytes.forEach((b) => (binary += String.fromCharCode(b)))
+  const b64 = btoa(binary)
+  return b64.match(/.{1,76}/g)?.join('\r\n') ?? b64
+}
+
+async function _smtpSend(
+  user: string,
+  pass: string,
+  fromName: string,
+  to: string,
+  subject: string,
+  html: string,
+): Promise<void> {
+  const conn = await Deno.connectTls({ hostname: 'smtp.gmail.com', port: 465 })
+  const enc = new TextEncoder()
+  const dec = new TextDecoder()
+  const buf = new Uint8Array(16384)
+
+  const recv = async (): Promise<string> => {
+    const n = await conn.read(buf)
+    return dec.decode(buf.subarray(0, n ?? 0))
+  }
+  const send = async (cmd: string): Promise<void> => {
+    await conn.write(enc.encode(cmd + '\r\n'))
+  }
+
+  const rawMessage = [
+    'MIME-Version: 1.0',
+    `From: ${fromName} <${user}>`,
+    `To: ${to}`,
+    `Subject: ${_encodeRFC2047(subject)}`,
+    'Content-Type: text/html; charset=utf-8',
+    'Content-Transfer-Encoding: base64',
+    '',
+    _toBase64Lines(html),
+  ].join('\r\n')
+
+  try {
+    await recv()                     // 220 greeting
+    await send('EHLO smtp.gmail.com')
+    await recv()                     // 250 features
+    await send('AUTH LOGIN')
+    await recv()                     // 334 Username:
+    await send(btoa(user))
+    await recv()                     // 334 Password:
+    await send(btoa(pass))
+    await recv()                     // 235 authenticated
+    await send(`MAIL FROM:<${user}>`)
+    await recv()                     // 250
+    await send(`RCPT TO:<${to}>`)
+    await recv()                     // 250
+    await send('DATA')
+    await recv()                     // 354 start input
+    await send(rawMessage + '\r\n.')
+    await recv()                     // 250 queued
+    await send('QUIT')
+  } finally {
+    conn.close()
+  }
+}
 
 async function sendEmail(
   to: string,
@@ -137,29 +235,10 @@ async function sendEmail(
     return
   }
 
-  const client = new SMTPClient({
-    connection: {
-      hostname: 'smtp.gmail.com',
-      port: 465,
-      tls: true,
-      auth: {
-        username: gmailUser,
-        password: gmailPass,
-      },
-    },
-  })
-
   try {
-    await client.send({
-      from: `Luko <${gmailUser}>`,
-      to,
-      subject,
-      html,
-    })
+    await _smtpSend(gmailUser, gmailPass, 'PR Dating', to, subject, html)
   } catch (e) {
     console.error('[review-application] Gmail send failed:', e)
-  } finally {
-    await client.close()
   }
 }
 
@@ -495,15 +574,19 @@ serve(async (req) => {
     }).eq('user_id', app.user_id)
 
     // f) Send notifications
+    const fcmApproveBody = quality_tier === 'top'
+      ? '您的申請已通過！作為創始成員，可終生免費使用 PR Dating 🎉'
+      : '您的 PR Dating 申請已通過審核，快來開始 5 天免費體驗吧！'
+
     await sendFcmNotification(
       app.user_id,
       '恭喜！申請通過 🎉',
-      '您的 Luko 申請已通過審核，快來探索吧！',
-      { type: 'application_approved' },
+      fcmApproveBody,
+      { type: 'application_approved', quality_tier: quality_tier! },
     )
 
     if (applicantEmail) {
-      const { subject, html } = buildApproveEmail(app.display_name)
+      const { subject, html } = buildApproveEmail(app.display_name, quality_tier!)
       await sendEmail(applicantEmail, subject, html)
     }
 
@@ -533,8 +616,8 @@ serve(async (req) => {
 
     // FCM notification
     const fcmMessages: Record<string, string> = {
-      soft: '目前暫時無法通過，30 天後可重新申請。',
-      hard: '很遺憾目前無法通過審核。',
+      soft: '差一點點！我們有一些建議給您，30 天後可重新申請。',
+      hard: '很遺憾，您的申請目前無法通過審核。',
     }
 
     await sendFcmNotification(
@@ -545,7 +628,7 @@ serve(async (req) => {
     )
 
     if (applicantEmail) {
-      const { subject, html } = buildRejectEmail(app.display_name, rejection_type!)
+      const { subject, html } = buildRejectEmail(app.display_name, rejection_type!, review_note)
       await sendEmail(applicantEmail, subject, html)
     }
 

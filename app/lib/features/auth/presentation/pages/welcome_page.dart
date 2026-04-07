@@ -313,7 +313,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                           Opacity(
                             opacity: (_brandFade.value * exitF).clamp(0.0, 1.0),
                             child: Text(
-                              'LUKO',
+                              'PR Dating',
                               style: GoogleFonts.dmSans(
                                 fontSize: 22,
                                 fontWeight: FontWeight.w200,

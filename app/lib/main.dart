@@ -14,6 +14,7 @@ import 'core/router/app_router.dart';
 import 'core/services/fcm_service.dart';
 import 'core/supabase/supabase_config.dart';
 import 'core/theme/app_theme.dart';
+import 'features/auth/providers/auth_provider.dart';
 import 'l10n/app_localizations.dart';
 
 Future<void> main() async {
@@ -87,11 +88,14 @@ class LukoApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // FCM 審核結果通知 → 刷新 App 狀態機，觸發 router redirect
+    FcmService.setStatusChangeCallback(() => ref.invalidate(appUserStatusProvider));
+
     // routerProvider 持有 GoRouter 實例（含 redirect 邏輯）
     final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
-      title: 'Luko',
+      title: 'PR Dating',
       debugShowCheckedModeBanner: false,
 
       // ── Theme ────────────────────────────────────────────────────────

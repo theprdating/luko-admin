@@ -19,7 +19,7 @@ class DiscoverPage extends StatelessWidget {
         backgroundColor: colors.backgroundWarm,
         elevation: 0,
         title: Text(
-          'Luko',
+          'PR Dating',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
             color: colors.forestGreen,
             fontWeight: FontWeight.w700,

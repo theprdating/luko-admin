@@ -19,6 +19,50 @@ import '../../../../l10n/app_localizations.dart';
 // ── 步驟狀態 ──────────────────────────────────────────────────────────────────
 enum _Step { phoneInput, otpVerify }
 
+// ── 國碼資料 ──────────────────────────────────────────────────────────────────
+
+class _CountryInfo {
+  const _CountryInfo({
+    required this.flag,
+    required this.nameZh,
+    required this.code,
+    required this.isSupported,
+    this.maxDigits = 15,
+  });
+
+  final String flag;
+  final String nameZh;
+
+  /// E.164 country code, e.g. '+886'
+  final String code;
+
+  /// 目前 Twilio 是否開啟此國碼
+  final bool isSupported;
+
+  /// 輸入框最大位數（含 trunk prefix 0）
+  final int maxDigits;
+}
+
+/// 目前支援的國碼清單。
+/// isSupported 由後台 Twilio 設定決定，此為前端顯示用旗標。
+const _kCountries = [
+  _CountryInfo(flag: '🇹🇼', nameZh: '台灣',  code: '+886', isSupported: true,  maxDigits: 10),
+  _CountryInfo(flag: '🇯🇵', nameZh: '日本',  code: '+81',  isSupported: false, maxDigits: 11),
+  _CountryInfo(flag: '🇭🇰', nameZh: '香港',  code: '+852', isSupported: false, maxDigits: 8),
+  _CountryInfo(flag: '🇸🇬', nameZh: '新加坡', code: '+65',  isSupported: false, maxDigits: 8),
+  _CountryInfo(flag: '🇰🇷', nameZh: '韓國',  code: '+82',  isSupported: false, maxDigits: 11),
+  _CountryInfo(flag: '🇲🇾', nameZh: '馬來西亞', code: '+60', isSupported: false, maxDigits: 11),
+  _CountryInfo(flag: '🇺🇸', nameZh: '美國',  code: '+1',   isSupported: false, maxDigits: 10),
+  _CountryInfo(flag: '🇨🇦', nameZh: '加拿大', code: '+1',   isSupported: false, maxDigits: 10),
+  _CountryInfo(flag: '🇦🇺', nameZh: '澳洲',  code: '+61',  isSupported: false, maxDigits: 10),
+  _CountryInfo(flag: '🇬🇧', nameZh: '英國',  code: '+44',  isSupported: false, maxDigits: 10),
+];
+
+// 直接用 constant value，不能用 _kCountries[0]（list indexing 不是 const expression）
+const _kDefaultCountry = _CountryInfo(
+  flag: '🇹🇼', nameZh: '台灣', code: '+886', isSupported: true, maxDigits: 10,
+);
+
 /// 手機 OTP 驗證流程（apply + login 共用）
 ///
 /// 使用方式：
@@ -76,13 +120,14 @@ class _PhoneOtpFlowState extends ConsumerState<PhoneOtpFlow> {
   String? _phoneError;
   String? _otpError;
 
+  _CountryInfo _selectedCountry = _kDefaultCountry;
+
   Timer? _resendTimer;
   int _resendSeconds = 0;
 
   // _DarkOtpFieldState.clear() 用
   final GlobalKey<_DarkOtpFieldState> _otpKey = GlobalKey();
 
-  static const String _countryCode = '+886';
   static const int _resendCooldown = 60;
 
   @override
@@ -93,23 +138,35 @@ class _PhoneOtpFlowState extends ConsumerState<PhoneOtpFlow> {
 
   // ── Phone Input Logic ────────────────────────────────────────────────────
 
+  /// 將本地號碼轉換為 E.164 格式
+  /// 台灣：0912345678 / 912345678 → +886912345678
+  /// 其他：strip leading 0 if present, prepend country code
   String _toE164(String localNumber) {
     final digits = localNumber.replaceAll(RegExp(r'\D'), '');
-    if (digits.startsWith('0')) {
-      return '$_countryCode${digits.substring(1)}';
-    }
-    return '$_countryCode$digits';
+    final stripped = digits.startsWith('0') ? digits.substring(1) : digits;
+    return '${_selectedCountry.code}$stripped';
   }
 
-  bool _isValidPhone(String digits) {
-    final cleaned = digits.replaceAll(RegExp(r'\D'), '');
-    return cleaned.startsWith('09') && cleaned.length == 10 ||
-        cleaned.startsWith('9') && cleaned.length == 9;
+  bool _isValidPhone(String input) {
+    final digits = input.replaceAll(RegExp(r'\D'), '');
+    if (_selectedCountry.code == '+886') {
+      // 台灣：09XXXXXXXX（10碼）或 9XXXXXXXX（9碼）
+      return (digits.startsWith('09') && digits.length == 10) ||
+          (digits.startsWith('9') && digits.length == 9);
+    }
+    // 其他國家：7–15 位基本驗證（unsupported 會在 _sendOtp 攔截）
+    return digits.length >= 7 && digits.length <= 15;
   }
 
   Future<void> _sendOtp(String localPhone) async {
     final l10n = AppLocalizations.of(context)!;
     final cleaned = localPhone.replaceAll(RegExp(r'\D'), '');
+
+    // 未支援的國碼：不發送，顯示提示
+    if (!_selectedCountry.isSupported) {
+      setState(() => _phoneError = l10n.phoneCountryUnsupported);
+      return;
+    }
 
     if (!_isValidPhone(cleaned)) {
       setState(() => _phoneError = l10n.authPhoneInvalid);
@@ -123,8 +180,8 @@ class _PhoneOtpFlowState extends ConsumerState<PhoneOtpFlow> {
 
     _e164Phone = _toE164(cleaned);
     _phoneDisplay = cleaned.startsWith('0')
-        ? '+886 ${cleaned.substring(1)}'
-        : '+886 $cleaned';
+        ? '${_selectedCountry.code} ${cleaned.substring(1)}'
+        : '${_selectedCountry.code} $cleaned';
 
     try {
       await ref.read(supabaseProvider).auth.signInWithOtp(
@@ -139,16 +196,31 @@ class _PhoneOtpFlowState extends ConsumerState<PhoneOtpFlow> {
       _startResendTimer();
     } on AuthException catch (e) {
       if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-        _phoneError = e.message;
-      });
+      // Rate-limit 類錯誤（"you can only request this after X seconds"）
+      // 代表前一個 OTP 仍有效，直接導向輸入頁讓用戶填寫
+      final isRateLimit = e.message.contains('seconds') ||
+          e.message.toLowerCase().contains('rate') ||
+          e.message.toLowerCase().contains('limit');
+      if (isRateLimit) {
+        setState(() {
+          _step = _Step.otpVerify;
+          _isLoading = false;
+        });
+        _startResendTimer();
+      } else {
+        setState(() {
+          _isLoading = false;
+          _phoneError = e.message;
+        });
+      }
     } catch (_) {
+      // 網路逾時或未知錯誤：Twilio 很可能已送出 SMS，直接導向 OTP 輸入頁
       if (!mounted) return;
       setState(() {
+        _step = _Step.otpVerify;
         _isLoading = false;
-        _phoneError = AppLocalizations.of(context)!.commonError;
       });
+      _startResendTimer();
     }
   }
 
@@ -221,6 +293,28 @@ class _PhoneOtpFlowState extends ConsumerState<PhoneOtpFlow> {
     });
   }
 
+  // ── Country Picker ───────────────────────────────────────────────────────
+
+  void _showCountryPicker() {
+    final colors = Theme.of(context).extension<AppColors>()!;
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => _CountryPickerSheet(
+        colors: colors,
+        selectedName: _selectedCountry.nameZh,
+        onSelected: (country) {
+          setState(() {
+            _selectedCountry = country;
+            _phoneError = null;
+          });
+          Navigator.of(context).pop();
+        },
+      ),
+    );
+  }
+
   // ── Back ─────────────────────────────────────────────────────────────────
 
   void _backToPhone() => setState(() {
@@ -242,30 +336,48 @@ class _PhoneOtpFlowState extends ConsumerState<PhoneOtpFlow> {
           widget.onBack?.call();
         }
       },
-      child: switch (_step) {
-        _Step.phoneInput => _PhoneInputView(
-            title: widget.title,
-            subtitle: widget.subtitle,
-            errorText: _phoneError,
-            isLoading: _isLoading,
-            onSend: _sendOtp,
-            onBack: widget.onBack,
-            debugSkipRoute: widget.debugSkipRoute,
-          ),
-        _Step.otpVerify => _OtpVerifyView(
-            otpKey: _otpKey,
-            phoneMasked: _phoneDisplay,
-            errorText: _otpError,
-            isLoading: _isLoading,
-            resendSeconds: _resendSeconds,
-            onCompleted: _verifyOtp,
-            onResend: () {
-              _otpKey.currentState?.clear();
-              _backToPhone();
-            },
-            onChangePhone: _backToPhone,
-          ),
-      },
+      // AnimatedSwitcher 讓 phone→OTP 有滑入感，貼近頁面跳轉體驗
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 320),
+        transitionBuilder: (child, animation) {
+          final slide = Tween<Offset>(
+            begin: const Offset(0.08, 0),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(position: slide, child: child),
+          );
+        },
+        child: switch (_step) {
+          _Step.phoneInput => _PhoneInputView(
+              key: const ValueKey('phone'),
+              title: widget.title,
+              subtitle: widget.subtitle,
+              errorText: _phoneError,
+              isLoading: _isLoading,
+              selectedCountry: _selectedCountry,
+              onCountryTap: _showCountryPicker,
+              onSend: _sendOtp,
+              onBack: widget.onBack,
+              debugSkipRoute: widget.debugSkipRoute,
+            ),
+          _Step.otpVerify => _OtpVerifyView(
+              key: const ValueKey('otp'),
+              otpKey: _otpKey,
+              phoneMasked: _phoneDisplay,
+              errorText: _otpError,
+              isLoading: _isLoading,
+              resendSeconds: _resendSeconds,
+              onCompleted: _verifyOtp,
+              onResend: () {
+                _otpKey.currentState?.clear();
+                _backToPhone();
+              },
+              onChangePhone: _backToPhone,
+            ),
+        },
+      ),
     );
   }
 }
@@ -276,10 +388,13 @@ class _PhoneOtpFlowState extends ConsumerState<PhoneOtpFlow> {
 
 class _PhoneInputView extends StatefulWidget {
   const _PhoneInputView({
+    super.key,
     required this.title,
     required this.subtitle,
     required this.errorText,
     required this.isLoading,
+    required this.selectedCountry,
+    required this.onCountryTap,
     required this.onSend,
     this.onBack,
     this.debugSkipRoute,
@@ -289,6 +404,8 @@ class _PhoneInputView extends StatefulWidget {
   final String subtitle;
   final String? errorText;
   final bool isLoading;
+  final _CountryInfo selectedCountry;
+  final VoidCallback onCountryTap;
   final ValueChanged<String> onSend;
   final VoidCallback? onBack;
   final String? debugSkipRoute;
@@ -310,12 +427,13 @@ class _PhoneInputViewState extends State<_PhoneInputView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).extension<AppColors>()!;
-    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
+    final isUnsupported = !widget.selectedCountry.isSupported;
 
     return Scaffold(
+      // resizeToAvoidBottomInset: true（預設）讓 Scaffold 自動縮短 body
+      // 使 CTA 按鈕自然浮在鍵盤上方，無需手動追蹤 viewInsets
       backgroundColor: colors.brandBg,
-      resizeToAvoidBottomInset: false,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -338,8 +456,7 @@ class _PhoneInputViewState extends State<_PhoneInputView> {
           // ── 可捲動主內容 ──────────────────────────────────────────────
           Expanded(
             child: SingleChildScrollView(
-              keyboardDismissBehavior:
-                  ScrollViewKeyboardDismissBehavior.onDrag,
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               padding: const EdgeInsets.fromLTRB(28, 32, 28, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -369,71 +486,83 @@ class _PhoneInputViewState extends State<_PhoneInputView> {
                   ),
                   const SizedBox(height: 36),
 
-                  // ── 區碼 + 手機輸入 ───────────────────────────────────
+                  // ── 國碼選擇 + 手機輸入 ───────────────────────────────
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _DarkCountryBadge(colors: colors),
+                      _DarkCountryButton(
+                        country: widget.selectedCountry,
+                        onTap: widget.onCountryTap,
+                        colors: colors,
+                      ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: _DarkPhoneField(
                           controller: _controller,
                           hint: l10n.authPhoneHint,
                           errorText: widget.errorText,
-                          onSubmitted: (_) =>
-                              widget.onSend(_controller.text),
+                          maxLength: widget.selectedCountry.maxDigits,
+                          onSubmitted: (_) => widget.onSend(_controller.text),
                           colors: colors,
                         ),
                       ),
                     ],
                   ),
 
+                  // ── 未支援國碼提示 ────────────────────────────────────
+                  if (isUnsupported) ...[
+                    const SizedBox(height: 10),
+                    _UnsupportedCountryBanner(
+                      message: l10n.phoneCountryUnsupported,
+                      colors: colors,
+                    ),
+                  ],
+
                 ],
               ),
             ),
           ),
 
-          // ── 固定底部：CTA + 同意告知（隨鍵盤上推）───────────────────
-          AnimatedPadding(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOutCubic,
-            padding: EdgeInsets.fromLTRB(
-              28, AppSpacing.sm, 28,
-              bottomInset > 0
-                  ? bottomInset + AppSpacing.md
-                  : bottomPadding + AppSpacing.xl,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _DarkCtaButton(
-                  label: l10n.authSendCode,
-                  onPressed: () => widget.onSend(_controller.text),
-                  isLoading: widget.isLoading,
-                  colors: colors,
-                ),
-                const SizedBox(height: 10),
-                _ConsentNotice(colors: colors),
-                // ── Dev 跳過（僅 debug build）─────────────────────────
-                if (widget.debugSkipRoute != null) ...[
-                  const SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: () => context.go(widget.debugSkipRoute!),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Center(
-                        child: Text(
-                          '⚙ Dev: Skip →',
-                          style: GoogleFonts.dmSans(
-                            fontSize: 11,
-                            color: colors.brandGold.withValues(alpha: 0.6),
+          // ── 固定底部：CTA + 同意告知（Scaffold 縮短時自然浮在鍵盤上）
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                28, AppSpacing.sm, 28,
+                bottomPadding > 0 ? 0 : AppSpacing.lg,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _DarkCtaButton(
+                    label: l10n.authSendCode,
+                    onPressed: isUnsupported ? null : () => widget.onSend(_controller.text),
+                    isLoading: widget.isLoading,
+                    colors: colors,
+                  ),
+                  const SizedBox(height: 10),
+                  _ConsentNotice(colors: colors),
+                  // ── Dev 跳過（僅 debug build）─────────────────────────
+                  if (widget.debugSkipRoute != null) ...[
+                    const SizedBox(height: 8),
+                    GestureDetector(
+                      onTap: () => context.go(widget.debugSkipRoute!),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Center(
+                          child: Text(
+                            '⚙ Dev: Skip →',
+                            style: GoogleFonts.dmSans(
+                              fontSize: 11,
+                              color: colors.brandGold.withValues(alpha: 0.6),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
 
@@ -449,6 +578,7 @@ class _PhoneInputViewState extends State<_PhoneInputView> {
 
 class _OtpVerifyView extends StatelessWidget {
   const _OtpVerifyView({
+    super.key,
     required this.otpKey,
     required this.phoneMasked,
     required this.errorText,
@@ -472,12 +602,10 @@ class _OtpVerifyView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).extension<AppColors>()!;
-    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
 
     return Scaffold(
       backgroundColor: colors.brandBg,
-      resizeToAvoidBottomInset: false,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -508,8 +636,7 @@ class _OtpVerifyView extends StatelessWidget {
           // ── 可捲動主內容 ──────────────────────────────────────────────
           Expanded(
             child: SingleChildScrollView(
-              keyboardDismissBehavior:
-                  ScrollViewKeyboardDismissBehavior.onDrag,
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               padding: const EdgeInsets.fromLTRB(28, 32, 28, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -577,8 +704,7 @@ class _OtpVerifyView extends StatelessWidget {
                                 onTap: onResend,
                                 behavior: HitTestBehavior.opaque,
                                 child: Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 6),
+                                  padding: const EdgeInsets.symmetric(vertical: 6),
                                   child: Text(
                                     l10n.authOtpResend,
                                     style: GoogleFonts.dmSans(
@@ -600,11 +726,7 @@ class _OtpVerifyView extends StatelessWidget {
           ),
 
           // ── 底部安全距離 ──────────────────────────────────────────────
-          SizedBox(
-            height: bottomInset > 0
-                ? bottomInset + AppSpacing.md
-                : bottomPadding + AppSpacing.md,
-          ),
+          SizedBox(height: bottomPadding + AppSpacing.md),
 
         ],
       ),
@@ -614,9 +736,6 @@ class _OtpVerifyView extends StatelessWidget {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 品牌小標頭（compact，用於 Login / Apply 頁頂部）
-//
-// Icon(56px) + LUKO + 金線 + CURATED DATING
-// [badge]：OTP 步驟才傳入手機號 badge，Phone 步驟傳 null
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _DarkBrandMini extends StatelessWidget {
@@ -660,7 +779,7 @@ class _DarkBrandMini extends StatelessWidget {
 
           // LUKO
           Text(
-            'LUKO',
+            'PR Dating',
             style: GoogleFonts.dmSans(
               fontSize: 15,
               fontWeight: FontWeight.w200,
@@ -716,40 +835,250 @@ class _DarkBrandMini extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 深色國碼徽章（🇹🇼 +886）
+// 可點擊國碼選擇器（深色背景）
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _DarkCountryBadge extends StatelessWidget {
-  const _DarkCountryBadge({required this.colors});
+class _DarkCountryButton extends StatelessWidget {
+  const _DarkCountryButton({
+    required this.country,
+    required this.onTap,
+    required this.colors,
+  });
+
+  final _CountryInfo country;
+  final VoidCallback onTap;
+  final AppColors colors;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 50,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.07),
+          borderRadius: BorderRadius.circular(AppRadius.input),
+          border: Border.all(
+            color: country.isSupported
+                ? Colors.white.withValues(alpha: 0.15)
+                : Colors.orange.withValues(alpha: 0.35),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(country.flag, style: const TextStyle(fontSize: 16)),
+            const SizedBox(width: AppSpacing.xs),
+            Text(
+              country.code,
+              style: GoogleFonts.dmSans(
+                color: colors.brandOnDark,
+                fontWeight: FontWeight.w500,
+                fontSize: 15,
+                letterSpacing: 0.3,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 16,
+              color: colors.brandCaption,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 未支援國碼警告條（深色背景）
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _UnsupportedCountryBanner extends StatelessWidget {
+  const _UnsupportedCountryBanner({required this.message, required this.colors});
+  final String message;
   final AppColors colors;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 50,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.07),
-        borderRadius: BorderRadius.circular(AppRadius.input),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.15),
-        ),
+        color: Colors.orange.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('🇹🇼', style: TextStyle(fontSize: 16)),
-          const SizedBox(width: AppSpacing.xs),
-          Text(
-            '+886',
-            style: GoogleFonts.dmSans(
-              color: colors.brandOnDark,
-              fontWeight: FontWeight.w500,
-              fontSize: 15,
-              letterSpacing: 0.3,
+          const Icon(Icons.info_outline_rounded, size: 15, color: Colors.orange),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: GoogleFonts.dmSans(
+                fontSize: 12,
+                color: Colors.orange.withValues(alpha: 0.9),
+                height: 1.5,
+              ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 國碼選擇底部表單（深色）
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _CountryPickerSheet extends StatelessWidget {
+  const _CountryPickerSheet({
+    required this.colors,
+    required this.selectedName,
+    required this.onSelected,
+  });
+
+  final AppColors colors;
+  final String selectedName;
+  final ValueChanged<_CountryInfo> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.paddingOf(context).bottom;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.brandSpot,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 拖曳把手
+          const SizedBox(height: 12),
+          Container(
+            width: 36,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // 標題
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              children: [
+                Text(
+                  '選擇國碼',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: colors.brandOnDark,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // 國家清單
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _kCountries.length,
+            itemBuilder: (_, i) {
+              final c = _kCountries[i];
+              // 用 nameZh 精確比對（因 +1 被美/加兩國共用）
+              final isSelected = c.nameZh == selectedName;
+              return _CountryTile(
+                country: c,
+                isSelected: isSelected,
+                colors: colors,
+                onTap: () => onSelected(c),
+              );
+            },
+          ),
+
+          SizedBox(height: bottomPadding + 16),
+        ],
+      ),
+    );
+  }
+}
+
+class _CountryTile extends StatelessWidget {
+  const _CountryTile({
+    required this.country,
+    required this.isSelected,
+    required this.colors,
+    required this.onTap,
+  });
+
+  final _CountryInfo country;
+  final bool isSelected;
+  final AppColors colors;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: country.isSupported ? onTap : null,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+        child: Row(
+          children: [
+            Text(country.flag, style: const TextStyle(fontSize: 20)),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                country.nameZh,
+                style: GoogleFonts.dmSans(
+                  fontSize: 15,
+                  color: country.isSupported
+                      ? colors.brandOnDark
+                      : colors.brandCaption,
+                ),
+              ),
+            ),
+            Text(
+              country.code,
+              style: GoogleFonts.dmSans(
+                fontSize: 14,
+                color: colors.brandCaption,
+              ),
+            ),
+            const SizedBox(width: 12),
+            if (isSelected)
+              Icon(Icons.check_rounded, size: 18, color: colors.brandGold)
+            else if (!country.isSupported)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '即將開放',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 10,
+                    color: Colors.orange.withValues(alpha: 0.8),
+                  ),
+                ),
+              )
+            else
+              const SizedBox(width: 18),
+          ],
+        ),
       ),
     );
   }
@@ -765,6 +1094,7 @@ class _DarkPhoneField extends StatelessWidget {
     required this.colors,
     this.hint,
     this.errorText,
+    this.maxLength = 10,
     this.onSubmitted,
   });
 
@@ -772,6 +1102,7 @@ class _DarkPhoneField extends StatelessWidget {
   final AppColors colors;
   final String? hint;
   final String? errorText;
+  final int maxLength;
   final ValueChanged<String>? onSubmitted;
 
   static const _kErrorColor = Color(0xFFCF6679);
@@ -802,7 +1133,7 @@ class _DarkPhoneField extends StatelessWidget {
             textInputAction: TextInputAction.done,
             inputFormatters: [
               FilteringTextInputFormatter.digitsOnly,
-              LengthLimitingTextInputFormatter(10),
+              LengthLimitingTextInputFormatter(maxLength),
             ],
             onSubmitted: onSubmitted,
             style: GoogleFonts.dmSans(
@@ -842,22 +1173,22 @@ class _DarkPhoneField extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 深色 OTP 輸入（複用 LukoOtpField 邏輯，但使用深色樣式）
+// 深色背景 OTP 輸入（複用 LukoOtpField 邏輯，但使用深色樣式）
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _DarkOtpField extends StatefulWidget {
   const _DarkOtpField({
     super.key,
     required this.colors,
-    this.length = 6,
     this.onCompleted,
     this.enabled = true,
   });
 
   final AppColors colors;
-  final int length;
   final ValueChanged<String>? onCompleted;
   final bool enabled;
+
+  static const int _length = 6;
 
   @override
   State<_DarkOtpField> createState() => _DarkOtpFieldState();
@@ -871,8 +1202,8 @@ class _DarkOtpFieldState extends State<_DarkOtpField> {
   void initState() {
     super.initState();
     _controllers =
-        List.generate(widget.length, (_) => TextEditingController());
-    _focusNodes = List.generate(widget.length, (i) {
+        List.generate(_DarkOtpField._length, (_) => TextEditingController());
+    _focusNodes = List.generate(_DarkOtpField._length, (i) {
       final node = FocusNode();
       node.onKeyEvent = (_, event) => _handleKeyEvent(i, event);
       return node;
@@ -908,8 +1239,8 @@ class _DarkOtpFieldState extends State<_DarkOtpField> {
     // 貼上整串 OTP
     if (value.length > 1) {
       final digits = value.replaceAll(RegExp(r'\D'), '');
-      if (digits.length >= widget.length) {
-        for (int i = 0; i < widget.length; i++) {
+      if (digits.length >= _DarkOtpField._length) {
+        for (int i = 0; i < _DarkOtpField._length; i++) {
           _controllers[i].text = digits[i];
         }
         _focusNodes.last.requestFocus();
@@ -926,7 +1257,7 @@ class _DarkOtpFieldState extends State<_DarkOtpField> {
           const TextSelection.collapsed(offset: 1);
     }
 
-    if (index < widget.length - 1) {
+    if (index < _DarkOtpField._length - 1) {
       _focusNodes[index + 1].requestFocus();
     } else {
       _focusNodes[index].unfocus();
@@ -936,7 +1267,7 @@ class _DarkOtpFieldState extends State<_DarkOtpField> {
 
   void _checkCompleted() {
     final otp = _controllers.map((c) => c.text).join();
-    if (otp.length == widget.length) {
+    if (otp.length == _DarkOtpField._length) {
       widget.onCompleted?.call(otp);
     }
   }
@@ -946,7 +1277,7 @@ class _DarkOtpFieldState extends State<_DarkOtpField> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: List.generate(
-        widget.length,
+        _DarkOtpField._length,
         (i) => _DarkOtpBox(
           controller: _controllers[i],
           focusNode: _focusNodes[i],
@@ -1033,14 +1364,14 @@ class _DarkOtpBox extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 深色背景 CTA 按鈕（近白色背景 + 深色文字，與 WelcomePage 同設計語彙）
+// 深色背景 CTA 按鈕
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _DarkCtaButton extends StatelessWidget {
   const _DarkCtaButton({
     required this.label,
-    required this.onPressed,
     required this.colors,
+    this.onPressed,
     this.isLoading = false,
   });
 
@@ -1079,7 +1410,9 @@ class _DarkCtaButton extends StatelessWidget {
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.2,
-                  color: colors.brandBg,
+                  color: isDisabled
+                      ? colors.brandBg.withValues(alpha: 0.4)
+                      : colors.brandBg,
                 ),
               ),
       ),

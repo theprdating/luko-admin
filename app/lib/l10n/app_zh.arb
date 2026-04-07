@@ -1,7 +1,7 @@
 {
   "@@locale": "zh",
 
-  "appName": "Luko",
+  "appName": "PR Dating",
   "@appName": { "description": "App 名稱" },
 
   "commonConfirm": "確認",
@@ -34,7 +34,7 @@
   "authWelcomeTitle": "與認真打理自己的人相遇。",
   "@authWelcomeTitle": { "description": "歡迎頁主標題" },
 
-  "authWelcomeSubtitle": "申請加入 Luko，每一個帳號都經過人工審核。",
+  "authWelcomeSubtitle": "申請加入 PR Dating，每一個帳號都經過人工審核。",
   "@authWelcomeSubtitle": { "description": "歡迎頁副標題" },
 
   "welcomeBadge": "申請制",
@@ -70,8 +70,20 @@
   "approvedGateTitle": "申請通過",
   "@approvedGateTitle": { "description": "審核通過頁主標題" },
 
-  "approvedGateBody": "恭喜！你已通過 Luko 的資格審核。\n接下來，綁定手機號碼以完成帳號設置。",
-  "@approvedGateBody": { "description": "審核通過頁說明文字" },
+  "approvedGateBody": "恭喜！你已通過 PR Dating 的資格審核。\n接下來，綁定手機號碼以完成帳號設置。",
+  "@approvedGateBody": { "description": "審核通過頁說明文字（通用備用）" },
+
+  "approvedGateBodyTop": "恭喜！你已通過 PR Dating 的資格審核。\n作為本批創始成員（前 85%），你可終生免費使用所有功能。\n接下來，綁定手機號碼以完成帳號設置。",
+  "@approvedGateBodyTop": { "description": "審核通過頁說明文字 — 前 85%（終生免費）" },
+
+  "approvedGateBodyStandard": "恭喜！你已通過 PR Dating 的資格審核。\n你可享有 5 天免費體驗，之後可訂閱方案繼續使用。\n接下來，綁定手機號碼以完成帳號設置。",
+  "@approvedGateBodyStandard": { "description": "審核通過頁說明文字 — 標準方案（5 天免費）" },
+
+  "approvedGateTierLabelTop": "創始成員 · 終生免費",
+  "@approvedGateTierLabelTop": { "description": "審核通過頁 — 前 85% 方案標籤" },
+
+  "approvedGateTierLabelStandard": "5 天免費體驗",
+  "@approvedGateTierLabelStandard": { "description": "審核通過頁 — 標準方案標籤" },
 
   "approvedGateCta": "綁定手機號碼",
   "@approvedGateCta": { "description": "審核通過頁 CTA 按鈕" },
@@ -132,6 +144,9 @@
 
   "authPhoneInvalid": "請輸入正確的手機號碼",
   "@authPhoneInvalid": { "description": "手機號碼格式錯誤提示" },
+
+  "phoneCountryUnsupported": "目前尚不支援此國家/地區的號碼，敬請期待",
+  "@phoneCountryUnsupported": { "description": "選擇了未支援的國碼時顯示的提示" },
 
   "authLoginTitle": "歡迎回來",
   "@authLoginTitle": { "description": "登入頁標題" },
@@ -238,16 +253,22 @@
     "placeholders": { "min": { "type": "int" } }
   },
 
+  "applyPhotosLimitedHint": "目前為有限存取，部分照片無法顯示",
+  "@applyPhotosLimitedHint": { "description": "iOS 有限相簿存取提示文字" },
+
+  "applyPhotosManageAccess": "新增照片",
+  "@applyPhotosManageAccess": { "description": "iOS 有限存取：開啟系統選照片面板的按鈕文字" },
+
   "permissionPhotoTitle": "需要相簿權限",
   "@permissionPhotoTitle": { "description": "相簿權限被拒 Dialog 標題" },
 
-  "permissionPhotoBody": "Luko 需要存取您的相簿才能上傳照片。請前往設定開啟相簿權限。",
+  "permissionPhotoBody": "PR Dating 需要存取您的相簿才能上傳照片。請前往設定開啟相簿權限。",
   "@permissionPhotoBody": { "description": "相簿權限被拒 Dialog 內文" },
 
   "permissionCameraTitle": "需要相機權限",
   "@permissionCameraTitle": { "description": "相機權限被拒 Dialog 標題" },
 
-  "permissionCameraBody": "Luko 需要存取相機才能拍照。請前往設定開啟相機權限。",
+  "permissionCameraBody": "PR Dating 需要存取相機才能拍照。請前往設定開啟相機權限。",
   "@permissionCameraBody": { "description": "相機權限被拒 Dialog 內文" },
 
   "permissionOpenSettings": "前往設定",
@@ -409,17 +430,20 @@
   "reviewRejectedBody": "您目前暫時未符合我們的社群標準。歡迎在 30 天後重新申請。",
   "@reviewRejectedBody": { "description": "審核未通過頁面說明（備用）" },
 
-  "reviewRejectedTitleSoft": "目前還不是時候",
-  "@reviewRejectedTitleSoft": { "description": "拒絕頁面標題 — 一般拒絕" },
+  "reviewRejectedTitleSoft": "感謝你的申請",
+  "@reviewRejectedTitleSoft": { "description": "拒絕頁面標題 — 不通過（hard）" },
 
-  "reviewRejectedBodySoft": "感謝你申請加入 Luko。\n目前的呈現方式暫時與我們的標準有些距離。",
-  "@reviewRejectedBodySoft": { "description": "拒絕頁面說明 — 一般拒絕" },
+  "reviewRejectedBodySoft": "感謝你申請加入 PR Dating。\n我們仔細審核了你的申請，目前很遺憾無法讓你通過。\n以下是一些一般性建議，希望對你有所幫助：",
+  "@reviewRejectedBodySoft": { "description": "拒絕頁面說明 — 不通過（hard）" },
 
-  "reviewRejectedTitlePotential": "你有 Luko 的潛力！",
+  "reviewRejectedTitlePotential": "差一點點！",
   "@reviewRejectedTitlePotential": { "description": "拒絕頁面標題 — 有潛力" },
 
-  "reviewRejectedBodyPotential": "我們看見你的潛力，但目前的照片還不夠展現你的魅力。\n試試這些建議，讓自己更容易通過審核：",
+  "reviewRejectedBodyPotential": "你與通過標準的距離不遠。\n試試這些建議，讓自己在重新申請時更容易通過：",
   "@reviewRejectedBodyPotential": { "description": "拒絕頁面說明 — 有潛力" },
+
+  "reviewAdminFeedbackTitle": "審核建議",
+  "@reviewAdminFeedbackTitle": { "description": "差一點拒絕頁面：審核員給用戶的建議卡片標題" },
 
   "reviewRejectedTip1": "靠近窗戶或在戶外自然光下拍攝",
   "@reviewRejectedTip1": { "description": "改善建議 1" },
@@ -430,23 +454,20 @@
   "reviewRejectedTip3": "加入一張展現你個性的生活照",
   "@reviewRejectedTip3": { "description": "改善建議 3" },
 
-  "reviewReapplyDays": "{days} 天後可重新申請",
-  "@reviewReapplyDays": {
-    "description": "距離可重申日期的剩餘天數",
-    "placeholders": { "days": { "type": "int" } }
-  },
-
-  "reviewReapplyAvailable": "現在可以重新申請了",
-  "@reviewReapplyAvailable": { "description": "重申請已解鎖時顯示的文字" },
-
   "reviewReapplyButton": "重新申請",
   "@reviewReapplyButton": { "description": "重新申請 CTA 按鈕" },
 
-  "reviewReapplyDateHint": "最早可於 {date} 重新申請",
-  "@reviewReapplyDateHint": {
-    "description": "顯示重申請開放日期的提示",
-    "placeholders": { "date": { "type": "String" } }
+  "reviewReapplyAttemptsLeft": "還剩 {remaining} 次申請機會",
+  "@reviewReapplyAttemptsLeft": {
+    "description": "顯示剩餘申請次數（最多 3 次）",
+    "placeholders": { "remaining": { "type": "int" } }
   },
+
+  "reviewReapplyExhaustedTitle": "申請機會已用完",
+  "@reviewReapplyExhaustedTitle": { "description": "已用完所有申請次數時的標題" },
+
+  "reviewReapplyExhaustedBody": "每個帳號最多可申請 3 次，此帳號已達上限。感謝你對 PR Dating 的支持。",
+  "@reviewReapplyExhaustedBody": { "description": "已用完所有申請次數時的說明文字" },
 
   "discoverTitle": "探索",
   "@discoverTitle": { "description": "探索分頁標題" },
@@ -520,7 +541,7 @@
   "onboarding3Title": "好的相遇，\n不是在人堆碰運氣",
   "@onboarding3Title": { "description": "Onboarding 第 3 頁標題" },
 
-  "onboarding3Body": "不再是無限滑卡。\n\n每天 Luko 只為你精選幾個人\n讓你把所有的注意力，放在真正值得的人身上。\n\n認真的你，值得一個認真的遇見。",
+  "onboarding3Body": "不再是無限滑卡。\n\n每天 PR Dating 只為你精選幾個人\n讓你把所有的注意力，放在真正值得的人身上。\n\n認真的你，值得一個認真的遇見。",
   "@onboarding3Body": { "description": "Onboarding 第 3 頁內文" },
 
   "onboarding1Quote1": "「連能挑選的照片都這樣，誰還相信見面他會打理好自己」",
@@ -565,7 +586,7 @@
   "termsUpdateTitle": "條款已更新",
   "@termsUpdateTitle": { "description": "條款更新頁標題" },
 
-  "termsUpdateSubtitle": "我們更新了服務條款與隱私政策，請閱讀後繼續使用 Luko。",
+  "termsUpdateSubtitle": "我們更新了服務條款與隱私政策，請閱讀後繼續使用 PR Dating。",
   "@termsUpdateSubtitle": { "description": "條款更新頁說明" },
 
   "termsUpdateAccept": "我已閱讀並同意最新條款",
@@ -602,5 +623,14 @@
   "@termsAgreeAnd": { "description": "服務條款連結與隱私政策連結之間的連接詞" },
 
   "authConsentPrefix": "繼續即代表您同意我們的 ",
-  "@authConsentPrefix": { "description": "發送 OTP 前的隱式同意告知文字前綴" }
+  "@authConsentPrefix": { "description": "發送 OTP 前的隱式同意告知文字前綴" },
+
+  "reviewRejectedHardTip1": "展現真實自我的照片往往最能引起共鳴",
+  "@reviewRejectedHardTip1": { "description": "不通過建議 1（中性，不涉及外貌評論）" },
+
+  "reviewRejectedHardTip2": "個人簡介能幫助別人更立體地認識你",
+  "@reviewRejectedHardTip2": { "description": "不通過建議 2" },
+
+  "reviewRejectedHardTip3": "多元面向的照片能展現更完整的你",
+  "@reviewRejectedHardTip3": { "description": "不通過建議 3" }
 }

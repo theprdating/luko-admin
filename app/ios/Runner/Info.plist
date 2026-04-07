@@ -5,7 +5,7 @@
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>
-		<string>Luko</string>
+		<string>PR Dating</string>
 		<key>CFBundleExecutable</key>
 		<string>$(EXECUTABLE_NAME)</string>
 		<key>CFBundleIdentifier</key>
@@ -13,7 +13,7 @@
 		<key>CFBundleInfoDictionaryVersion</key>
 		<string>6.0</string>
 		<key>CFBundleName</key>
-		<string>luko</string>
+		<string>PR Dating</string>
 		<key>CFBundlePackageType</key>
 		<string>APPL</string>
 		<key>CFBundleShortVersionString</key>
@@ -52,11 +52,11 @@
 
 		<!-- ── 隱私權說明（App Store 審核必填；iOS 彈窗中顯示的文字）──────── -->
 		<key>NSPhotoLibraryUsageDescription</key>
-		<string>Luko 需要存取相簿以上傳申請照片</string>
+		<string>PR Dating 需要存取相簿以上傳申請照片</string>
 		<key>NSPhotoLibraryAddUsageDescription</key>
-		<string>Luko 需要存取相簿</string>
+		<string>PR Dating 需要存取相簿</string>
 		<key>NSCameraUsageDescription</key>
-		<string>Luko 需要存取相機以拍攝申請照片</string>
+		<string>PR Dating 需要存取相機以拍攝申請照片</string>
 		<key>CFBundleURLTypes</key>
         <array>
           <dict>

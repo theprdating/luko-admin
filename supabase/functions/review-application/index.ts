@@ -29,7 +29,7 @@ interface ReviewBody {
   application_id: string
   action: 'approve' | 'reject'
   quality_tier?: 'top' | 'standard'
-  rejection_type?: 'potential' | 'soft' | 'hard'
+  rejection_type?: 'soft' | 'hard'
   review_note?: string
   review_started_at?: string
 }
@@ -39,9 +39,6 @@ interface ReviewBody {
 function reapplyAfter(rejectionType: string): string | null {
   const now = new Date()
   switch (rejectionType) {
-    case 'potential': {
-      const d = new Date(now); d.setDate(d.getDate() + 14); return d.toISOString()
-    }
     case 'soft': {
       const d = new Date(now); d.setDate(d.getDate() + 30); return d.toISOString()
     }
@@ -82,13 +79,6 @@ function buildRejectEmail(
   rejectionType: string,
 ): { subject: string; html: string } {
   const messages: Record<string, { title: string; body: string }> = {
-    potential: {
-      title: '您的申請目前暫未通過',
-      body: `${displayName}，您的照片看起來有潛力！<br><br>
-        目前由於審核標準，我們暫時無法通過您的申請。<br>
-        建議您在 <strong>14 天後</strong>以更完整、更自然的照片重新申請。<br><br>
-        小提醒：選用光線充足、表情自然的照片，效果最好。`,
-    },
     soft: {
       title: '感謝您的申請',
       body: `${displayName}，感謝您申請 Luko。<br><br>
@@ -543,7 +533,6 @@ serve(async (req) => {
 
     // FCM notification
     const fcmMessages: Record<string, string> = {
-      potential: '目前暫時無法通過，14 天後可重新嘗試。',
       soft: '目前暫時無法通過，30 天後可重新申請。',
       hard: '很遺憾目前無法通過審核。',
     }

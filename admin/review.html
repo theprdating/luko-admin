@@ -401,11 +401,6 @@
           <div id="reject-panel" class="hidden">
             <div class="option-row">
               <span class="option-label">類型：</span>
-              <button class="pick-btn pick-btn-reject" data-type="potential"
-                      onclick="selectRejType('potential')"
-                      title="有潛力，語氣溫暖，14 天後可重試">
-                潛力可等
-              </button>
               <button class="pick-btn pick-btn-reject" data-type="soft"
                       onclick="selectRejType('soft')"
                       title="暫不通過，30 天後可重申請">
@@ -413,7 +408,7 @@
               </button>
               <button class="pick-btn pick-btn-reject" data-type="hard"
                       onclick="selectRejType('hard')"
-                      title="不符合，長期不建議重申請">
+                      title="不符合，不建議重申請">
                 不符合
               </button>
               <button class="btn-confirm btn-confirm-reject"
@@ -641,9 +636,8 @@
         if (e.key === 'Enter') document.getElementById('btn-confirm-approve')?.click()
       }
       if (decisionMode === 'reject') {
-        if (e.key === '1') selectRejType('potential')
-        if (e.key === '2') selectRejType('soft')
-        if (e.key === '3') selectRejType('hard')
+        if (e.key === '1') selectRejType('soft')
+        if (e.key === '2') selectRejType('hard')
         if (e.key === 'Enter') document.getElementById('btn-confirm-reject')?.click()
       }
     })

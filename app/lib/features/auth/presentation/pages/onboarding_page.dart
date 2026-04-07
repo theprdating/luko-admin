@@ -311,7 +311,7 @@ class _BrandHeader extends StatelessWidget {
               const SizedBox(width: 10),
               // LUKO wordmark
               Text(
-                'LUKO',
+                'PR Dating',
                 style: GoogleFonts.dmSans(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,

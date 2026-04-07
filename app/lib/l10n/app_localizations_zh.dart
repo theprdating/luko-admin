@@ -138,6 +138,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get authPhoneInvalid => '請輸入正確的手機號碼';
 
   @override
+  String get phoneCountryUnsupported => '目前尚不支援此國家/地區的號碼，敬請期待';
+
+  @override
   String get authLoginTitle => '歡迎回來';
 
   @override

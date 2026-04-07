@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../core/auth/sign_out.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/supabase/supabase_provider.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -102,7 +103,7 @@ class _TermsUpdatePageState extends ConsumerState<TermsUpdatePage> {
 
     if (confirmed != true || !mounted) return;
 
-    await ref.read(supabaseProvider).auth.signOut();
+    await signOutAll();
     // Auth stream 觸發 → appUserStatusProvider → unauthenticated → /welcome
   }
 
@@ -157,7 +158,7 @@ class _TermsUpdatePageState extends ConsumerState<TermsUpdatePage> {
 
                     // LUKO wordmark
                     Text(
-                      'LUKO',
+                      'PR Dating',
                       style: GoogleFonts.dmSans(
                         fontSize: 16,
                         fontWeight: FontWeight.w200,

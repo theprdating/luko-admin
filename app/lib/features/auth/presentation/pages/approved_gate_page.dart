@@ -81,7 +81,7 @@ class _ApprovedGatePageState extends State<ApprovedGatePage>
     final bottom  = MediaQuery.paddingOf(context).bottom;
 
     return Scaffold(
-      backgroundColor: colors.brandBg,
+      backgroundColor: colors.backgroundWarm,
       body: SafeArea(
         bottom: false,
         child: Padding(
@@ -96,7 +96,7 @@ class _ApprovedGatePageState extends State<ApprovedGatePage>
             children: [
               const Spacer(flex: 3),
 
-              // ── 金色徽章 ─────────────────────────────────────────
+              // ── 徽章 ─────────────────────────────────────────────
               FadeTransition(
                 opacity: _badgeFade,
                 child: ScaleTransition(
@@ -115,15 +115,16 @@ class _ApprovedGatePageState extends State<ApprovedGatePage>
                   position: _contentSlide,
                   child: Column(
                     children: [
-                      // 金框小徽章
+                      // 小徽章標籤
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 14,
                           vertical: 5,
                         ),
                         decoration: BoxDecoration(
+                          color: colors.forestGreenSubtle,
                           border: Border.all(
-                            color: colors.brandGold.withValues(alpha: 0.45),
+                            color: colors.forestGreen.withValues(alpha: 0.35),
                           ),
                           borderRadius: BorderRadius.circular(20),
                         ),
@@ -132,7 +133,7 @@ class _ApprovedGatePageState extends State<ApprovedGatePage>
                           style: GoogleFonts.dmSans(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
-                            color: colors.brandGold,
+                            color: colors.forestGreen,
                             letterSpacing: 1.2,
                           ),
                         ),
@@ -145,7 +146,7 @@ class _ApprovedGatePageState extends State<ApprovedGatePage>
                         style: GoogleFonts.dmSans(
                           fontSize: 36,
                           fontWeight: FontWeight.w700,
-                          color: colors.brandOnDark,
+                          color: colors.primaryText,
                           height: 1.1,
                           letterSpacing: -0.5,
                         ),
@@ -157,7 +158,7 @@ class _ApprovedGatePageState extends State<ApprovedGatePage>
                       Text(
                         l10n.approvedGateBody,
                         style: textTheme.bodyMedium?.copyWith(
-                          color: colors.brandOnDark.withValues(alpha: 0.58),
+                          color: colors.secondaryText,
                           height: 1.7,
                         ),
                         textAlign: TextAlign.center,
@@ -181,7 +182,7 @@ class _ApprovedGatePageState extends State<ApprovedGatePage>
                         height: 54,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: colors.brandButtonBg,
+                          color: colors.forestGreen,
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Text(
@@ -189,7 +190,7 @@ class _ApprovedGatePageState extends State<ApprovedGatePage>
                           style: GoogleFonts.dmSans(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
-                            color: colors.brandBg,
+                            color: colors.brandOnDark,
                           ),
                         ),
                       ),
@@ -199,7 +200,7 @@ class _ApprovedGatePageState extends State<ApprovedGatePage>
                       l10n.approvedGateNote,
                       style: GoogleFonts.dmSans(
                         fontSize: 12,
-                        color: colors.brandCaption,
+                        color: colors.secondaryText,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -235,9 +236,9 @@ class _ApprovalBadge extends StatelessWidget {
           height: 116,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: colors.brandGold.withValues(alpha: 0.07),
+            color: colors.forestGreen.withValues(alpha: 0.07),
             border: Border.all(
-              color: colors.brandGold.withValues(alpha: 0.15),
+              color: colors.forestGreen.withValues(alpha: 0.18),
               width: 1,
             ),
           ),
@@ -248,16 +249,16 @@ class _ApprovalBadge extends StatelessWidget {
           height: 88,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: colors.brandGold.withValues(alpha: 0.11),
+            color: colors.forestGreenSubtle,
             border: Border.all(
-              color: colors.brandGold.withValues(alpha: 0.5),
+              color: colors.forestGreen.withValues(alpha: 0.45),
               width: 1.5,
             ),
           ),
           child: Icon(
             Icons.check_rounded,
             size: 40,
-            color: colors.brandGold,
+            color: colors.forestGreen,
           ),
         ),
       ],

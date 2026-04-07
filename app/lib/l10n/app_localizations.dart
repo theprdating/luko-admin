@@ -344,6 +344,12 @@ abstract class AppLocalizations {
   /// **'Please enter a valid phone number'**
   String get authPhoneInvalid;
 
+  /// Shown when user selects an unsupported country code
+  ///
+  /// In en, this message translates to:
+  /// **'This country/region is not yet supported. Stay tuned!'**
+  String get phoneCountryUnsupported;
+
   /// Login page title
   ///
   /// In en, this message translates to:

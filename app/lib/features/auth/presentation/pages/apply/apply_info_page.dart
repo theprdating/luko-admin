@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../../core/auth/sign_out.dart';
 import '../../../../../core/constants/app_radius.dart';
 import '../../../../../core/constants/app_spacing.dart';
-import '../../../../../core/supabase/supabase_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/luko_button.dart';
 import '../../../../../core/widgets/luko_text_field.dart';
@@ -143,7 +143,7 @@ class _ApplyInfoPageState extends ConsumerState<ApplyInfoPage> {
               context.go('/dev/state-picker');
               return;
             }
-            await ref.read(supabaseProvider).auth.signOut();
+            await signOutAll();
             // signOut 後 authStateProvider emit → _RouterNotifier 觸發 redirect
             // GoRouter 自動導向 /onboarding 或 /welcome，無需手動 context.go()
           },

@@ -108,7 +108,25 @@
       "Skill(commit-commands:commit)",
       "Skill(commit-commands:commit:*)",
       "Bash(git -C D:/Startup/Luko add app/lib/features/auth/presentation/pages/apply/apply_confirm_page.dart app/lib/features/auth/presentation/pages/apply/apply_info_page.dart app/lib/features/auth/presentation/pages/apply/apply_photos_page.dart app/lib/l10n/app_en.arb app/lib/l10n/app_localizations.dart app/lib/l10n/app_localizations_en.dart app/lib/l10n/app_localizations_zh.dart app/lib/l10n/app_zh.arb .claude/settings.local.json)",
-      "Bash(git -C:*)"
+      "Bash(git -C:*)",
+      "Bash(supabase functions:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(grep -r application-photos /d/Startup/Luko --include=*.ts --include=*.js --include=*.dart --include=*.sql)",
+      "Bash(MAXUID=\"ce579ad9-aded-4871-9d9f-60e7915563ad\" __NEW_LINE_9d8f9744db3a819c__ echo \"=== application-photos ===\")",
+      "Bash(supabase --experimental storage rm --linked -r \"ss:///application-photos/$MAXUID/\" 2)",
+      "Bash(1 __NEW_LINE_9d8f9744db3a819c__ echo \"=== profile-photos ===\")",
+      "Bash(supabase --experimental storage rm --linked -r \"ss:///profile-photos/$MAXUID/\" 2)",
+      "Bash(1 __NEW_LINE_9d8f9744db3a819c__ echo \"=== verification-photos ===\")",
+      "Bash(supabase --experimental storage rm --linked -r \"ss:///verification-photos/$MAXUID/\")",
+      "Bash(MAXUID=\"ce579ad9-aded-4871-9d9f-60e7915563ad\" __NEW_LINE_d746c9249c0f3eff__ echo \"=== application-photos ===\")",
+      "Bash(supabase --experimental storage rm --linked -r \"ss:///application-photos/$MAXUID\" 2)",
+      "Bash(1 __NEW_LINE_d746c9249c0f3eff__ echo \"=== profile-photos ===\")",
+      "Bash(supabase --experimental storage rm --linked -r \"ss:///profile-photos/$MAXUID\" 2)",
+      "Bash(1 __NEW_LINE_d746c9249c0f3eff__ echo \"=== verification-photos ===\")",
+      "Bash(supabase --experimental storage rm --linked -r \"ss:///verification-photos/$MAXUID\")",
+      "Bash(grep -E \"\\\\.\\(dart\\)$\")"
     ]
   }
 }

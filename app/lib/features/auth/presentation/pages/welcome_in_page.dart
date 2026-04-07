@@ -127,7 +127,7 @@ class _WelcomeInPageState extends State<WelcomeInPage>
                       child: Column(
                         children: [
                           Text(
-                            'Welcome to Luko',
+                            'Welcome to PR Dating',
                             style: textTheme.displaySmall?.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.w800,

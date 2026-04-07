@@ -133,6 +133,9 @@
   "authPhoneInvalid": "請輸入正確的手機號碼",
   "@authPhoneInvalid": { "description": "手機號碼格式錯誤提示" },
 
+  "phoneCountryUnsupported": "目前尚不支援此國家/地區的號碼，敬請期待",
+  "@phoneCountryUnsupported": { "description": "選擇了未支援的國碼時顯示的提示" },
+
   "authLoginTitle": "歡迎回來",
   "@authLoginTitle": { "description": "登入頁標題" },
 

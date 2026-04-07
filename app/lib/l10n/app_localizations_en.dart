@@ -144,6 +144,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authPhoneInvalid => 'Please enter a valid phone number';
 
   @override
+  String get phoneCountryUnsupported =>
+      'This country/region is not yet supported. Stay tuned!';
+
+  @override
   String get authLoginTitle => 'Welcome back';
 
   @override

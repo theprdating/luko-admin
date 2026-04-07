@@ -133,6 +133,9 @@
   "authPhoneInvalid": "Please enter a valid phone number",
   "@authPhoneInvalid": { "description": "Invalid phone number error" },
 
+  "phoneCountryUnsupported": "This country/region is not yet supported. Stay tuned!",
+  "@phoneCountryUnsupported": { "description": "Shown when user selects an unsupported country code" },
+
   "authLoginTitle": "Welcome back",
   "@authLoginTitle": { "description": "Login page title" },
 

@@ -95,7 +95,7 @@ class LukoApp extends ConsumerWidget {
     final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
-      title: 'Luko',
+      title: 'PR Dating',
       debugShowCheckedModeBanner: false,
 
       // ── Theme ────────────────────────────────────────────────────────

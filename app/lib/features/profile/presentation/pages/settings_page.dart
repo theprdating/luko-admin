@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/supabase/supabase_provider.dart';
+import '../../../../core/auth/sign_out.dart';
 import '../../../../core/theme/app_colors.dart';
 
 /// 設定頁
@@ -55,7 +55,7 @@ class SettingsPage extends ConsumerWidget {
                 );
 
                 if (shouldLogout == true && context.mounted) {
-                  await ref.read(supabaseProvider).auth.signOut();
+                  await signOutAll();
                   // GoRouter redirect 會自動導向 /welcome
                 }
               },

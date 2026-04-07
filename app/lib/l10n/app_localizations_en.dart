@@ -248,6 +248,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get applyPhotosLimitedHint =>
+      'Limited access — some photos are hidden';
+
+  @override
+  String get applyPhotosManageAccess => 'Add Photos';
+
+  @override
   String get permissionPhotoTitle => 'Photo Library Access Required';
 
   @override

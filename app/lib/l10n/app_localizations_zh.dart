@@ -240,6 +240,12 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get applyPhotosLimitedHint => '目前為有限存取，部分照片無法顯示';
+
+  @override
+  String get applyPhotosManageAccess => '新增照片';
+
+  @override
   String get permissionPhotoTitle => '需要相簿權限';
 
   @override

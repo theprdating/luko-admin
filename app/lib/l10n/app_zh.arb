@@ -241,6 +241,12 @@
     "placeholders": { "min": { "type": "int" } }
   },
 
+  "applyPhotosLimitedHint": "目前為有限存取，部分照片無法顯示",
+  "@applyPhotosLimitedHint": { "description": "iOS 有限相簿存取提示文字" },
+
+  "applyPhotosManageAccess": "新增照片",
+  "@applyPhotosManageAccess": { "description": "iOS 有限存取：開啟系統選照片面板的按鈕文字" },
+
   "permissionPhotoTitle": "需要相簿權限",
   "@permissionPhotoTitle": { "description": "相簿權限被拒 Dialog 標題" },
 

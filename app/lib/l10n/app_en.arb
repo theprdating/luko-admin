@@ -241,6 +241,12 @@
     "placeholders": { "min": { "type": "int" } }
   },
 
+  "applyPhotosLimitedHint": "Limited access — some photos are hidden",
+  "@applyPhotosLimitedHint": { "description": "iOS limited photo access hint text" },
+
+  "applyPhotosManageAccess": "Add Photos",
+  "@applyPhotosManageAccess": { "description": "iOS limited access: button to open system photo selection panel" },
+
   "permissionPhotoTitle": "Photo Library Access Required",
   "@permissionPhotoTitle": { "description": "Gallery permission denied dialog title" },
 

@@ -70,6 +70,9 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage> {
   bool _isUploading = false;  // 上傳中
   String? _error;
 
+  /// 最近一次取得的相簿權限狀態，用於判斷是否顯示「有限存取」提示橫幅
+  PermissionState? _permissionState;
+
   @override
   void initState() {
     super.initState();
@@ -99,9 +102,13 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage> {
     if (ps == PermissionState.denied || ps == PermissionState.restricted) {
       _pickerDelegate = null;
       _pickerProvider = null;
+      if (mounted) setState(() => _permissionState = ps);
       await MediaPermissionHelper.showPhotoDenied(context);
       return;
     }
+
+    // 記錄最新權限狀態，以便 UI 顯示「有限存取」提示橫幅
+    if (mounted) setState(() => _permissionState = ps);
 
     // 首次建立，或 delegate 尚未初始化
     if (_pickerDelegate == null) {
@@ -168,6 +175,21 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage> {
     } finally {
       if (mounted) setState(() => _isProcessing = false);
     }
+  }
+
+  // ── iOS 有限存取：開啟系統「選擇照片」面板 ─────────────────────────────────────
+  //
+  // PhotoManager.presentLimited() 讓用戶在 iOS 系統 UI 追加 / 移除允許的照片。
+  // 回傳後重置 delegate，確保下次開啟 picker 時重新載入最新的 asset list。
+
+  Future<void> _managePhotoAccess() async {
+    await PhotoManager.presentLimited();
+    // delegate 使用舊的 asset list，必須重置讓下次重建
+    _pickerDelegate = null;
+    _pickerProvider = null;
+    // 重新抓取最新權限狀態，更新橫幅顯示
+    final ps = await PhotoManager.requestPermissionExtend();
+    if (mounted) setState(() => _permissionState = ps);
   }
 
   // ── 從相機拍照（單張，含裁切）──────────────────────────────────────────────
@@ -490,6 +512,18 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage> {
                     style: textTheme.bodyMedium?.copyWith(color: colors.secondaryText),
                   ),
 
+                  // ── iOS 有限存取提示橫幅 ─────────────────────────────
+                  if (Platform.isIOS && _permissionState == PermissionState.limited) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    _LimitedAccessBanner(
+                      hint: l10n.applyPhotosLimitedHint,
+                      buttonLabel: l10n.applyPhotosManageAccess,
+                      onManage: _managePhotoAccess,
+                      colors: colors,
+                      textTheme: textTheme,
+                    ),
+                  ],
+
                   const SizedBox(height: AppSpacing.xl),
 
                   // ── 9 格可拖動照片 Grid ────────────────────────────────
@@ -806,6 +840,63 @@ class _FilledSlot extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+// ── iOS 有限存取橫幅 ──────────────────────────────────────────────────────────
+//
+// 當用戶選擇「有限存取」時顯示，提供一個按鈕讓用戶呼叫系統「選擇照片」面板。
+
+class _LimitedAccessBanner extends StatelessWidget {
+  const _LimitedAccessBanner({
+    required this.hint,
+    required this.buttonLabel,
+    required this.onManage,
+    required this.colors,
+    required this.textTheme,
+  });
+
+  final String hint;
+  final String buttonLabel;
+  final VoidCallback onManage;
+  final AppColors colors;
+  final TextTheme textTheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: colors.forestGreen.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+        border: Border.all(
+          color: colors.forestGreen.withValues(alpha: 0.25),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.photo_library_outlined, size: 16, color: colors.forestGreen),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              hint,
+              style: textTheme.bodySmall?.copyWith(color: colors.secondaryText),
+            ),
+          ),
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: onManage,
+            child: Text(
+              buttonLabel,
+              style: textTheme.bodySmall?.copyWith(
+                color: colors.forestGreen,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -536,6 +536,18 @@ abstract class AppLocalizations {
   /// **'At least {min} photos required'**
   String applyPhotosMinRequired(int min);
 
+  /// iOS limited photo access hint text
+  ///
+  /// In en, this message translates to:
+  /// **'Limited access — some photos are hidden'**
+  String get applyPhotosLimitedHint;
+
+  /// iOS limited access: button to open system photo selection panel
+  ///
+  /// In en, this message translates to:
+  /// **'Add Photos'**
+  String get applyPhotosManageAccess;
+
   /// Gallery permission denied dialog title
   ///
   /// In en, this message translates to:

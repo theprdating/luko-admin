@@ -82,6 +82,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'Congratulations! You\'ve passed the PR Dating review.\nOne last step — link your phone number to finish setting up your account.';
 
   @override
+  String get approvedGateBodyTop =>
+      'Congratulations! You\'ve passed the PR Dating review.\nAs a founding member (top 85%), you\'ll have free access to all features for life.\nOne last step — link your phone number to finish setting up your account.';
+
+  @override
+  String get approvedGateBodyStandard =>
+      'Congratulations! You\'ve passed the PR Dating review.\nYou\'ll enjoy a 5-day free trial, after which you can subscribe to continue.\nOne last step — link your phone number to finish setting up your account.';
+
+  @override
+  String get approvedGateTierLabelTop => 'Founding Member · Free Forever';
+
+  @override
+  String get approvedGateTierLabelStandard => '5-Day Free Trial';
+
+  @override
   String get approvedGateCta => 'Link Phone Number';
 
   @override
@@ -442,11 +456,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your profile doesn\'t meet our community standards at this time. You\'re welcome to reapply in 30 days.';
 
   @override
-  String get reviewRejectedTitleSoft => 'Not Quite Yet';
+  String get reviewRejectedTitleSoft => 'Thank You for Applying';
 
   @override
   String get reviewRejectedBodySoft =>
-      'Thanks for applying to PR Dating.\nYour current presentation doesn\'t quite meet our standards at this time.';
+      'Thanks for applying to PR Dating.\nWe reviewed your application carefully and are sorry that we can\'t approve it at this time.\nHere are some general tips that might be helpful:';
 
   @override
   String get reviewRejectedTitlePotential => 'Almost There!';
@@ -471,20 +485,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'Add a lifestyle photo that shows your personality';
 
   @override
-  String reviewReapplyDays(int days) {
-    return 'Reapply in $days days';
-  }
-
-  @override
-  String get reviewReapplyAvailable => 'Ready to Reapply';
-
-  @override
   String get reviewReapplyButton => 'Reapply Now';
 
   @override
-  String reviewReapplyDateHint(String date) {
-    return 'Available after $date';
+  String reviewReapplyAttemptsLeft(int remaining) {
+    return '$remaining attempt(s) remaining';
   }
+
+  @override
+  String get reviewReapplyExhaustedTitle => 'No More Attempts';
+
+  @override
+  String get reviewReapplyExhaustedBody =>
+      'Each account is limited to 3 application attempts. This account has reached the limit. Thank you for your interest in PR Dating.';
 
   @override
   String get discoverTitle => 'Discover';
@@ -668,4 +681,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authConsentPrefix => 'By continuing, you agree to our ';
+
+  @override
+  String get reviewRejectedHardTip1 =>
+      'Authentic photos that show your true self tend to resonate best';
+
+  @override
+  String get reviewRejectedHardTip2 =>
+      'A personal bio helps others get to know you in a more complete way';
+
+  @override
+  String get reviewRejectedHardTip3 =>
+      'A variety of photos can show different sides of who you are';
 }

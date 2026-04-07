@@ -71,7 +71,19 @@
   "@approvedGateTitle": { "description": "Approval gate page main title" },
 
   "approvedGateBody": "Congratulations! You've passed the PR Dating review.\nOne last step — link your phone number to finish setting up your account.",
-  "@approvedGateBody": { "description": "Approval gate page body text" },
+  "@approvedGateBody": { "description": "Approval gate page body text (generic fallback)" },
+
+  "approvedGateBodyTop": "Congratulations! You've passed the PR Dating review.\nAs a founding member (top 85%), you'll have free access to all features for life.\nOne last step — link your phone number to finish setting up your account.",
+  "@approvedGateBodyTop": { "description": "Approval gate page body — top tier (lifetime free)" },
+
+  "approvedGateBodyStandard": "Congratulations! You've passed the PR Dating review.\nYou'll enjoy a 5-day free trial, after which you can subscribe to continue.\nOne last step — link your phone number to finish setting up your account.",
+  "@approvedGateBodyStandard": { "description": "Approval gate page body — standard tier (5-day free)" },
+
+  "approvedGateTierLabelTop": "Founding Member · Free Forever",
+  "@approvedGateTierLabelTop": { "description": "Approval gate page — top tier label" },
+
+  "approvedGateTierLabelStandard": "5-Day Free Trial",
+  "@approvedGateTierLabelStandard": { "description": "Approval gate page — standard tier label" },
 
   "approvedGateCta": "Link Phone Number",
   "@approvedGateCta": { "description": "Approval gate page CTA button" },
@@ -418,11 +430,11 @@
   "reviewRejectedBody": "Your profile doesn't meet our community standards at this time. You're welcome to reapply in 30 days.",
   "@reviewRejectedBody": { "description": "Review rejected screen body text (fallback)" },
 
-  "reviewRejectedTitleSoft": "Not Quite Yet",
-  "@reviewRejectedTitleSoft": { "description": "Rejected screen title — soft rejection" },
+  "reviewRejectedTitleSoft": "Thank You for Applying",
+  "@reviewRejectedTitleSoft": { "description": "Rejected screen title — hard rejection" },
 
-  "reviewRejectedBodySoft": "Thanks for applying to PR Dating.\nYour current presentation doesn't quite meet our standards at this time.",
-  "@reviewRejectedBodySoft": { "description": "Rejected screen body — soft rejection" },
+  "reviewRejectedBodySoft": "Thanks for applying to PR Dating.\nWe reviewed your application carefully and are sorry that we can't approve it at this time.\nHere are some general tips that might be helpful:",
+  "@reviewRejectedBodySoft": { "description": "Rejected screen body — hard rejection" },
 
   "reviewRejectedTitlePotential": "Almost There!",
   "@reviewRejectedTitlePotential": { "description": "Rejected screen title — potential tier" },
@@ -442,23 +454,20 @@
   "reviewRejectedTip3": "Add a lifestyle photo that shows your personality",
   "@reviewRejectedTip3": { "description": "Improvement tip 3" },
 
-  "reviewReapplyDays": "Reapply in {days} days",
-  "@reviewReapplyDays": {
-    "description": "Days remaining until reapply is allowed",
-    "placeholders": { "days": { "type": "int" } }
-  },
-
-  "reviewReapplyAvailable": "Ready to Reapply",
-  "@reviewReapplyAvailable": { "description": "Label shown when reapply is unlocked" },
-
   "reviewReapplyButton": "Reapply Now",
   "@reviewReapplyButton": { "description": "Reapply CTA button" },
 
-  "reviewReapplyDateHint": "Available after {date}",
-  "@reviewReapplyDateHint": {
-    "description": "Hint showing the exact date when reapply becomes available",
-    "placeholders": { "date": { "type": "String" } }
+  "reviewReapplyAttemptsLeft": "{remaining} attempt(s) remaining",
+  "@reviewReapplyAttemptsLeft": {
+    "description": "Shows how many reapply attempts are left (max 3 total)",
+    "placeholders": { "remaining": { "type": "int" } }
   },
+
+  "reviewReapplyExhaustedTitle": "No More Attempts",
+  "@reviewReapplyExhaustedTitle": { "description": "Title shown when all application attempts are used up" },
+
+  "reviewReapplyExhaustedBody": "Each account is limited to 3 application attempts. This account has reached the limit. Thank you for your interest in PR Dating.",
+  "@reviewReapplyExhaustedBody": { "description": "Body shown when all application attempts are used up" },
 
   "discoverTitle": "Discover",
   "@discoverTitle": { "description": "Discover tab title" },
@@ -614,5 +623,14 @@
   "@termsAgreeAnd": { "description": "Conjunction between terms link and privacy link" },
 
   "authConsentPrefix": "By continuing, you agree to our ",
-  "@authConsentPrefix": { "description": "Implicit consent notice prefix shown before sending OTP" }
+  "@authConsentPrefix": { "description": "Implicit consent notice prefix shown before sending OTP" },
+
+  "reviewRejectedHardTip1": "Authentic photos that show your true self tend to resonate best",
+  "@reviewRejectedHardTip1": { "description": "Hard rejection tip 1 (neutral, no appearance judgement)" },
+
+  "reviewRejectedHardTip2": "A personal bio helps others get to know you in a more complete way",
+  "@reviewRejectedHardTip2": { "description": "Hard rejection tip 2" },
+
+  "reviewRejectedHardTip3": "A variety of photos can show different sides of who you are",
+  "@reviewRejectedHardTip3": { "description": "Hard rejection tip 3" }
 }

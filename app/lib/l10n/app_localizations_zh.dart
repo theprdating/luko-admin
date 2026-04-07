@@ -80,6 +80,20 @@ class AppLocalizationsZh extends AppLocalizations {
   String get approvedGateBody => '恭喜！你已通過 PR Dating 的資格審核。\n接下來，綁定手機號碼以完成帳號設置。';
 
   @override
+  String get approvedGateBodyTop =>
+      '恭喜！你已通過 PR Dating 的資格審核。\n作為本批創始成員（前 85%），你可終生免費使用所有功能。\n接下來，綁定手機號碼以完成帳號設置。';
+
+  @override
+  String get approvedGateBodyStandard =>
+      '恭喜！你已通過 PR Dating 的資格審核。\n你可享有 5 天免費體驗，之後可訂閱方案繼續使用。\n接下來，綁定手機號碼以完成帳號設置。';
+
+  @override
+  String get approvedGateTierLabelTop => '創始成員 · 終生免費';
+
+  @override
+  String get approvedGateTierLabelStandard => '5 天免費體驗';
+
+  @override
   String get approvedGateCta => '綁定手機號碼';
 
   @override
@@ -419,11 +433,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reviewRejectedBody => '您目前暫時未符合我們的社群標準。歡迎在 30 天後重新申請。';
 
   @override
-  String get reviewRejectedTitleSoft => '目前還不是時候';
+  String get reviewRejectedTitleSoft => '感謝你的申請';
 
   @override
   String get reviewRejectedBodySoft =>
-      '感謝你申請加入 PR Dating。\n目前的呈現方式暫時與我們的標準有些距離。';
+      '感謝你申請加入 PR Dating。\n我們仔細審核了你的申請，目前很遺憾無法讓你通過。\n以下是一些一般性建議，希望對你有所幫助：';
 
   @override
   String get reviewRejectedTitlePotential => '差一點點！';
@@ -445,20 +459,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reviewRejectedTip3 => '加入一張展現你個性的生活照';
 
   @override
-  String reviewReapplyDays(int days) {
-    return '$days 天後可重新申請';
-  }
-
-  @override
-  String get reviewReapplyAvailable => '現在可以重新申請了';
-
-  @override
   String get reviewReapplyButton => '重新申請';
 
   @override
-  String reviewReapplyDateHint(String date) {
-    return '最早可於 $date 重新申請';
+  String reviewReapplyAttemptsLeft(int remaining) {
+    return '還剩 $remaining 次申請機會';
   }
+
+  @override
+  String get reviewReapplyExhaustedTitle => '申請機會已用完';
+
+  @override
+  String get reviewReapplyExhaustedBody =>
+      '每個帳號最多可申請 3 次，此帳號已達上限。感謝你對 PR Dating 的支持。';
 
   @override
   String get discoverTitle => '探索';
@@ -632,4 +645,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get authConsentPrefix => '繼續即代表您同意我們的 ';
+
+  @override
+  String get reviewRejectedHardTip1 => '展現真實自我的照片往往最能引起共鳴';
+
+  @override
+  String get reviewRejectedHardTip2 => '個人簡介能幫助別人更立體地認識你';
+
+  @override
+  String get reviewRejectedHardTip3 => '多元面向的照片能展現更完整的你';
 }

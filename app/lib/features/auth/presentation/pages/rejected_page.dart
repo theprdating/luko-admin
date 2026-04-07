@@ -11,17 +11,22 @@ import '../../../../core/widgets/luko_button.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../providers/auth_provider.dart';
 
+const _kMaxAttempts = 3;
+
 /// 審核未通過頁
 ///
 /// 路由：/review/rejected
 /// 根據 applications.rejection_type 顯示不同內容：
-///   potential → 有潛力畫面（改善建議 + 合作推薦）
 ///   soft / null → 一般拒絕畫面
-///   hard → 後台靜默封鎖，不會到達此頁
+///   hard        → 後台靜默封鎖，不會到達此頁
+///
+/// 重新申請規則：
+///   - 無等待期，拒絕後可立即重新申請
+///   - 每個帳號最多 3 次機會（application_count >= 3 時停用按鈕）
 class RejectedPage extends ConsumerStatefulWidget {
   const RejectedPage({super.key, this.devRejectionType});
 
-  /// Dev 模式覆寫：傳入 'soft' 或 'potential' 可繞過 DB 查詢直接渲染對應畫面
+  /// Dev 模式覆寫：傳入 'soft' 可繞過 DB 查詢直接渲染對應畫面
   final String? devRejectionType;
 
   @override
@@ -29,9 +34,9 @@ class RejectedPage extends ConsumerStatefulWidget {
 }
 
 class _RejectedPageState extends ConsumerState<RejectedPage> {
-  DateTime? _reapplyAfter;
-  String? _rejectionType; // 'soft' | 'hard' | null
+  String? _rejectionType;    // 'soft' | 'hard' | null
   String? _reviewNote;
+  int _applicationCount = 1; // 目前第幾次申請（1–3）
   bool _isLoading = true;
 
   @override
@@ -44,9 +49,9 @@ class _RejectedPageState extends ConsumerState<RejectedPage> {
     // Dev 模式：直接套用覆寫類型，跳過 DB 查詢
     if (widget.devRejectionType != null) {
       setState(() {
-        _rejectionType = widget.devRejectionType;
-        _reapplyAfter = DateTime.now().add(const Duration(days: 5));
-        _isLoading = false;
+        _rejectionType    = widget.devRejectionType;
+        _applicationCount = 1;
+        _isLoading        = false;
       });
       return;
     }
@@ -58,32 +63,20 @@ class _RejectedPageState extends ConsumerState<RejectedPage> {
 
       final row = await supabase
           .from('applications')
-          .select('reapply_after, rejection_type, review_note')
+          .select('rejection_type, review_note, application_count')
           .eq('user_id', userId)
           .maybeSingle();
 
       if (!mounted) return;
       setState(() {
-        final raw = row?['reapply_after'] as String?;
-        _reapplyAfter = raw != null ? DateTime.tryParse(raw)?.toLocal() : null;
-        _rejectionType = row?['rejection_type'] as String?;
-        _reviewNote    = row?['review_note'] as String?;
-        _isLoading = false;
+        _rejectionType    = row?['rejection_type'] as String?;
+        _reviewNote       = row?['review_note'] as String?;
+        _applicationCount = (row?['application_count'] as int?) ?? 1;
+        _isLoading        = false;
       });
     } catch (_) {
       if (mounted) setState(() => _isLoading = false);
     }
-  }
-
-  bool get _canReapply {
-    if (_reapplyAfter == null) return true;
-    return DateTime.now().isAfter(_reapplyAfter!);
-  }
-
-  int get _daysRemaining {
-    if (_reapplyAfter == null) return 0;
-    final diff = _reapplyAfter!.difference(DateTime.now());
-    return diff.inDays.clamp(0, 999);
   }
 
   Future<void> _reapply() async {
@@ -106,103 +99,105 @@ class _RejectedPageState extends ConsumerState<RejectedPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppColors>()!;
-    final l10n = AppLocalizations.of(context)!;
+    final colors    = Theme.of(context).extension<AppColors>()!;
+    final l10n      = AppLocalizations.of(context)!;
     final isPotential = _rejectionType == 'soft';
 
     return ExitOnDoubleBackScope(
       child: Scaffold(
-      backgroundColor: colors.backgroundWarm,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pagePadding),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // ── Dev 返回箭頭 ──────────────────────────────────────
-              if (widget.devRejectionType != null) ...[
-                const SizedBox(height: AppSpacing.md),
-                GestureDetector(
-                  onTap: () => context.go('/dev/state-picker'),
-                  behavior: HitTestBehavior.opaque,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 8, right: 20),
-                    child: Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      color: colors.secondaryText,
-                      size: 20,
+        backgroundColor: colors.backgroundWarm,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pagePadding),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // ── Dev 返回箭頭 ──────────────────────────────────────
+                if (widget.devRejectionType != null) ...[
+                  const SizedBox(height: AppSpacing.md),
+                  GestureDetector(
+                    onTap: () => context.go('/dev/state-picker'),
+                    behavior: HitTestBehavior.opaque,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 8, right: 20),
+                      child: Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        color: colors.secondaryText,
+                        size: 20,
+                      ),
                     ),
                   ),
+                ],
+                const SizedBox(height: AppSpacing.xxl),
+
+                // ── 圖示 ──────────────────────────────────────────────
+                Center(
+                  child: _RejectedIcon(colors: colors, isPotential: isPotential),
                 ),
-              ],
-              const SizedBox(height: AppSpacing.xxl),
-
-              // ── 圖示 ──────────────────────────────────────────────
-              Center(
-                child: _RejectedIcon(colors: colors, isPotential: isPotential),
-              ),
-              const SizedBox(height: AppSpacing.xl),
-
-              // ── 標題 ──────────────────────────────────────────────
-              Text(
-                isPotential
-                    ? l10n.reviewRejectedTitlePotential
-                    : l10n.reviewRejectedTitleSoft,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  color: colors.primaryText,
-                  fontWeight: FontWeight.w700,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.md),
-
-              // ── 說明文字 ───────────────────────────────────────────
-              Text(
-                isPotential
-                    ? l10n.reviewRejectedBodyPotential
-                    : l10n.reviewRejectedBodySoft,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colors.secondaryText,
-                  height: 1.65,
-                ),
-                textAlign: TextAlign.center,
-              ),
-
-              // ── 改善建議（有潛力時顯示）──────────────────────────────
-              if (isPotential) ...[
                 const SizedBox(height: AppSpacing.xl),
-                // 審核員個人化建議（若有）優先顯示，再附上通用建議
-                if (_reviewNote != null && _reviewNote!.isNotEmpty) ...[
-                  _AdminFeedbackCard(
-                    reviewNote: _reviewNote!,
+
+                // ── 標題 ──────────────────────────────────────────────
+                Text(
+                  isPotential
+                      ? l10n.reviewRejectedTitlePotential
+                      : l10n.reviewRejectedTitleSoft,
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    color: colors.primaryText,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.md),
+
+                // ── 說明文字 ───────────────────────────────────────────
+                Text(
+                  isPotential
+                      ? l10n.reviewRejectedBodyPotential
+                      : l10n.reviewRejectedBodySoft,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colors.secondaryText,
+                    height: 1.65,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                // ── 改善建議 ───────────────────────────────────────────
+                // soft（差一點）：顯示個人化建議 + 通用改善 tips
+                // hard（不通過）：顯示中性通用建議（不涉及外貌評論）
+                if (isPotential) ...[
+                  const SizedBox(height: AppSpacing.xl),
+                  if (_reviewNote != null && _reviewNote!.isNotEmpty) ...[
+                    _AdminFeedbackCard(
+                      reviewNote: _reviewNote!,
+                      colors: colors,
+                      l10n: l10n,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                  ],
+                  _ImprovementTips(colors: colors, l10n: l10n),
+                ] else ...[
+                  const SizedBox(height: AppSpacing.xl),
+                  _ImprovementTips(colors: colors, l10n: l10n, isHard: true),
+                ],
+
+                const SizedBox(height: AppSpacing.xl),
+
+                // ── 重申請卡片 ─────────────────────────────────────────
+                if (!_isLoading)
+                  _ReapplyCard(
                     colors: colors,
                     l10n: l10n,
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                ],
-                _ImprovementTips(colors: colors, l10n: l10n),
+                    applicationCount: _applicationCount,
+                    onReapply: _reapply,
+                  )
+                else
+                  const Center(child: CircularProgressIndicator()),
+
+                const SizedBox(height: AppSpacing.xxl),
               ],
-
-              const SizedBox(height: AppSpacing.xl),
-
-              // ── 重申請卡片 ─────────────────────────────────────────
-              if (!_isLoading)
-                _ReapplyCard(
-                  colors: colors,
-                  l10n: l10n,
-                  canReapply: _canReapply,
-                  daysRemaining: _daysRemaining,
-                  reapplyAfter: _reapplyAfter,
-                  onReapply: _reapply,
-                )
-              else
-                const Center(child: CircularProgressIndicator()),
-
-              const SizedBox(height: AppSpacing.xxl),
-            ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -288,20 +283,30 @@ class _AdminFeedbackCard extends StatelessWidget {
   }
 }
 
-// ── 改善建議卡片（有潛力 tier）────────────────────────────────────────────────
+// ── 改善建議卡片 ──────────────────────────────────────────────────────────────
+//
+// isHard = false（soft / 差一點）：使用針對性改善建議（照片光線、清晰度等）
+// isHard = true（hard / 不通過）：使用中性建議，避免讓用戶感覺被評論外貌
 
 class _ImprovementTips extends StatelessWidget {
-  const _ImprovementTips({required this.colors, required this.l10n});
+  const _ImprovementTips({required this.colors, required this.l10n, this.isHard = false});
   final AppColors colors;
   final AppLocalizations l10n;
+  final bool isHard;
 
   @override
   Widget build(BuildContext context) {
-    final tips = [
-      l10n.reviewRejectedTip1,
-      l10n.reviewRejectedTip2,
-      l10n.reviewRejectedTip3,
-    ];
+    final tips = isHard
+        ? [
+            l10n.reviewRejectedHardTip1,
+            l10n.reviewRejectedHardTip2,
+            l10n.reviewRejectedHardTip3,
+          ]
+        : [
+            l10n.reviewRejectedTip1,
+            l10n.reviewRejectedTip2,
+            l10n.reviewRejectedTip3,
+          ];
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -364,18 +369,17 @@ class _ReapplyCard extends StatelessWidget {
   const _ReapplyCard({
     required this.colors,
     required this.l10n,
-    required this.canReapply,
-    required this.daysRemaining,
-    required this.reapplyAfter,
+    required this.applicationCount,
     required this.onReapply,
   });
 
   final AppColors colors;
   final AppLocalizations l10n;
-  final bool canReapply;
-  final int daysRemaining;
-  final DateTime? reapplyAfter;
+  final int applicationCount;
   final VoidCallback onReapply;
+
+  bool get _attemptsExhausted => applicationCount >= _kMaxAttempts;
+  int get _attemptsRemaining  => (_kMaxAttempts - applicationCount).clamp(0, _kMaxAttempts);
 
   @override
   Widget build(BuildContext context) {
@@ -388,58 +392,94 @@ class _ReapplyCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: colors.divider),
       ),
-      child: canReapply
-          ? Column(
-              children: [
-                Icon(
-                  Icons.refresh_rounded,
-                  size: 32,
-                  color: colors.forestGreen,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  l10n.reviewReapplyAvailable,
-                  style: textTheme.labelLarge?.copyWith(
-                    color: colors.primaryText,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                LukoButton.primary(
-                  label: l10n.reviewReapplyButton,
-                  onPressed: onReapply,
-                ),
-              ],
-            )
-          : Column(
-              children: [
-                Text(
-                  '$daysRemaining',
-                  style: textTheme.displaySmall?.copyWith(
-                    color: colors.forestGreen,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                Text(
-                  l10n.reviewReapplyDays(daysRemaining),
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: colors.secondaryText,
-                  ),
-                ),
-                if (reapplyAfter != null) ...[
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    l10n.reviewReapplyDateHint(_formatDate(reapplyAfter!)),
-                    style: textTheme.bodySmall?.copyWith(
-                      color: colors.secondaryText,
-                    ),
-                  ),
-                ],
-              ],
+      child: _attemptsExhausted
+          ? _ExhaustedState(colors: colors, l10n: l10n, textTheme: textTheme)
+          : _ReapplyAvailableState(
+              colors: colors,
+              l10n: l10n,
+              textTheme: textTheme,
+              attemptsRemaining: _attemptsRemaining,
+              onReapply: onReapply,
             ),
     );
   }
+}
 
-  String _formatDate(DateTime dt) =>
-      '${dt.year}/${dt.month.toString().padLeft(2, '0')}/${dt.day.toString().padLeft(2, '0')}';
+// 已用完所有機會
+class _ExhaustedState extends StatelessWidget {
+  const _ExhaustedState({
+    required this.colors,
+    required this.l10n,
+    required this.textTheme,
+  });
+
+  final AppColors colors;
+  final AppLocalizations l10n;
+  final TextTheme textTheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Icon(Icons.block_rounded, size: 32, color: colors.secondaryText),
+        const SizedBox(height: AppSpacing.sm),
+        Text(
+          l10n.reviewReapplyExhaustedTitle,
+          style: textTheme.labelLarge?.copyWith(
+            color: colors.primaryText,
+            fontWeight: FontWeight.w600,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Text(
+          l10n.reviewReapplyExhaustedBody,
+          style: textTheme.bodySmall?.copyWith(
+            color: colors.secondaryText,
+            height: 1.6,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+}
+
+// 可以重新申請
+class _ReapplyAvailableState extends StatelessWidget {
+  const _ReapplyAvailableState({
+    required this.colors,
+    required this.l10n,
+    required this.textTheme,
+    required this.attemptsRemaining,
+    required this.onReapply,
+  });
+
+  final AppColors colors;
+  final AppLocalizations l10n;
+  final TextTheme textTheme;
+  final int attemptsRemaining;
+  final VoidCallback onReapply;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Icon(Icons.refresh_rounded, size: 32, color: colors.forestGreen),
+        const SizedBox(height: AppSpacing.sm),
+        LukoButton.primary(
+          label: l10n.reviewReapplyButton,
+          onPressed: onReapply,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Text(
+          l10n.reviewReapplyAttemptsLeft(attemptsRemaining),
+          style: textTheme.bodySmall?.copyWith(
+            color: colors.secondaryText,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
 }

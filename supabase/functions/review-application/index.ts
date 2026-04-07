@@ -50,7 +50,17 @@ function reapplyAfter(rejectionType: string): string | null {
   }
 }
 
-function buildApproveEmail(displayName: string): { subject: string; html: string } {
+function buildApproveEmail(displayName: string, qualityTier: string): { subject: string; html: string } {
+  const isTop = qualityTier === 'top'
+  const tierBlockHtml = isTop
+    ? `<div style="background:#eef7f1;border-radius:10px;padding:14px 16px;margin:20px 0;border:1px solid #b8ddc8;">
+         <p style="font-size:13px;font-weight:700;color:#2d6a4f;margin:0 0 6px;">創始成員 · 終生免費</p>
+         <p style="line-height:1.8;color:#444;margin:0;font-size:14px;">作為本批前 85% 的創始成員，您可<strong>終生免費</strong>使用 PR Dating 的所有功能。感謝您的早期支持！</p>
+       </div>`
+    : `<div style="background:#f5f0e8;border-radius:10px;padding:14px 16px;margin:20px 0;border:1px solid #e0c99a;">
+         <p style="font-size:13px;font-weight:700;color:#8a5c1a;margin:0 0 6px;">5 天免費體驗</p>
+         <p style="line-height:1.8;color:#444;margin:0;font-size:14px;">您可享有 <strong>5 天免費體驗</strong>，之後可訂閱方案繼續使用完整功能。</p>
+       </div>`
   return {
     subject: '恭喜！您已通過 PR Dating 資格審核',
     html: `<!DOCTYPE html>
@@ -63,7 +73,8 @@ function buildApproveEmail(displayName: string): { subject: string; html: string
   <div style="font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;max-width:480px;margin:0 auto;padding:40px 24px;color:#1a1a1a;">
     <p style="font-size:20px;font-weight:600;color:#C9A96E;margin:0 0 24px;">PR DATING</p>
     <h1 style="font-size:22px;font-weight:700;margin:0 0 16px;">恭喜，${displayName}！</h1>
-    <p style="line-height:1.8;color:#444;margin:0 0 16px;">您的申請已通過我們的資格審核。<br>現在可以開啟 App 開始探索了。</p>
+    <p style="line-height:1.8;color:#444;margin:0 0 4px;">您的申請已通過我們的資格審核。<br>現在可以開啟 App 開始探索了。</p>
+    ${tierBlockHtml}
     <p style="font-size:12px;color:#999;margin:32px 0 0;line-height:1.7;">
       PR Dating 是一個精選制約會社群，每位成員都經過人工審核。<br>
       感謝您成為我們社群的一員。
@@ -103,7 +114,7 @@ function buildRejectEmail(
     <h1 style="font-size:20px;font-weight:700;margin:0 0 16px;">差一點點，${displayName}</h1>
     <p style="line-height:1.8;color:#444;margin:0 0 16px;">感謝您申請 PR Dating。<br>您與通過標準的距離不遠，以下是一些建議，幫助您在重新申請時提高通過機會。</p>
     ${noteHtml}
-    <p style="font-size:12px;color:#999;margin:32px 0 0;">如有疑問，請聯繫 support@prdating.app</p>
+    <p style="font-size:12px;color:#999;margin:32px 0 0;">如有疑問，請聯繫 theprdating@gmail.com</p>
   </div>
 </body>
 </html>`,
@@ -123,8 +134,8 @@ function buildRejectEmail(
   <div style="font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;max-width:480px;margin:0 auto;padding:40px 24px;color:#1a1a1a;">
     <p style="font-size:20px;font-weight:600;color:#C9A96E;margin:0 0 24px;">PR DATING</p>
     <h1 style="font-size:20px;font-weight:700;margin:0 0 16px;">感謝您的申請</h1>
-    <p style="line-height:1.8;color:#444;margin:0 0 16px;">${displayName}，感謝您申請 PR Dating。<br>很遺憾，您的申請目前無法通過審核。</p>
-    <p style="font-size:12px;color:#999;margin:32px 0 0;">如有疑問，請聯繫 support@prdating.app</p>
+    <p style="line-height:1.8;color:#444;margin:0 0 16px;">${displayName}，感謝您申請 PR Dating。<br>我們仔細審核了您的申請，目前很遺憾無法讓您通過。</p>
+    <p style="font-size:12px;color:#999;margin:32px 0 0;">如有疑問，請聯繫 theprdating@gmail.com</p>
   </div>
 </body>
 </html>`,
@@ -563,15 +574,19 @@ serve(async (req) => {
     }).eq('user_id', app.user_id)
 
     // f) Send notifications
+    const fcmApproveBody = quality_tier === 'top'
+      ? '您的申請已通過！作為創始成員，可終生免費使用 PR Dating 🎉'
+      : '您的 PR Dating 申請已通過審核，快來開始 5 天免費體驗吧！'
+
     await sendFcmNotification(
       app.user_id,
       '恭喜！申請通過 🎉',
-      '您的 PR Dating 申請已通過審核，快來探索吧！',
-      { type: 'application_approved' },
+      fcmApproveBody,
+      { type: 'application_approved', quality_tier: quality_tier! },
     )
 
     if (applicantEmail) {
-      const { subject, html } = buildApproveEmail(app.display_name)
+      const { subject, html } = buildApproveEmail(app.display_name, quality_tier!)
       await sendEmail(applicantEmail, subject, html)
     }
 

@@ -1,4 +1,4 @@
-// ── Luko Admin — Shared utilities ────────────────────────────────────────────
+// ── PR Dating Admin — Shared utilities ───────────────────────────────────────
 //
 // 1. Fill in SUPABASE_ANON_KEY before deploying.
 //    Get it from: Supabase Dashboard → Project Settings → API → anon public key

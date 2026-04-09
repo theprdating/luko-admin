@@ -81,14 +81,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get approvedGateBodyTop =>
-      '恭喜！你已通過 PR Dating 的資格審核。\n作為本批創始成員（前 85%），你可終生免費使用所有功能。\n接下來，綁定手機號碼以完成帳號設置。';
+      '您的形象符合 PR Dating 的精選標準，歡迎加入。\n你可終生免費使用所有功能。\n接下來，綁定手機號碼以完成帳號設置。';
 
   @override
   String get approvedGateBodyStandard =>
-      '恭喜！你已通過 PR Dating 的資格審核。\n你可享有 5 天免費體驗，之後可訂閱方案繼續使用。\n接下來，綁定手機號碼以完成帳號設置。';
+      '您通過了我們的基本審核，期待看見您在社群中的表現。\n你可享有 5 天免費體驗，之後可訂閱方案繼續使用。\n接下來，綁定手機號碼以完成帳號設置。';
 
   @override
-  String get approvedGateTierLabelTop => '創始成員 · 終生免費';
+  String get approvedGateTierLabelTop => '精選成員 · 終生免費';
 
   @override
   String get approvedGateTierLabelStandard => '5 天免費體驗';
@@ -258,6 +258,11 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get applyPhotosManageAccess => '新增照片';
+
+  @override
+  String applyPhotosExistingHint(int count) {
+    return '已有 $count 張上傳照片，可直接繼續，或重新選取替換';
+  }
 
   @override
   String get permissionPhotoTitle => '需要相簿權限';
@@ -437,14 +442,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get reviewRejectedBodySoft =>
-      '感謝你申請加入 PR Dating。\n我們仔細審核了你的申請，目前很遺憾無法讓你通過。\n以下是一些一般性建議，希望對你有所幫助：';
+      '感謝你的申請。為確保每位成員都能擁有最佳的配對體驗，我們對申請照片有基本的品質要求。\n以下是一些建議，希望對你有所幫助：';
 
   @override
   String get reviewRejectedTitlePotential => '差一點點！';
 
   @override
   String get reviewRejectedBodyPotential =>
-      '你與通過標準的距離不遠。\n試試這些建議，讓自己在重新申請時更容易通過：';
+      '感謝你的申請。為確保每位成員都能擁有最佳的配對體驗，我們對申請照片有基本的品質要求。\n你與通過標準的距離不遠，試試這些建議：';
 
   @override
   String get reviewAdminFeedbackTitle => '審核建議';

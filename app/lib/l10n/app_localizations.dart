@@ -239,19 +239,19 @@ abstract class AppLocalizations {
   /// Approval gate page body — top tier (lifetime free)
   ///
   /// In en, this message translates to:
-  /// **'Congratulations! You\'ve passed the PR Dating review.\nAs a founding member (top 85%), you\'ll have free access to all features for life.\nOne last step — link your phone number to finish setting up your account.'**
+  /// **'Your profile meets PR Dating\'s community standards — welcome aboard.\nYou\'ll have free access to all features for life.\nOne last step — link your phone number to finish setting up your account.'**
   String get approvedGateBodyTop;
 
   /// Approval gate page body — standard tier (5-day free)
   ///
   /// In en, this message translates to:
-  /// **'Congratulations! You\'ve passed the PR Dating review.\nYou\'ll enjoy a 5-day free trial, after which you can subscribe to continue.\nOne last step — link your phone number to finish setting up your account.'**
+  /// **'You\'ve passed our review. We look forward to seeing you in the community.\nYou\'ll enjoy a 5-day free trial, after which you can subscribe to continue.\nOne last step — link your phone number to finish setting up your account.'**
   String get approvedGateBodyStandard;
 
   /// Approval gate page — top tier label
   ///
   /// In en, this message translates to:
-  /// **'Founding Member · Free Forever'**
+  /// **'Member · Free Forever'**
   String get approvedGateTierLabelTop;
 
   /// Approval gate page — standard tier label
@@ -571,6 +571,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add Photos'**
   String get applyPhotosManageAccess;
+
+  /// Banner shown when reapplying with existing uploaded photos
+  ///
+  /// In en, this message translates to:
+  /// **'You have {count} uploaded photos. Tap Next to keep them, or add new ones to replace.'**
+  String applyPhotosExistingHint(int count);
 
   /// Gallery permission denied dialog title
   ///
@@ -923,7 +929,7 @@ abstract class AppLocalizations {
   /// Rejected screen body — hard rejection
   ///
   /// In en, this message translates to:
-  /// **'Thanks for applying to PR Dating.\nWe reviewed your application carefully and are sorry that we can\'t approve it at this time.\nHere are some general tips that might be helpful:'**
+  /// **'Thank you for your application. To ensure every member has the best possible matching experience, we have basic quality standards for application photos.\nHere are some tips that might be helpful:'**
   String get reviewRejectedBodySoft;
 
   /// Rejected screen title — potential tier
@@ -935,7 +941,7 @@ abstract class AppLocalizations {
   /// Rejected screen body — potential tier
   ///
   /// In en, this message translates to:
-  /// **'You\'re close to our standard — just not quite there yet.\nTry these tips before reapplying:'**
+  /// **'Thank you for your application. To ensure every member has the best possible matching experience, we have basic quality standards for application photos.\nYou\'re close to our standard — try these tips before reapplying:'**
   String get reviewRejectedBodyPotential;
 
   /// Soft-rejected page: admin feedback card title

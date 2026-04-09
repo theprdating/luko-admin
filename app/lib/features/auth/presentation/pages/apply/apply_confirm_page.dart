@@ -175,6 +175,8 @@ class _ApplyConfirmPageState extends ConsumerState<ApplyConfirmPage> {
       } catch (_) {}
 
       ref.read(applyFormProvider.notifier).reset();
+      // 重新申請模式結束（status 即將更新為 pending，router 會重導向）
+      ref.read(reapplyModeProvider.notifier).state = false;
 
       ref.read(analyticsProvider)
         ..track(AnalyticsEvents.applyStepCompleted, {'step': 6})
@@ -565,22 +567,18 @@ class _TermsRowState extends State<_TermsRow> {
     );
 
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // 略微上移 checkbox 使其與文字第一行對齊
-        Transform.translate(
-          offset: const Offset(0, -2),
-          child: Checkbox(
-            value: widget.isAgreed,
-            onChanged: widget.onChanged,
-            activeColor: widget.colors.forestGreen,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(4),
-            ),
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        Checkbox(
+          value: widget.isAgreed,
+          onChanged: widget.onChanged,
+          activeColor: widget.colors.forestGreen,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(4),
           ),
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          visualDensity: VisualDensity.compact,
         ),
-        const SizedBox(width: AppSpacing.xs),
         Expanded(
           child: RichText(
             text: TextSpan(

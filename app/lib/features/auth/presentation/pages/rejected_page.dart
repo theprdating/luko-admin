@@ -9,7 +9,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/exit_on_double_back_scope.dart';
 import '../../../../core/widgets/luko_button.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../providers/auth_provider.dart';
+import '../../providers/apply_provider.dart';
 
 const _kMaxAttempts = 3;
 
@@ -84,16 +84,42 @@ class _RejectedPageState extends ConsumerState<RejectedPage> {
     final userId = supabase.auth.currentUser?.id;
     if (userId == null) return;
 
-    try {
-      await supabase
-          .from('applications')
-          .update({'status': 'pending', 'reapply_after': null})
-          .eq('user_id', userId);
+    setState(() => _isLoading = true);
 
-      ref.invalidate(appUserStatusProvider);
-      if (mounted) context.go('/apply/photos');
+    try {
+      // 載入現有申請資料以預填表單（status 不在此更新，由 confirm 頁送出時觸發）
+      final row = await supabase
+          .from('applications')
+          .select('display_name, birth_date, gender, seeking, bio, photo_paths')
+          .eq('user_id', userId)
+          .single();
+
+      if (!mounted) return;
+
+      final birthDate = DateTime.tryParse((row['birth_date'] as String?) ?? '');
+      if (birthDate == null) {
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      // 預填表單：保留個人資料 + 已上傳照片路徑；認證欄位清空，強制重拍
+      ref.read(applyFormProvider.notifier).prefillForReapply(
+        displayName:        (row['display_name']  as String?)    ?? '',
+        birthDate:          birthDate,
+        gender:             (row['gender']         as String?)    ?? '',
+        seeking:            List<String>.from(row['seeking']      as List? ?? []),
+        uploadedPhotoPaths: List<String>.from(row['photo_paths']  as List? ?? []),
+        bio:                (row['bio']            as String?)    ?? '',
+      );
+
+      // 放行 router，讓 rejected 用戶可存取 /apply/* 路由
+      ref.read(reapplyModeProvider.notifier).state = true;
+
+      if (mounted) context.go('/apply/info');
     } on PostgrestException {
-      // 靜默失敗，讓用戶再試一次
+      if (mounted) setState(() => _isLoading = false);
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

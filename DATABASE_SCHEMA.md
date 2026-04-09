@@ -93,6 +93,7 @@ CREATE TRIGGER applications_updated_at
 | `status` | 審核狀態 | `pending` / `approved` / `rejected` |
 | `review_note` | 審核員內部備註 | ⚠️ 不對外顯示，只供內部紀錄 |
 | `reapply_after` | 拒絕後可重申請的時間 | 設為 `rejected_at + 30 days` |
+| `rejection_tags` | 審核員勾選的標準化拒絕標籤 | `text[]`，只在 `status=rejected` 時有效；approve 時清為 `NULL` |
 | `terms_accepted_at` | Step 5 確認送出時接受服務條款的時間 | 審核通過後複製到 `profiles.terms_accepted_at` |
 | `privacy_accepted_at` | Step 5 確認送出時接受隱私政策的時間 | 審核通過後複製到 `profiles.privacy_accepted_at` |
 

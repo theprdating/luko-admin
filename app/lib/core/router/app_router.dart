@@ -21,6 +21,7 @@ import '../../features/auth/presentation/pages/privacy_page.dart';
 import '../../features/auth/presentation/pages/terms_update_page.dart';
 import '../../features/auth/presentation/pages/welcome_in_page.dart';
 import '../../features/auth/presentation/pages/welcome_page.dart';
+import '../../features/auth/providers/apply_provider.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../supabase/supabase_provider.dart';
 import '../../features/chat/presentation/pages/chat_room_page.dart';
@@ -86,6 +87,8 @@ class _RouterNotifier extends ChangeNotifier {
     _ref.listen(authStateProvider, (_, __) => notifyListeners());
     // 監聽用戶狀態變化（申請審核通過 / 拒絕）
     _ref.listen(appUserStatusProvider, (_, __) => notifyListeners());
+    // 監聽重新申請模式（rejected 用戶重填申請流程時放行 /apply/*）
+    _ref.listen(reapplyModeProvider, (_, __) => notifyListeners());
   }
 
   final Ref _ref;
@@ -125,7 +128,10 @@ class _RouterNotifier extends ChangeNotifier {
       },
 
       // OAuth 已登入，申請流程進行中（填寫資料步驟）
-      AppUserStatus.onboarding => path.startsWith('/apply') ? null : '/apply/info',
+      // /apply/phone 不在正常申請流程中（使用 signInWithOtp 會提前設定 user.phone，
+      // 導致 post-approval 的恭喜頁面被跳過）→ 一律導回 /apply/info
+      AppUserStatus.onboarding =>
+          (path.startsWith('/apply') && path != '/apply/phone') ? null : '/apply/info',
 
       // 審核通過，手機尚未綁定（一次性儀式）
       // 先顯示告知頁（/review/approved），用戶點 CTA 後才進 /verify/phone
@@ -138,14 +144,19 @@ class _RouterNotifier extends ChangeNotifier {
       // 等待審核：只允許停在 /review/pending
       AppUserStatus.pending => path == '/review/pending' ? null : '/review/pending',
 
-      // 審核未通過：只允許停在 /review/rejected
-      AppUserStatus.rejected => path == '/review/rejected' ? null : '/review/rejected',
+      // 審核未通過：停在 /review/rejected，或重新申請流程中允許 /apply/*
+      AppUserStatus.rejected => (
+        path == '/review/rejected' ||
+        (path.startsWith('/apply') && _ref.read(reapplyModeProvider))
+      ) ? null : '/review/rejected',
 
       // 已通過，但條款需更新：強制停在 /terms-update
       AppUserStatus.termsRequired => path == '/terms-update' ? null : '/terms-update',
 
       // 已通過且條款最新：不允許停在 auth / apply / review / verify 頁面
+      // path == '/' 是冷啟動的暫時 splash，需一併導向（否則 approved 用戶會卡在空白頁）
       AppUserStatus.approved => (
+        path == '/' ||
         path.startsWith('/apply') ||
         path.startsWith('/review') ||
         path == '/onboarding' ||

@@ -52,7 +52,8 @@ class ApplyPhotosPage extends ConsumerStatefulWidget {
   ConsumerState<ApplyPhotosPage> createState() => _ApplyPhotosPageState();
 }
 
-class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage> {
+class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage>
+    with WidgetsBindingObserver {
   static const int _minPhotos = 2;
   static const int _maxPhotos = 9;
 
@@ -66,8 +67,9 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage> {
   DefaultAssetPickerProvider? _pickerProvider;
   DefaultAssetPickerBuilderDelegate? _pickerDelegate;
 
-  bool _isProcessing = false; // 壓縮 / 裁切中
-  bool _isUploading = false;  // 上傳中
+  bool _isProcessing  = false; // 壓縮 / 裁切中
+  bool _isUploading   = false; // 上傳中
+  bool _isDownloading = false; // 重新申請：從 Storage 下載已有照片中
   String? _error;
 
   /// 最近一次取得的相簿權限狀態，用於判斷是否顯示「有限存取」提示橫幅
@@ -77,10 +79,87 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage> {
   void initState() {
     super.initState();
     _localPaths = List.from(ref.read(applyFormProvider).localPhotoPaths);
+    WidgetsBinding.instance.addObserver(this);
+    // addPostFrameCallback 確保 widget 完全 mount 後才查詢權限。
+    // 使用 getPermissionState()（純查詢，不觸發系統彈窗）取代
+    // requestPermissionExtend()，避免 Android 14 雙重請求導致回傳
+    // 舊快取 limited 狀態的問題。
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _checkInitialPermission();
+
+      // 重新申請：localPhotoPaths 為空但有已上傳路徑 → 從 Storage 下載以預覽
+      final form = ref.read(applyFormProvider);
+      if (_localPaths.isEmpty && form.uploadedPhotoPaths.isNotEmpty) {
+        _downloadExistingPhotos(form.uploadedPhotoPaths);
+      }
+    });
+  }
+
+  /// App 從背景回到前台時（用戶可能剛在 Settings 更改過照片權限），
+  /// 重新查詢並同步 UI 狀態。若權限有變動則同時重置 stale delegate，
+  /// 確保下次開啟 picker 時以最新權限重建。
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _refreshPermissionOnResume();
+    }
+  }
+
+  Future<void> _refreshPermissionOnResume() async {
+    try {
+      // 從設定頁回來：使用純查詢，不再彈一次系統授權對話框。
+      // getPermissionState() 直接讀取目前系統授予的狀態，
+      // 包含用戶在設定裡把「有限存取」改為「允許全部」的情境。
+      final ps = await PhotoManager.getPermissionState(
+        requestOption: const PermissionRequestOption(
+          androidPermission: AndroidPermission(
+            type: RequestType.image,
+            mediaLocation: false,
+          ),
+        ),
+      );
+      if (!mounted) return;
+      if (ps != _permissionState) {
+        setState(() => _permissionState = ps);
+        // 權限已變動，delegate 快取的 initialPermission 已過時，強制重建
+        _pickerDelegate = null;
+        _pickerProvider = null;
+      }
+    } catch (_) {
+      // 查詢失敗不中斷流程
+    }
+  }
+
+  /// 初始查詢：純讀取目前系統狀態，不觸發授權彈窗。
+  ///
+  /// 設計原則：
+  /// - `getPermissionState()` 是非侵入式查詢，不會彈出系統對話框。
+  /// - 真正的授權彈窗由 `AssetPicker.pickAssetsWithDelegate()` 在用戶
+  ///   主動點擊「從相簿選取」時由 picker 自行觸發，時機更自然。
+  /// - 避免 Android 14 雙重呼叫問題：initState postFrameCallback 呼叫
+  ///   requestPermissionExtend() 後，_pickFromGallery() 內部再次呼叫，
+  ///   Activity permission result callback 不保證順序，可能回傳舊快取
+  ///   limited 狀態，即使用戶已授予完整存取（READ_MEDIA_IMAGES）亦然。
+  Future<void> _checkInitialPermission() async {
+    try {
+      final ps = await PhotoManager.getPermissionState(
+        requestOption: const PermissionRequestOption(
+          androidPermission: AndroidPermission(
+            type: RequestType.image,
+            mediaLocation: false,
+          ),
+        ),
+      );
+      if (mounted) setState(() => _permissionState = ps);
+    } catch (_) {
+      // 查詢失敗不影響 UI，用戶仍可手動開啟 picker
+    }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _pickerProvider?.dispose();
     super.dispose();
   }
@@ -92,10 +171,24 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage> {
     final locale = Localizations.localeOf(context); // context 在 await 前擷取
     if (_localPaths.length >= _maxPhotos) return;
 
-    // 每次開啟前都重新確認權限狀態：
-    // 若用戶在設定中從 limited → authorized，delegate 需要以新狀態重建，
-    // 否則 wechat_assets_picker 的「部分存取」橫幅會持續顯示。
-    final ps = await PhotoManager.requestPermissionExtend();
+    // 使用快取的 _permissionState（由 _checkInitialPermission 或
+    // _refreshPermissionOnResume 以 getPermissionState() 純查詢取得）。
+    //
+    // 若尚未初始化（理論上極少發生），才做一次 getPermissionState() fallback。
+    // 不使用 requestPermissionExtend() 的原因：
+    //   picker 本身已會在開啟時觸發系統授權彈窗；
+    //   若此處再呼叫 requestPermissionExtend()，Android 14 的雙重請求
+    //   可能使 Activity permission result 順序錯亂，回傳 limited 舊快取，
+    //   即使用戶已授予完整 READ_MEDIA_IMAGES 亦然。
+    final ps = _permissionState ??
+        await PhotoManager.getPermissionState(
+          requestOption: const PermissionRequestOption(
+            androidPermission: AndroidPermission(
+              type: RequestType.image,
+              mediaLocation: false,
+            ),
+          ),
+        );
     if (!mounted) return;
 
     // 明確被永久拒絕才顯示引導 Dialog；同時清除快取，讓用戶改設定後可重試。
@@ -107,10 +200,7 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage> {
       return;
     }
 
-    // 記錄最新權限狀態，以便 UI 顯示「有限存取」提示橫幅
-    if (mounted) setState(() => _permissionState = ps);
-
-    // 首次建立，或 delegate 尚未初始化
+    // 首次建立，或 delegate 已被重置（權限變動後）
     if (_pickerDelegate == null) {
       _pickerProvider = DefaultAssetPickerProvider(
         maxAssets: 1,
@@ -118,11 +208,12 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage> {
       );
       _pickerDelegate = DefaultAssetPickerBuilderDelegate(
         provider: _pickerProvider!,
-        // limited 和 authorized 都傳 authorized：
-        // 隱藏 picker 內建的「部分存取」橫幅（用戶已能選照片，橫幅只會造成混淆）
-        initialPermission: ps.hasAccess
-            ? PermissionState.authorized
-            : ps,
+        // 直接傳入實際的 ps：
+        // - authorized → 正常，無橫幅
+        // - limited    → 顯示 picker 內建「有限存取」橫幅，用戶可在 picker 裡
+        //                直接點「管理」追加照片，不必退出再找外層橫幅
+        // - notDetermined → picker 會自行觸發系統授權彈窗
+        initialPermission: ps,
         keepScrollOffset: true,
         pickerTheme: AssetPicker.themeData(colors.forestGreen),
         textDelegate: locale.languageCode == 'zh'
@@ -153,6 +244,30 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage> {
       _pickerProvider = null;
       return;
     }
+
+    // picker 關閉後，以純查詢同步最新狀態：
+    // 用戶可能在 picker 內點「管理」並將 limited → authorized，
+    // 若狀態有變化需同步更新外層橫幅，並重置 delegate 讓下次以新狀態重建。
+    // 同樣使用 getPermissionState() 而非 requestPermissionExtend()，
+    // 避免 picker 剛關閉時的競爭條件。
+    try {
+      final updatedPs = await PhotoManager.getPermissionState(
+        requestOption: const PermissionRequestOption(
+          androidPermission: AndroidPermission(
+            type: RequestType.image,
+            mediaLocation: false,
+          ),
+        ),
+      );
+      if (mounted && updatedPs != _permissionState) {
+        setState(() => _permissionState = updatedPs);
+        _pickerDelegate = null;
+        _pickerProvider = null;
+      }
+    } catch (_) {
+      // 查詢失敗不影響照片處理流程
+    }
+
     if (result == null || !mounted) return;
 
     setState(() => _isProcessing = true);
@@ -175,21 +290,6 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage> {
     } finally {
       if (mounted) setState(() => _isProcessing = false);
     }
-  }
-
-  // ── iOS 有限存取：開啟系統「選擇照片」面板 ─────────────────────────────────────
-  //
-  // PhotoManager.presentLimited() 讓用戶在 iOS 系統 UI 追加 / 移除允許的照片。
-  // 回傳後重置 delegate，確保下次開啟 picker 時重新載入最新的 asset list。
-
-  Future<void> _managePhotoAccess() async {
-    await PhotoManager.presentLimited();
-    // delegate 使用舊的 asset list，必須重置讓下次重建
-    _pickerDelegate = null;
-    _pickerProvider = null;
-    // 重新抓取最新權限狀態，更新橫幅顯示
-    final ps = await PhotoManager.requestPermissionExtend();
-    if (mounted) setState(() => _permissionState = ps);
   }
 
   // ── 從相機拍照（單張，含裁切）──────────────────────────────────────────────
@@ -338,6 +438,49 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage> {
     ref.read(applyFormProvider.notifier).setLocalPhotos(List.from(_localPaths));
   }
 
+  // ── 重新申請：從 Storage 下載已有照片，還原為本機暫存路徑 ──────────────────
+  //
+  // 目的：讓照片格顯示之前上傳的照片（維持原順序），使用者可以直接預覽、
+  // 拖動排序或刪除，體驗與首次申請完全一致。
+  // 下載完成後同步更新 provider 的 localPhotoPaths，供 confirm 頁預覽使用。
+  // 若部分照片下載失敗則跳過，不中斷整體流程。
+
+  Future<void> _downloadExistingPhotos(List<String> storagePaths) async {
+    setState(() => _isDownloading = true);
+
+    try {
+      final supabase = ref.read(supabaseProvider);
+      final tmpDir   = await getTemporaryDirectory();
+      final ts       = DateTime.now().millisecondsSinceEpoch;
+      final localPaths = <String>[];
+
+      for (int i = 0; i < storagePaths.length; i++) {
+        try {
+          final bytes     = await supabase.storage
+              .from('application-photos')
+              .download(storagePaths[i]);
+          final localPath = '${tmpDir.path}/luko_reapply_${ts}_$i.jpg';
+          await File(localPath).writeAsBytes(bytes);
+          localPaths.add(localPath);
+        } catch (e) {
+          debugPrint('Reapply photo download [$i] failed: $e');
+          // 單張失敗不中斷，其餘照片繼續下載
+        }
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _localPaths     = localPaths;
+        _isDownloading  = false;
+      });
+      // 更新 provider，讓 confirm 頁也能看到照片預覽
+      ref.read(applyFormProvider.notifier).setLocalPhotos(List.from(_localPaths));
+    } catch (e) {
+      debugPrint('Reapply photo download error: $e');
+      if (mounted) setState(() => _isDownloading = false);
+    }
+  }
+
   // ── 上傳並前進 ─────────────────────────────────────────────────────────────
   //
   // 修正重點：
@@ -354,12 +497,19 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage> {
   // 4. 加入更詳細的錯誤分類，方便 debug。
 
   Future<void> _onNext() async {
-    if (_localPaths.length < _minPhotos) return;
-
     if (widget.isDevMode) {
       context.go('/dev/apply-verify');
       return;
     }
+
+    // 重新申請：用戶未重新選照片但已有上傳路徑，直接沿用不重傳
+    final existingPaths = ref.read(applyFormProvider).uploadedPhotoPaths;
+    if (_localPaths.isEmpty && existingPaths.isNotEmpty) {
+      context.go('/apply/verify');
+      return;
+    }
+
+    if (_localPaths.length < _minPhotos) return;
 
     if (_isUploading) return;
 
@@ -464,7 +614,11 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage> {
     final colors = Theme.of(context).extension<AppColors>()!;
     final textTheme = Theme.of(context).textTheme;
     final count = _localPaths.length;
-    final canProceed = count >= _minPhotos && !_isProcessing;
+    final existingPaths = ref.watch(applyFormProvider).uploadedPhotoPaths;
+    // 允許前進：已有新選照片（≥2）或重新申請保留舊路徑；下載 / 壓縮中停用
+    final canProceed = (count >= _minPhotos || existingPaths.isNotEmpty)
+        && !_isProcessing
+        && !_isDownloading;
 
     return LukoLoadingOverlay(
       isLoading: _isUploading,
@@ -512,13 +666,25 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage> {
                     style: textTheme.bodyMedium?.copyWith(color: colors.secondaryText),
                   ),
 
-                  // ── iOS 有限存取提示橫幅 ─────────────────────────────
-                  if (Platform.isIOS && _permissionState == PermissionState.limited) ...[
+                  // ── 重新申請：下載失敗後的 fallback 橫幅 ────────────────
+                  // 下載中（_isDownloading）改以 Grid 內 spinner 表達，不顯示橫幅
+                  if (existingPaths.isNotEmpty && _localPaths.isEmpty && !_isDownloading) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    _ExistingPhotosBanner(
+                      count: existingPaths.length,
+                      colors: colors,
+                      textTheme: textTheme,
+                    ),
+                  ],
+
+                  // ── 有限存取提示橫幅（僅在確認為 limited 時顯示）────────
+                  // _permissionState == null 表示尚未查詢完成，不顯示橫幅
+                  // _permissionState == authorized 表示完整權限，不顯示
+                  // _permissionState == limited 才顯示（iOS 或 Android 14 部分存取）
+                  if (_permissionState == PermissionState.limited) ...[
                     const SizedBox(height: AppSpacing.sm),
                     _LimitedAccessBanner(
                       hint: l10n.applyPhotosLimitedHint,
-                      buttonLabel: l10n.applyPhotosManageAccess,
-                      onManage: _managePhotoAccess,
                       colors: colors,
                       textTheme: textTheme,
                     ),
@@ -526,17 +692,30 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage> {
 
                   const SizedBox(height: AppSpacing.xl),
 
-                  // ── 9 格可拖動照片 Grid ────────────────────────────────
-                  _DraggablePhotoGrid(
-                    localPaths: _localPaths,
-                    maxPhotos: _maxPhotos,
-                    isProcessing: _isProcessing,
-                    colors: colors,
-                    l10n: l10n,
-                    onAddTap: count < _maxPhotos ? _showSourcePicker : null,
-                    onRemove: _removePhoto,
-                    onReorder: _reorderPhotos,
-                  ),
+                  // ── 9 格可拖動照片 Grid（或下載中 spinner）────────────────
+                  // 重新申請時先從 Storage 下載照片（_isDownloading），
+                  // 完成後才渲染可操作的 Grid，避免空格子誤導用戶重新上傳。
+                  if (_isDownloading)
+                    SizedBox(
+                      height: 200,
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: colors.forestGreen,
+                          strokeWidth: 2.5,
+                        ),
+                      ),
+                    )
+                  else
+                    _DraggablePhotoGrid(
+                      localPaths: _localPaths,
+                      maxPhotos: _maxPhotos,
+                      isProcessing: _isProcessing,
+                      colors: colors,
+                      l10n: l10n,
+                      onAddTap: count < _maxPhotos ? _showSourcePicker : null,
+                      onRemove: _removePhoto,
+                      onReorder: _reorderPhotos,
+                    ),
 
                   const SizedBox(height: AppSpacing.md),
 
@@ -605,7 +784,8 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage> {
 // ── 可拖動照片 Grid ────────────────────────────────────────────────────────────
 //
 // 每個有照片的格子都是 LongPressDraggable（長按啟動拖動）+ DragTarget（接受放下）。
-// 空格子只作為 DragTarget（拖到最後空位可移動照片順序）。
+// 空格子是純 DragTarget（只接受，不發射）。
+// 順序規則：拖到目標格子時，fromIndex 的照片插入 toIndex 位置，其他往後移。
 
 class _DraggablePhotoGrid extends StatefulWidget {
   const _DraggablePhotoGrid({
@@ -626,7 +806,7 @@ class _DraggablePhotoGrid extends StatefulWidget {
   final AppLocalizations l10n;
   final VoidCallback? onAddTap;
   final void Function(int index) onRemove;
-  final void Function(int from, int to) onReorder;
+  final void Function(int fromIndex, int toIndex) onReorder;
 
   @override
   State<_DraggablePhotoGrid> createState() => _DraggablePhotoGridState();
@@ -637,58 +817,46 @@ class _DraggablePhotoGridState extends State<_DraggablePhotoGrid> {
 
   @override
   Widget build(BuildContext context) {
-    const crossAxisCount = 3;
-    const spacing = 8.0;
     final count = widget.localPaths.length;
 
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        crossAxisSpacing: spacing,
-        mainAxisSpacing: spacing,
+        crossAxisCount: 3,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
+        childAspectRatio: 1,
       ),
+      // 永遠顯示全部 9 格：已填格 + 1 個可點擊加號格 + 其餘灰階佔位格
       itemCount: widget.maxPhotos,
-      itemBuilder: (_, i) {
+      itemBuilder: (context, i) {
         if (i < count) {
-          // ── 有照片的格子：Draggable + DragTarget ────────────────────
-          return _buildFilledSlot(i, count);
-        } else if (i == count && count < widget.maxPhotos) {
-          // ── 下一個空格（活躍）：DragTarget + 點擊新增 ────────────────
-          return _buildActiveEmptySlot(i, count);
+          return _buildDraggableSlot(i, count);  // 已有照片
+        } else if (i == count) {
+          return _buildActiveEmptySlot(i, count); // 下一個可新增格（含 + 按鈕）
         } else {
-          // ── 其餘空格（不活躍）────────────────────────────────────────
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(AppRadius.card),
-            child: _EmptySlot(
-              isNext: false,
-              isProcessing: false,
-              colors: widget.colors,
-              l10n: widget.l10n,
-            ),
-          );
+          return _buildInactiveEmptySlot();        // 視覺佔位格（不可互動）
         }
       },
     );
   }
 
-  Widget _buildFilledSlot(int i, int count) {
+  Widget _buildDraggableSlot(int i, int count) {
     final path = widget.localPaths[i];
     final isDragging = _draggingIndex == i;
 
     return LongPressDraggable<int>(
-      key: ValueKey(path),
       data: i,
       delay: const Duration(milliseconds: 300),
       onDragStarted: () => setState(() => _draggingIndex = i),
       onDragEnd: (_) => setState(() => _draggingIndex = null),
       onDraggableCanceled: (_, __) => setState(() => _draggingIndex = null),
       feedback: SizedBox(
-        width: 100, height: 100,
-        child: Material(
-          elevation: 6,
-          borderRadius: BorderRadius.circular(AppRadius.card),
+        width: (MediaQuery.of(context).size.width - 2 * AppSpacing.pagePadding - 16) / 3,
+        height: (MediaQuery.of(context).size.width - 2 * AppSpacing.pagePadding - 16) / 3,
+        child: Opacity(
+          opacity: 0.85,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(AppRadius.card),
             child: Image.file(File(path), fit: BoxFit.cover),
@@ -775,6 +943,22 @@ class _DraggablePhotoGridState extends State<_DraggablePhotoGrid> {
       },
     );
   }
+
+  /// 灰階佔位格：純視覺，不可點擊、不接受拖放
+  Widget _buildInactiveEmptySlot() {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppRadius.card),
+      child: Container(
+        decoration: BoxDecoration(
+          color: widget.colors.forestGreenSubtle.withValues(alpha: 0.4),
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          border: Border.all(
+            color: widget.colors.forestGreen.withValues(alpha: 0.12),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 // ── 已填入照片的格子 ──────────────────────────────────────────────────────────
@@ -844,22 +1028,19 @@ class _FilledSlot extends StatelessWidget {
   }
 }
 
-// ── iOS 有限存取橫幅 ──────────────────────────────────────────────────────────
+// ── iOS / Android 14 有限存取橫幅 ─────────────────────────────────────────────
 //
-// 當用戶選擇「有限存取」時顯示，提供一個按鈕讓用戶呼叫系統「選擇照片」面板。
+// 僅在 _permissionState == PermissionState.limited 時顯示。
+// authorized / notDetermined / null 一律不顯示。
 
 class _LimitedAccessBanner extends StatelessWidget {
   const _LimitedAccessBanner({
     required this.hint,
-    required this.buttonLabel,
-    required this.onManage,
     required this.colors,
     required this.textTheme,
   });
 
   final String hint;
-  final String buttonLabel;
-  final VoidCallback onManage;
   final AppColors colors;
   final TextTheme textTheme;
 
@@ -884,15 +1065,46 @@ class _LimitedAccessBanner extends StatelessWidget {
               style: textTheme.bodySmall?.copyWith(color: colors.secondaryText),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── 重新申請：已有上傳照片提示橫幅 ────────────────────────────────────────────
+//
+// 當用戶進入重新申請流程，`uploadedPhotoPaths` 已預填但未重選本機照片時顯示。
+// 提示用戶可直接點「下一步」保留舊照片，或重新選取替換。
+
+class _ExistingPhotosBanner extends StatelessWidget {
+  const _ExistingPhotosBanner({
+    required this.count,
+    required this.colors,
+    required this.textTheme,
+  });
+
+  final int count;
+  final AppColors colors;
+  final TextTheme textTheme;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: colors.forestGreen.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+        border: Border.all(color: colors.forestGreen.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.check_circle_outline_rounded, size: 16, color: colors.forestGreen),
           const SizedBox(width: 8),
-          GestureDetector(
-            onTap: onManage,
+          Expanded(
             child: Text(
-              buttonLabel,
-              style: textTheme.bodySmall?.copyWith(
-                color: colors.forestGreen,
-                fontWeight: FontWeight.w600,
-              ),
+              l10n.applyPhotosExistingHint(count),
+              style: textTheme.bodySmall?.copyWith(color: colors.secondaryText),
             ),
           ),
         ],

@@ -18,7 +18,7 @@ const _kCaption  = Color(0x61FFFFFF); // 38%
 
 // 公開常數供 TermsPage / PrivacyPage 使用
 const kLegalCompany = 'Luko Inc.';
-const kLegalEmail   = 'legal@luko.tw';
+const kLegalEmail   = 'theprdating@gmail.com';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LegalScaffold — 法律文件頁面共用骨架

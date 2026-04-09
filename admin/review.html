@@ -69,6 +69,14 @@
     // ── Constants ──────────────────────────────────────────────────────────────
     const MAX_ATTEMPTS = 3
 
+    const REJECTION_TAGS = [
+      { key: 'photo_blurry',     label: '建議提供清晰、光線充足的照片' },
+      { key: 'messy_background', label: '建議在整潔或有質感的空間拍攝' },
+      { key: 'casual_style',     label: '建議展現經過打理的穿搭與造型' },
+      { key: 'face_unclear',     label: '建議確保主照片能清楚看見臉部' },
+      { key: 'too_few_photos',   label: '建議提供至少 3 張不同角度的照片' },
+    ]
+
     // ── State ──────────────────────────────────────────────────────────────────
     let queue            = []   // pending applications
     let selectedId       = null // current application id
@@ -76,6 +84,7 @@
     let decisionMode     = null // 'approve' | 'reject'
     let selectedTier     = null // 'top' | 'standard'
     let selectedRejType  = null // 'soft' | 'hard'
+    let selectedRejTags  = new Set() // rejection tag keys
     let reviewStartedAt  = null
     let isSubmitting     = false
     let currentTab       = 'first' // 'first' | 'reapply'
@@ -222,6 +231,7 @@
       decisionMode    = null
       selectedTier    = null
       selectedRejType = null
+      selectedRejTags = new Set()
       reviewStartedAt = new Date().toISOString()
       startReviewTimer()
 
@@ -341,6 +351,15 @@
                  </div>`
               : ''
             }
+            ${app.rejection_tags && app.rejection_tags.length > 0
+              ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin:6px 0;">
+                   ${app.rejection_tags.map(k => {
+                     const found = REJECTION_TAGS.find(t => t.key === k)
+                     return `<span style="font-size:11px;background:rgba(201,169,110,0.12);color:var(--gold);border:1px solid rgba(201,169,110,0.3);border-radius:4px;padding:2px 7px;">${found ? found.label : k}</span>`
+                   }).join('')}
+                 </div>`
+              : ''
+            }
             <div class="reapply-prev-note">
               ${app.review_note
                 ? escapeHtml(app.review_note)
@@ -448,6 +467,19 @@
                 <span class="pick-sub">純粹不符合標準</span>
               </button>
             </div>
+            <!-- Rejection tags -->
+            <div style="margin:10px 0 4px;">
+              <div style="font-size:11px;color:var(--text-second);margin-bottom:8px;letter-spacing:0.02em;">改善建議標籤（可多選，勾選後顯示給用戶）</div>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                ${REJECTION_TAGS.map(t => `
+                  <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                    <input type="checkbox" value="${t.key}" onchange="toggleRejTag(this)"
+                           style="accent-color:var(--gold);width:14px;height:14px;flex-shrink:0;cursor:pointer;">
+                    <span style="font-size:13px;color:var(--text-main);">${t.label}</span>
+                  </label>
+                `).join('')}
+              </div>
+            </div>
             <button class="btn-confirm btn-confirm-reject" id="btn-confirm-reject"
                     disabled onclick="confirmReject()">確認拒絕</button>
           </div>
@@ -456,6 +488,17 @@
 
         </div>
       `
+
+      // Wheel → horizontal scroll on photos row
+      const photosRow = document.querySelector('.photos-row')
+      if (photosRow) {
+        photosRow.addEventListener('wheel', e => {
+          if (e.deltaY !== 0) {
+            e.preventDefault()
+            photosRow.scrollLeft += e.deltaY
+          }
+        }, { passive: false })
+      }
     }
 
     // ── Decision: Approve ──────────────────────────────────────────────────────
@@ -527,9 +570,15 @@
     }
 
     // ── Decision: Reject ───────────────────────────────────────────────────────
+    function toggleRejTag(el) {
+      if (el.checked) selectedRejTags.add(el.value)
+      else selectedRejTags.delete(el.value)
+    }
+
     function startReject() {
       decisionMode = 'reject'
       selectedRejType = null
+      selectedRejTags = new Set()
       document.getElementById('btn-reject').classList.add('active')
       document.getElementById('btn-approve').classList.remove('active')
       document.getElementById('reject-panel').classList.remove('hidden')
@@ -591,6 +640,7 @@
           application_id:    selectedId,
           action:            'reject',
           rejection_type:    selectedRejType,
+          rejection_tags:    selectedRejTags.size > 0 ? Array.from(selectedRejTags) : null,
           review_note:       note || null,
           review_started_at: reviewStartedAt,
         },

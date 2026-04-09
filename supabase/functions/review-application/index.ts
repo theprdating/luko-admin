@@ -517,31 +517,33 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: updateErr.message }), { status: 500, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
     }
 
-    // b) Copy application photos to profile-photos bucket
+    // b) Copy application photos to profile-photos bucket (parallel)
+    const timestamp = Date.now()
     const profilePhotoPaths: string[] = []
-    for (let i = 0; i < (app.photo_paths ?? []).length; i++) {
-      const appPath = app.photo_paths[i] as string
-      const profilePath = `${app.user_id}/${Date.now()}_${i}.jpg`
-
-      try {
+    const copyResults = await Promise.allSettled(
+      (app.photo_paths ?? []).map(async (appPath: string, i: number) => {
+        const profilePath = `${app.user_id}/${timestamp}_${i}.jpg`
         const { data: fileData, error: dlErr } = await adminDb.storage
           .from('application-photos')
           .download(appPath)
-
-        if (!dlErr && fileData) {
-          await adminDb.storage
-            .from('profile-photos')
-            .upload(profilePath, fileData, { contentType: 'image/jpeg', upsert: true })
-          profilePhotoPaths.push(profilePath)
-        } else {
-          // Fallback: keep application-photos path (photos won't be visible to other users
-          // until copied, but profile creation can still proceed)
+        if (dlErr || !fileData) {
           console.warn(`[review-application] Failed to copy photo ${appPath}:`, dlErr?.message)
+          return null
         }
-      } catch (e) {
-        console.warn(`[review-application] Photo copy error for ${appPath}:`, e)
+        await adminDb.storage
+          .from('profile-photos')
+          .upload(profilePath, fileData, { contentType: 'image/jpeg', upsert: true })
+        return { profilePath, i }
+      })
+    )
+    // Collect successful copies in original order
+    for (const result of copyResults) {
+      if (result.status === 'fulfilled' && result.value) {
+        profilePhotoPaths[result.value.i] = result.value.profilePath
       }
     }
+    // Compact: remove holes left by failed copies
+    const compactPaths = profilePhotoPaths.filter(Boolean)
 
     // c) Create profile (upsert in case of re-review edge case)
     const { error: profileErr } = await adminDb.from('profiles').upsert({
@@ -550,7 +552,7 @@ serve(async (req) => {
       birth_date: app.birth_date,
       gender: app.gender,
       bio: app.bio ?? null,
-      photo_paths: profilePhotoPaths.length > 0 ? profilePhotoPaths : (app.photo_paths ?? []),
+      photo_paths: compactPaths.length > 0 ? compactPaths : (app.photo_paths ?? []),
       seeking: app.seeking ?? [],
       is_active: true,
       is_founding_member: true,
@@ -560,21 +562,20 @@ serve(async (req) => {
 
     if (profileErr) {
       console.error('[review-application] Profile creation error:', profileErr)
-      // Don't fail the whole request — application is already approved
     }
 
-    // d) Create profile_photos entries
-    if (profilePhotoPaths.length > 0) {
-      for (let i = 0; i < profilePhotoPaths.length; i++) {
-        await adminDb.from('profile_photos').upsert({
+    // d) Create profile_photos entries (parallel)
+    if (compactPaths.length > 0) {
+      await Promise.all(compactPaths.map((storagePath, i) =>
+        adminDb.from('profile_photos').upsert({
           user_id: app.user_id,
-          storage_path: profilePhotoPaths[i],
+          storage_path: storagePath,
           display_order: i,
           is_verified: true,
           verified_at: now,
           verified_by: callerUserId,
         }, { onConflict: 'user_id, storage_path' })
-      }
+      ))
     }
 
     // e) Also approve the identity_verification record
@@ -584,22 +585,21 @@ serve(async (req) => {
       reviewed_at: now,
     }).eq('user_id', app.user_id)
 
-    // f) Send notifications
+    // f) Return immediately, send notifications in background (fire-and-forget)
     const fcmApproveBody = quality_tier === 'top'
       ? '您的形象符合 PR Dating 的精選標準，歡迎加入 🎉'
       : '您通過了我們的基本審核，快來開始 5 天免費體驗吧！'
 
-    await sendFcmNotification(
-      app.user_id,
-      '恭喜！申請通過 🎉',
-      fcmApproveBody,
-      { type: 'application_approved', quality_tier: quality_tier! },
-    )
-
-    if (applicantEmail) {
-      const { subject, html } = buildApproveEmail(app.display_name, quality_tier!)
-      await sendEmail(applicantEmail, subject, html)
-    }
+    const { subject: appSubject, html: appHtml } = buildApproveEmail(app.display_name, quality_tier!)
+    Promise.all([
+      sendFcmNotification(
+        app.user_id,
+        '恭喜！申請通過 🎉',
+        fcmApproveBody,
+        { type: 'application_approved', quality_tier: quality_tier! },
+      ),
+      applicantEmail ? sendEmail(applicantEmail, appSubject, appHtml) : Promise.resolve(),
+    ]).catch(e => console.error('[review-application] approve notify error:', e))
 
     return new Response(
       JSON.stringify({ success: true, action: 'approved', quality_tier }),
@@ -626,23 +626,21 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: updateErr.message }), { status: 500, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
     }
 
-    // FCM notification
+    // Fire notifications in background (fire-and-forget)
     const fcmMessages: Record<string, string> = {
       soft: '差一點點！我們有一些建議給您，30 天後可重新申請。',
       hard: '很遺憾，您的申請目前無法通過審核。',
     }
-
-    await sendFcmNotification(
-      app.user_id,
-      '申請結果通知',
-      fcmMessages[rejection_type!] ?? fcmMessages.soft,
-      { type: 'application_rejected', rejection_type: rejection_type! },
-    )
-
-    if (applicantEmail) {
-      const { subject, html } = buildRejectEmail(app.display_name, rejection_type!, review_note)
-      await sendEmail(applicantEmail, subject, html)
-    }
+    const { subject: rejSubject, html: rejHtml } = buildRejectEmail(app.display_name, rejection_type!, review_note)
+    Promise.all([
+      sendFcmNotification(
+        app.user_id,
+        '申請結果通知',
+        fcmMessages[rejection_type!] ?? fcmMessages.soft,
+        { type: 'application_rejected', rejection_type: rejection_type! },
+      ),
+      applicantEmail ? sendEmail(applicantEmail, rejSubject, rejHtml) : Promise.resolve(),
+    ]).catch(e => console.error('[review-application] reject notify error:', e))
 
     return new Response(
       JSON.stringify({ success: true, action: 'rejected', rejection_type }),

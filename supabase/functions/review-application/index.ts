@@ -30,6 +30,7 @@ interface ReviewBody {
   action: 'approve' | 'reject'
   quality_tier?: 'top' | 'standard'
   rejection_type?: 'soft' | 'hard'
+  rejection_tags?: string[]
   review_note?: string
   review_started_at?: string
 }
@@ -54,12 +55,12 @@ function buildApproveEmail(displayName: string, qualityTier: string): { subject:
   const isTop = qualityTier === 'top'
   const tierBlockHtml = isTop
     ? `<div style="background:#eef7f1;border-radius:10px;padding:14px 16px;margin:20px 0;border:1px solid #b8ddc8;">
-         <p style="font-size:13px;font-weight:700;color:#2d6a4f;margin:0 0 6px;">創始成員 · 終生免費</p>
-         <p style="line-height:1.8;color:#444;margin:0;font-size:14px;">作為本批前 85% 的創始成員，您可<strong>終生免費</strong>使用 PR Dating 的所有功能。感謝您的早期支持！</p>
+         <p style="font-size:13px;font-weight:700;color:#2d6a4f;margin:0 0 6px;">精選成員 · 終生免費</p>
+         <p style="line-height:1.8;color:#444;margin:0;font-size:14px;">您的形象符合 PR Dating 的精選標準，歡迎加入。<br>您可<strong>終生免費</strong>使用 PR Dating 的所有功能，感謝您的支持！</p>
        </div>`
     : `<div style="background:#f5f0e8;border-radius:10px;padding:14px 16px;margin:20px 0;border:1px solid #e0c99a;">
          <p style="font-size:13px;font-weight:700;color:#8a5c1a;margin:0 0 6px;">5 天免費體驗</p>
-         <p style="line-height:1.8;color:#444;margin:0;font-size:14px;">您可享有 <strong>5 天免費體驗</strong>，之後可訂閱方案繼續使用完整功能。</p>
+         <p style="line-height:1.8;color:#444;margin:0;font-size:14px;">您通過了我們的基本審核，期待看見您在社群中的表現。<br>您可享有 <strong>5 天免費體驗</strong>，之後可訂閱方案繼續使用完整功能。</p>
        </div>`
   return {
     subject: '恭喜！您已通過 PR Dating 資格審核',
@@ -90,6 +91,8 @@ function buildRejectEmail(
   rejectionType: string,
   reviewNote?: string,
 ): { subject: string; html: string } {
+  const fixedOpening = `感謝您的申請。為確保每位成員都能擁有最佳的配對體驗，我們對申請照片有基本的品質要求。`
+
   if (rejectionType === 'soft') {
     const noteHtml = reviewNote
       ? `<div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
@@ -97,8 +100,7 @@ function buildRejectEmail(
            <p style="line-height:1.8;color:#444;margin:0;font-size:14px;">${reviewNote}</p>
          </div>`
       : `<p style="line-height:1.8;color:#444;margin:0 0 16px;">
-           建議您留意照片的清晰度與自然感，並讓個人簡介真實呈現自己。<br>
-           <strong>30 天後</strong>可重新提交申請。
+           建議您留意照片的清晰度與自然感，並讓個人簡介真實呈現自己。
          </p>`
     return {
       subject: '關於您的 PR Dating 申請',
@@ -112,7 +114,7 @@ function buildRejectEmail(
   <div style="font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;max-width:480px;margin:0 auto;padding:40px 24px;color:#1a1a1a;">
     <p style="font-size:20px;font-weight:600;color:#C9A96E;margin:0 0 24px;">PR DATING</p>
     <h1 style="font-size:20px;font-weight:700;margin:0 0 16px;">差一點點，${displayName}</h1>
-    <p style="line-height:1.8;color:#444;margin:0 0 16px;">感謝您申請 PR Dating。<br>您與通過標準的距離不遠，以下是一些建議，幫助您在重新申請時提高通過機會。</p>
+    <p style="line-height:1.8;color:#444;margin:0 0 16px;">${fixedOpening}<br>您與通過標準的距離不遠，以下是一些建議，幫助您在重新申請時提高通過機會。</p>
     ${noteHtml}
     <p style="font-size:12px;color:#999;margin:32px 0 0;">如有疑問，請聯繫 theprdating@gmail.com</p>
   </div>
@@ -134,7 +136,7 @@ function buildRejectEmail(
   <div style="font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;max-width:480px;margin:0 auto;padding:40px 24px;color:#1a1a1a;">
     <p style="font-size:20px;font-weight:600;color:#C9A96E;margin:0 0 24px;">PR DATING</p>
     <h1 style="font-size:20px;font-weight:700;margin:0 0 16px;">感謝您的申請</h1>
-    <p style="line-height:1.8;color:#444;margin:0 0 16px;">${displayName}，感謝您申請 PR Dating。<br>我們仔細審核了您的申請，目前很遺憾無法讓您通過。</p>
+    <p style="line-height:1.8;color:#444;margin:0 0 16px;">${fixedOpening}</p>
     <p style="font-size:12px;color:#999;margin:32px 0 0;">如有疑問，請聯繫 theprdating@gmail.com</p>
   </div>
 </body>
@@ -401,6 +403,10 @@ serve(async (req) => {
   }
 
   // ── 1. Validate admin ───────────────────────────────────────────────────────
+  //
+  // 直接 decode JWT payload（不需要 network call）。
+  // Supabase gateway 已在進入 function 前驗證 JWT 簽章，
+  // 因此這裡只需讀取 claims 判斷 admin 身份即可。
 
   const authHeader = req.headers.get('Authorization')
   if (!authHeader?.startsWith('Bearer ')) {
@@ -409,33 +415,36 @@ serve(async (req) => {
 
   const token = authHeader.slice(7)
 
-  // ── 3. Service-role client for DB operations ────────────────────────────────
-  const adminDb = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-  )
-
-  // ── Verify caller: use anon client + explicit token (most compatible in Deno) ─
-  const anonClient = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_ANON_KEY')!,
-  )
-  const { data: { user: callerUser }, error: authError } = await anonClient.auth.getUser(token)
-
-  if (authError || !callerUser) {
-    console.error('[review-application] getUser error:', authError?.message, '| token prefix:', token.slice(0, 20))
+  let callerUserId: string
+  let callerUserRole: string | undefined
+  try {
+    const parts = token.split('.')
+    if (parts.length !== 3) throw new Error('malformed JWT')
+    const padded = parts[1].replace(/-/g, '+').replace(/_/g, '/') + '=='.slice(0, (4 - parts[1].length % 4) % 4)
+    const claims = JSON.parse(atob(padded)) as Record<string, unknown>
+    callerUserId = claims.sub as string
+    callerUserRole = (claims.user_metadata as Record<string, string> | undefined)?.user_role
+    if (!callerUserId) throw new Error('no sub claim')
+  } catch (e) {
+    console.error('[review-application] JWT decode error:', e)
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
     })
   }
 
-  if (callerUser.user_metadata?.user_role !== 'admin') {
+  if (callerUserRole !== 'admin') {
     return new Response(JSON.stringify({ error: 'Admin access required' }), {
       status: 403,
       headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
     })
   }
+
+  // ── 3. Service-role client for DB operations ────────────────────────────────
+  const adminDb = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+  )
 
   // ── 2. Parse body ───────────────────────────────────────────────────────────
 
@@ -446,7 +455,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
   }
 
-  const { application_id, action, quality_tier, rejection_type, review_note, review_started_at } = body
+  const { application_id, action, quality_tier, rejection_type, rejection_tags, review_note, review_started_at } = body
 
   if (!application_id || !action) {
     return new Response(JSON.stringify({ error: 'Missing application_id or action' }), { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
@@ -495,8 +504,10 @@ serve(async (req) => {
     const { error: updateErr } = await adminDb.from('applications').update({
       status: 'approved',
       quality_tier,
+      rejection_type: null,       // 清除上次拒絕殘留資料（Task 1 fix）
+      rejection_tags: null,
       review_note: review_note ?? null,
-      reviewed_by: callerUser.id,
+      reviewed_by: callerUserId,
       reviewed_at: now,
       review_started_at: review_started_at ?? null,
       review_duration_seconds: reviewDuration,
@@ -561,7 +572,7 @@ serve(async (req) => {
           display_order: i,
           is_verified: true,
           verified_at: now,
-          verified_by: callerUser.id,
+          verified_by: callerUserId,
         }, { onConflict: 'user_id, storage_path' })
       }
     }
@@ -569,14 +580,14 @@ serve(async (req) => {
     // e) Also approve the identity_verification record
     await adminDb.from('identity_verifications').update({
       status: 'approved',
-      reviewed_by: callerUser.id,
+      reviewed_by: callerUserId,
       reviewed_at: now,
     }).eq('user_id', app.user_id)
 
     // f) Send notifications
     const fcmApproveBody = quality_tier === 'top'
-      ? '您的申請已通過！作為創始成員，可終生免費使用 PR Dating 🎉'
-      : '您的 PR Dating 申請已通過審核，快來開始 5 天免費體驗吧！'
+      ? '您的形象符合 PR Dating 的精選標準，歡迎加入 🎉'
+      : '您通過了我們的基本審核，快來開始 5 天免費體驗吧！'
 
     await sendFcmNotification(
       app.user_id,
@@ -602,8 +613,9 @@ serve(async (req) => {
     const { error: updateErr } = await adminDb.from('applications').update({
       status: 'rejected',
       rejection_type,
+      rejection_tags: rejection_tags ?? null,
       review_note: review_note ?? null,
-      reviewed_by: callerUser.id,
+      reviewed_by: callerUserId,
       reviewed_at: now,
       review_started_at: review_started_at ?? null,
       review_duration_seconds: reviewDuration,

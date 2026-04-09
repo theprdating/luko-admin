@@ -73,14 +73,14 @@
   "approvedGateBody": "恭喜！你已通過 PR Dating 的資格審核。\n接下來，綁定手機號碼以完成帳號設置。",
   "@approvedGateBody": { "description": "審核通過頁說明文字（通用備用）" },
 
-  "approvedGateBodyTop": "恭喜！你已通過 PR Dating 的資格審核。\n作為本批創始成員（前 85%），你可終生免費使用所有功能。\n接下來，綁定手機號碼以完成帳號設置。",
-  "@approvedGateBodyTop": { "description": "審核通過頁說明文字 — 前 85%（終生免費）" },
+  "approvedGateBodyTop": "您的形象符合 PR Dating 的精選標準，歡迎加入。\n你可終生免費使用所有功能。\n接下來，綁定手機號碼以完成帳號設置。",
+  "@approvedGateBodyTop": { "description": "審核通過頁說明文字 — 精選方案（終生免費）" },
 
-  "approvedGateBodyStandard": "恭喜！你已通過 PR Dating 的資格審核。\n你可享有 5 天免費體驗，之後可訂閱方案繼續使用。\n接下來，綁定手機號碼以完成帳號設置。",
+  "approvedGateBodyStandard": "您通過了我們的基本審核，期待看見您在社群中的表現。\n你可享有 5 天免費體驗，之後可訂閱方案繼續使用。\n接下來，綁定手機號碼以完成帳號設置。",
   "@approvedGateBodyStandard": { "description": "審核通過頁說明文字 — 標準方案（5 天免費）" },
 
-  "approvedGateTierLabelTop": "創始成員 · 終生免費",
-  "@approvedGateTierLabelTop": { "description": "審核通過頁 — 前 85% 方案標籤" },
+  "approvedGateTierLabelTop": "精選成員 · 終生免費",
+  "@approvedGateTierLabelTop": { "description": "審核通過頁 — 精選方案標籤" },
 
   "approvedGateTierLabelStandard": "5 天免費體驗",
   "@approvedGateTierLabelStandard": { "description": "審核通過頁 — 標準方案標籤" },
@@ -259,6 +259,14 @@
   "applyPhotosManageAccess": "新增照片",
   "@applyPhotosManageAccess": { "description": "iOS 有限存取：開啟系統選照片面板的按鈕文字" },
 
+  "applyPhotosExistingHint": "已有 {count} 張上傳照片，可直接繼續，或重新選取替換",
+  "@applyPhotosExistingHint": {
+    "description": "重新申請時，用戶未重選照片但已有上傳路徑的提示",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
   "permissionPhotoTitle": "需要相簿權限",
   "@permissionPhotoTitle": { "description": "相簿權限被拒 Dialog 標題" },
 
@@ -433,13 +441,13 @@
   "reviewRejectedTitleSoft": "感謝你的申請",
   "@reviewRejectedTitleSoft": { "description": "拒絕頁面標題 — 不通過（hard）" },
 
-  "reviewRejectedBodySoft": "感謝你申請加入 PR Dating。\n我們仔細審核了你的申請，目前很遺憾無法讓你通過。\n以下是一些一般性建議，希望對你有所幫助：",
+  "reviewRejectedBodySoft": "感謝你的申請。為確保每位成員都能擁有最佳的配對體驗，我們對申請照片有基本的品質要求。\n以下是一些建議，希望對你有所幫助：",
   "@reviewRejectedBodySoft": { "description": "拒絕頁面說明 — 不通過（hard）" },
 
   "reviewRejectedTitlePotential": "差一點點！",
   "@reviewRejectedTitlePotential": { "description": "拒絕頁面標題 — 有潛力" },
 
-  "reviewRejectedBodyPotential": "你與通過標準的距離不遠。\n試試這些建議，讓自己在重新申請時更容易通過：",
+  "reviewRejectedBodyPotential": "感謝你的申請。為確保每位成員都能擁有最佳的配對體驗，我們對申請照片有基本的品質要求。\n你與通過標準的距離不遠，試試這些建議：",
   "@reviewRejectedBodyPotential": { "description": "拒絕頁面說明 — 有潛力" },
 
   "reviewAdminFeedbackTitle": "審核建議",

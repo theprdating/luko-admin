@@ -83,14 +83,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get approvedGateBodyTop =>
-      'Congratulations! You\'ve passed the PR Dating review.\nAs a founding member (top 85%), you\'ll have free access to all features for life.\nOne last step — link your phone number to finish setting up your account.';
+      'Your profile meets PR Dating\'s community standards — welcome aboard.\nYou\'ll have free access to all features for life.\nOne last step — link your phone number to finish setting up your account.';
 
   @override
   String get approvedGateBodyStandard =>
-      'Congratulations! You\'ve passed the PR Dating review.\nYou\'ll enjoy a 5-day free trial, after which you can subscribe to continue.\nOne last step — link your phone number to finish setting up your account.';
+      'You\'ve passed our review. We look forward to seeing you in the community.\nYou\'ll enjoy a 5-day free trial, after which you can subscribe to continue.\nOne last step — link your phone number to finish setting up your account.';
 
   @override
-  String get approvedGateTierLabelTop => 'Founding Member · Free Forever';
+  String get approvedGateTierLabelTop => 'Member · Free Forever';
 
   @override
   String get approvedGateTierLabelStandard => '5-Day Free Trial';
@@ -267,6 +267,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get applyPhotosManageAccess => 'Add Photos';
+
+  @override
+  String applyPhotosExistingHint(int count) {
+    return 'You have $count uploaded photos. Tap Next to keep them, or add new ones to replace.';
+  }
 
   @override
   String get permissionPhotoTitle => 'Photo Library Access Required';
@@ -460,14 +465,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reviewRejectedBodySoft =>
-      'Thanks for applying to PR Dating.\nWe reviewed your application carefully and are sorry that we can\'t approve it at this time.\nHere are some general tips that might be helpful:';
+      'Thank you for your application. To ensure every member has the best possible matching experience, we have basic quality standards for application photos.\nHere are some tips that might be helpful:';
 
   @override
   String get reviewRejectedTitlePotential => 'Almost There!';
 
   @override
   String get reviewRejectedBodyPotential =>
-      'You\'re close to our standard — just not quite there yet.\nTry these tips before reapplying:';
+      'Thank you for your application. To ensure every member has the best possible matching experience, we have basic quality standards for application photos.\nYou\'re close to our standard — try these tips before reapplying:';
 
   @override
   String get reviewAdminFeedbackTitle => 'Review Feedback';

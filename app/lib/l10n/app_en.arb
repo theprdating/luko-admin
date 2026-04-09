@@ -73,13 +73,13 @@
   "approvedGateBody": "Congratulations! You've passed the PR Dating review.\nOne last step — link your phone number to finish setting up your account.",
   "@approvedGateBody": { "description": "Approval gate page body text (generic fallback)" },
 
-  "approvedGateBodyTop": "Congratulations! You've passed the PR Dating review.\nAs a founding member (top 85%), you'll have free access to all features for life.\nOne last step — link your phone number to finish setting up your account.",
+  "approvedGateBodyTop": "Your profile meets PR Dating's community standards — welcome aboard.\nYou'll have free access to all features for life.\nOne last step — link your phone number to finish setting up your account.",
   "@approvedGateBodyTop": { "description": "Approval gate page body — top tier (lifetime free)" },
 
-  "approvedGateBodyStandard": "Congratulations! You've passed the PR Dating review.\nYou'll enjoy a 5-day free trial, after which you can subscribe to continue.\nOne last step — link your phone number to finish setting up your account.",
+  "approvedGateBodyStandard": "You've passed our review. We look forward to seeing you in the community.\nYou'll enjoy a 5-day free trial, after which you can subscribe to continue.\nOne last step — link your phone number to finish setting up your account.",
   "@approvedGateBodyStandard": { "description": "Approval gate page body — standard tier (5-day free)" },
 
-  "approvedGateTierLabelTop": "Founding Member · Free Forever",
+  "approvedGateTierLabelTop": "Member · Free Forever",
   "@approvedGateTierLabelTop": { "description": "Approval gate page — top tier label" },
 
   "approvedGateTierLabelStandard": "5-Day Free Trial",
@@ -259,6 +259,14 @@
   "applyPhotosManageAccess": "Add Photos",
   "@applyPhotosManageAccess": { "description": "iOS limited access: button to open system photo selection panel" },
 
+  "applyPhotosExistingHint": "You have {count} uploaded photos. Tap Next to keep them, or add new ones to replace.",
+  "@applyPhotosExistingHint": {
+    "description": "Banner shown when reapplying with existing uploaded photos",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
   "permissionPhotoTitle": "Photo Library Access Required",
   "@permissionPhotoTitle": { "description": "Gallery permission denied dialog title" },
 
@@ -433,13 +441,13 @@
   "reviewRejectedTitleSoft": "Thank You for Applying",
   "@reviewRejectedTitleSoft": { "description": "Rejected screen title — hard rejection" },
 
-  "reviewRejectedBodySoft": "Thanks for applying to PR Dating.\nWe reviewed your application carefully and are sorry that we can't approve it at this time.\nHere are some general tips that might be helpful:",
+  "reviewRejectedBodySoft": "Thank you for your application. To ensure every member has the best possible matching experience, we have basic quality standards for application photos.\nHere are some tips that might be helpful:",
   "@reviewRejectedBodySoft": { "description": "Rejected screen body — hard rejection" },
 
   "reviewRejectedTitlePotential": "Almost There!",
   "@reviewRejectedTitlePotential": { "description": "Rejected screen title — potential tier" },
 
-  "reviewRejectedBodyPotential": "You're close to our standard — just not quite there yet.\nTry these tips before reapplying:",
+  "reviewRejectedBodyPotential": "Thank you for your application. To ensure every member has the best possible matching experience, we have basic quality standards for application photos.\nYou're close to our standard — try these tips before reapplying:",
   "@reviewRejectedBodyPotential": { "description": "Rejected screen body — potential tier" },
 
   "reviewAdminFeedbackTitle": "Review Feedback",

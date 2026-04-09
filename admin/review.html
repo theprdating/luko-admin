@@ -456,6 +456,17 @@
 
         </div>
       `
+
+      // Wheel → horizontal scroll on photos row
+      const photosRow = document.querySelector('.photos-row')
+      if (photosRow) {
+        photosRow.addEventListener('wheel', e => {
+          if (e.deltaY !== 0) {
+            e.preventDefault()
+            photosRow.scrollLeft += e.deltaY
+          }
+        }, { passive: false })
+      }
     }
 
     // ── Decision: Approve ──────────────────────────────────────────────────────

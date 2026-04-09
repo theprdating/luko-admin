@@ -165,9 +165,35 @@ class ApplyFormNotifier extends StateNotifier<ApplyFormData> {
 
   /// 申請送出後重置（或用戶重新申請時）
   void reset() => state = const ApplyFormData();
+
+  /// 重新申請：從 DB 預填已有資料，認證照片欄位保持空白（強制重拍）
+  void prefillForReapply({
+    required String displayName,
+    required DateTime birthDate,
+    required String gender,
+    required List<String> seeking,
+    required List<String> uploadedPhotoPaths,
+    required String bio,
+  }) {
+    state = ApplyFormData(
+      displayName:        displayName,
+      birthDate:          birthDate,
+      gender:             gender,
+      seeking:            seeking,
+      uploadedPhotoPaths: uploadedPhotoPaths,
+      bio:                bio,
+      // phone, localPhotoPaths, verification 維持預設空值，
+      // 照片頁面可辨識已有上傳路徑；認證步驟強制重拍。
+    );
+  }
 }
 
 final applyFormProvider =
     StateNotifierProvider<ApplyFormNotifier, ApplyFormData>(
   (ref) => ApplyFormNotifier(),
 );
+
+/// 用戶點擊「重新申請」後進入重填流程時設為 true，
+/// 讓 router 放行 rejected 用戶存取 /apply/* 路由。
+/// 送出確認頁後自動重設為 false。
+final reapplyModeProvider = StateProvider<bool>((ref) => false);

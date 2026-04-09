@@ -33,50 +33,9 @@
         <button id="login-btn" class="btn-primary" style="width:100%;padding:12px;margin-bottom:12px;">
           登入
         </button>
-        <div style="text-align:center;">
-          <button onclick="showView('forgot')"
-            style="background:none;border:none;color:var(--text-second);font-size:12px;cursor:pointer;padding:4px;">
-            忘記密碼？
-          </button>
-        </div>
-      </div>
-
-      <!-- ── View 2: 忘記密碼 ── -->
-      <div id="view-forgot" class="hidden">
-        <p style="font-size:13px;color:var(--text-second);margin-bottom:16px;line-height:1.6;">
-          輸入你的 Email，我們會寄一封重設密碼連結給你。
+        <p style="text-align:center;font-size:11px;color:var(--text-second);margin-top:12px;line-height:1.6;">
+          僅限授權管理員登入。<br>忘記密碼請聯繫系統管理員。
         </p>
-        <div class="form-group">
-          <label for="forgot-email">Email</label>
-          <input type="email" id="forgot-email" placeholder="admin@luko.app">
-        </div>
-        <button id="forgot-btn" class="btn-primary" style="width:100%;padding:12px;margin-bottom:12px;">
-          寄出重設連結
-        </button>
-        <div style="text-align:center;">
-          <button onclick="showView('login')"
-            style="background:none;border:none;color:var(--text-second);font-size:12px;cursor:pointer;padding:4px;">
-            ← 返回登入
-          </button>
-        </div>
-      </div>
-
-      <!-- ── View 3: 設定新密碼（從重設信點進來） ── -->
-      <div id="view-reset" class="hidden">
-        <p style="font-size:13px;color:var(--text-second);margin-bottom:16px;">
-          請輸入你的新密碼。
-        </p>
-        <div class="form-group">
-          <label for="new-password">新密碼</label>
-          <input type="password" id="new-password" placeholder="至少 8 個字元" autocomplete="new-password">
-        </div>
-        <div class="form-group">
-          <label for="confirm-password">確認新密碼</label>
-          <input type="password" id="confirm-password" autocomplete="new-password">
-        </div>
-        <button id="reset-btn" class="btn-primary" style="width:100%;padding:12px;">
-          設定密碼
-        </button>
       </div>
 
     </div>
@@ -87,7 +46,7 @@
   <script>
     // ── View 切換 ──────────────────────────────────────────────────────────────
     function showView(name) {
-      ['login', 'forgot', 'reset'].forEach(v => {
+      ['login'].forEach(v => {
         document.getElementById(`view-${v}`).classList.toggle('hidden', v !== name)
       })
       document.getElementById('error-msg').classList.add('hidden')
@@ -108,47 +67,20 @@
       document.getElementById('error-msg').classList.add('hidden')
     }
 
-    // ── 偵測 URL hash（從密碼重設信點進來）────────────────────────────────────
-    //
-    // Supabase 密碼重設信點擊後，會在 URL hash 帶上：
-    //   #access_token=...&refresh_token=...&type=recovery
-    // 偵測到這個 → 顯示「設定新密碼」介面
-    async function checkRecoveryToken() {
-      const hash   = new URLSearchParams(window.location.hash.substring(1))
-      const type   = hash.get('type')
-      const access = hash.get('access_token')
-      const refresh = hash.get('refresh_token')
-
-      if (type === 'recovery' && access) {
-        // 建立 session（讓後續的 updateUser 能驗證身份）
-        const { error } = await db.auth.setSession({
-          access_token:  access,
-          refresh_token: refresh ?? '',
-        })
-        if (error) {
-          showError('重設連結已失效，請重新申請。')
-          return
-        }
-        // 清掉 URL hash 避免重整時重複觸發
-        history.replaceState(null, '', window.location.pathname)
-        showView('reset')
-        return
-      }
-
-      // 一般情況：已登入直接跳轉
+    // ── 初始化：已登入直接跳轉 ─────────────────────────────────────────────────
+    async function checkSession() {
       const { data: { session } } = await db.auth.getSession()
       if (session?.user?.user_metadata?.user_role === 'admin') {
         window.location.href = 'dashboard.html'
       }
 
-      // 錯誤參數檢查
       const urlParams = new URLSearchParams(window.location.search)
       if (urlParams.get('error') === 'unauthorized') {
         showError('您沒有管理員權限')
       }
     }
 
-    checkRecoveryToken()
+    checkSession()
 
     // ── 登入 ───────────────────────────────────────────────────────────────────
     let failedAttempts = 0
@@ -196,74 +128,9 @@
       window.location.href = 'dashboard.html'
     })
 
-    // ── 忘記密碼 ───────────────────────────────────────────────────────────────
-    document.getElementById('forgot-btn').addEventListener('click', async () => {
-      const email = document.getElementById('forgot-email').value.trim()
-      const btn   = document.getElementById('forgot-btn')
-
-      if (!email) { showError('請輸入 Email'); return }
-
-      btn.textContent = '寄送中...'
-      btn.disabled = true
-
-      const { error } = await db.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + '/index.html',
-      })
-
-      btn.textContent = '寄出重設連結'
-      btn.disabled = false
-
-      if (error) { showError('寄送失敗：' + error.message); return }
-
-      showSuccess('✓ 已寄出！請去信箱點擊重設連結（連結 1 小時內有效）')
-    })
-
-    // ── 設定新密碼 ─────────────────────────────────────────────────────────────
-    document.getElementById('reset-btn').addEventListener('click', async () => {
-      const newPw  = document.getElementById('new-password').value
-      const confirm = document.getElementById('confirm-password').value
-      const btn    = document.getElementById('reset-btn')
-
-      if (!newPw || newPw.length < 8) {
-        showError('密碼至少需要 8 個字元')
-        return
-      }
-      if (newPw !== confirm) {
-        showError('兩次輸入的密碼不一致')
-        return
-      }
-
-      btn.textContent = '設定中...'
-      btn.disabled = true
-
-      const { data, error } = await db.auth.updateUser({ password: newPw })
-
-      if (error) {
-        showError('設定失敗：' + error.message)
-        btn.textContent = '設定密碼'
-        btn.disabled = false
-        return
-      }
-
-      // 設定成功 → 確認是 admin 才進後台
-      if (data.user?.user_metadata?.user_role === 'admin') {
-        showSuccess('✓ 密碼設定成功！正在跳轉...')
-        setTimeout(() => window.location.href = 'dashboard.html', 1200)
-      } else {
-        showSuccess('✓ 密碼設定成功！請用新密碼登入。')
-        setTimeout(() => showView('login'), 1500)
-      }
-    })
-
     // Enter 鍵送出
     document.addEventListener('keydown', e => {
-      if (e.key !== 'Enter') return
-      const activeView = ['login','forgot','reset'].find(v =>
-        !document.getElementById(`view-${v}`).classList.contains('hidden')
-      )
-      if (activeView === 'login')  document.getElementById('login-btn').click()
-      if (activeView === 'forgot') document.getElementById('forgot-btn').click()
-      if (activeView === 'reset')  document.getElementById('reset-btn').click()
+      if (e.key === 'Enter') document.getElementById('login-btn').click()
     })
   </script>
 </body>

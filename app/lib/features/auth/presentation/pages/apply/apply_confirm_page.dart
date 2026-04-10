@@ -44,8 +44,8 @@ class _ApplyConfirmPageState extends ConsumerState<ApplyConfirmPage> {
 
   // ── 送出申請（Step 6）────────────────────────────────────────────────────────
   //
-  // 所有上傳集中在此處理：
-  //   1. 上傳申請照片 → application-photos bucket（用 upload(File) 繞過 uploadBinary bug）
+  // 所有上傳集中在此處理（Step 3 照片頁僅選取與預覽，不上傳）：
+  //   1. 上傳申請照片 → application-photos bucket（並行，繞過 uploadBinary bug）
   //   2. 上傳驗證照片 → verification-photos bucket
   //   3. 寫入 identity_verifications table
   //   4. 寫入 applications table
@@ -53,7 +53,7 @@ class _ApplyConfirmPageState extends ConsumerState<ApplyConfirmPage> {
   // 好處：
   //   - 用戶中途放棄不會留下孤兒檔案
   //   - 網路錯誤只在最後一步出現，不卡在流程中途
-  //   - 統一用 upload(File) 避免 storage_client 2.5.0 的 uploadBinary bug
+  //   - 申請照片並行上傳，速度更快
 
   Future<void> _submit() async {
     if (!_isAgreed || _isSubmitting) return;
@@ -106,9 +106,26 @@ class _ApplyConfirmPageState extends ConsumerState<ApplyConfirmPage> {
         return storagePath;
       }
 
-      // ── 1. 申請照片已由 Step 3 上傳完成，直接使用已存的路徑 ─────────────
-      // 避免重複上傳（photos page 已上傳並存入 uploadedPhotoPaths）
-      final uploadedPhotoPaths = form.uploadedPhotoPaths;
+      // ── 1. 上傳申請照片（若尚未上傳）────────────────────────────────────
+      // 重新申請且照片未修改（uploadedPhotoPaths 非空）→ 直接重用既有路徑
+      // 首次申請或照片已修改（新選 / 刪除 / 排序）→ 從本機路徑並行上傳
+      final List<String> uploadedPhotoPaths;
+      if (form.uploadedPhotoPaths.isNotEmpty) {
+        uploadedPhotoPaths = form.uploadedPhotoPaths;
+      } else {
+        final photoFutures = List.generate(
+          form.localPhotoPaths.length,
+          (i) => uploadFile(
+            'application-photos',
+            form.localPhotoPaths[i],
+            '$userId/photos/${ts}_$i.jpg',
+          ),
+        );
+        uploadedPhotoPaths = await Future.wait(photoFutures);
+        if (uploadedPhotoPaths.isEmpty) {
+          throw Exception('所有照片上傳失敗，請確認網路連線');
+        }
+      }
 
       // ── 2. 上傳驗證照片 → verification-photos ───────────────────────────
       final frontStoragePath = await uploadFile(
@@ -175,15 +192,15 @@ class _ApplyConfirmPageState extends ConsumerState<ApplyConfirmPage> {
       } catch (_) {}
 
       ref.read(applyFormProvider.notifier).reset();
-      // 重新申請模式結束（status 即將更新為 pending，router 會重導向）
+
+      // 先讓 status 進 loading（router redirect 回傳 null，不重導向）
+      // 再關閉 reapplyMode，避免 rejected 中間狀態閃屏到 /review/rejected
+      ref.invalidate(appUserStatusProvider);
       ref.read(reapplyModeProvider.notifier).state = false;
 
       ref.read(analyticsProvider)
         ..track(AnalyticsEvents.applyStepCompleted, {'step': 6})
         ..track(AnalyticsEvents.applySubmitted);
-
-      // 觸發 GoRouter redirect → /review/pending
-      ref.invalidate(appUserStatusProvider);
     } catch (e, st) {
       debugPrint('Apply submit error: $e\n$st');
       if (!mounted) return;
@@ -317,13 +334,88 @@ class _ApplyConfirmPageState extends ConsumerState<ApplyConfirmPage> {
   }
 }
 
-// ── 照片縮圖列（顯示所有已選照片，等寬排列）────────────────────────────────────
+// ── 照片縮圖列（顯示所有已選照片，等寬排列，點擊可放大）──────────────────────────
 
 class _PhotoRow extends StatelessWidget {
   const _PhotoRow({required this.localPaths, required this.colors});
 
   final List<String> localPaths;
   final AppColors colors;
+
+  void _showFullscreen(BuildContext context, int index) {
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.92),
+      builder: (ctx) => GestureDetector(
+        onTap: () => Navigator.of(ctx).pop(),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: SafeArea(
+            child: Stack(
+              children: [
+                // ── 可縮放的照片 ─────────────────────────────────────
+                Center(
+                  child: InteractiveViewer(
+                    minScale: 0.8,
+                    maxScale: 4.0,
+                    child: Image.file(
+                      File(localPaths[index]),
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+                // ── 關閉按鈕（右上角）───────────────────────────────
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: GestureDetector(
+                    onTap: () => Navigator.of(ctx).pop(),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.55),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ),
+                // ── 照片計數（左上角）───────────────────────────────
+                if (localPaths.length > 1)
+                  Positioned(
+                    top: 12,
+                    left: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.55),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '${index + 1} / ${localPaths.length}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -333,13 +425,39 @@ class _PhotoRow extends StatelessWidget {
       children: [
         for (int i = 0; i < localPaths.length; i++) ...[
           Expanded(
-            child: AspectRatio(
-              aspectRatio: 3 / 4,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(AppRadius.card),
-                child: Image.file(
-                  File(localPaths[i]),
-                  fit: BoxFit.cover,
+            child: GestureDetector(
+              onTap: () => _showFullscreen(context, i),
+              child: AspectRatio(
+                aspectRatio: 3 / 4,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(AppRadius.card),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Image.file(
+                        File(localPaths[i]),
+                        fit: BoxFit.cover,
+                      ),
+                      // 放大提示（僅第一張，引導用戶發現可點擊）
+                      if (i == 0)
+                        Positioned(
+                          right: 5,
+                          bottom: 5,
+                          child: Container(
+                            padding: const EdgeInsets.all(3),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.45),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Icon(
+                              Icons.zoom_in_rounded,
+                              color: Colors.white,
+                              size: 13,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),

@@ -39,8 +39,17 @@ async function signOut() {
 // Redirects to login if the session cannot be recovered.
 async function getFreshToken() {
   // First try to refresh (forces a new JWT from the server)
-  const { data: refreshed } = await db.auth.refreshSession()
+  const { data: refreshed, error: refreshError } = await db.auth.refreshSession()
   if (refreshed?.session?.access_token) return refreshed.session.access_token
+
+  // If refresh explicitly failed (session revoked / token already rotated),
+  // do NOT fall through to the stale cached token — it will be rejected by
+  // the Supabase gateway with 401 (execution_id: null in function logs).
+  if (refreshError) {
+    console.warn('[getFreshToken] session refresh failed:', refreshError.message)
+    window.location.href = 'index.html?error=session_expired'
+    throw new Error('Session expired: ' + refreshError.message)
+  }
 
   // Fallback: use existing session (covers cases where refresh is redundant)
   const { data: { session } } = await db.auth.getSession()

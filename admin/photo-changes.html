@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>PR Dating Admin — 換照審核</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .compare-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      text-align: center;
+    }
+    .compare-card img {
+      width: 100%;
+      aspect-ratio: 3/4;
+      object-fit: cover;
+      border-radius: calc(var(--radius) - 4px);
+      cursor: pointer;
+    }
+    .compare-card-label {
+      font-size: 11px;
+      color: var(--text-second);
+      margin-top: 6px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .compare-card-label.label-original {
+      color: var(--gold);
+    }
+    .compare-card-label.label-selfie {
+      color: #6FCFA4;
+    }
+    .identity-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-second);
+      margin-bottom: 8px;
+    }
+    .identity-match-hint {
+      font-size: 12px;
+      color: var(--text-second);
+      background: rgba(201,169,110,0.08);
+      border: 1px solid rgba(201,169,110,0.2);
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <span class="navbar-brand">PR DATING ADMIN</span>
+    <div class="navbar-nav">
+      <a href="dashboard.html" class="nav-link">儀表板</a>
+      <a href="review.html" class="nav-link">審核</a>
+      <a href="photo-changes.html" class="nav-link">換照審核</a>
+      <a href="history.html" class="nav-link">紀錄</a>
+      <button onclick="signOut()" class="btn-ghost" style="font-size:12px;padding:6px 12px;margin-left:8px;">登出</button>
+    </div>
+  </nav>
+
+  <div id="toast-container"></div>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox hidden">
+    <button class="lightbox-close" onclick="closeLightbox()">×</button>
+    <img id="lightbox-img" src="" alt="">
+    <div id="lightbox-caption" class="lightbox-caption"></div>
+  </div>
+
+  <!-- Two-column layout -->
+  <div class="review-layout">
+
+    <!-- ── Queue Panel ─────────────────────────────────────────────────────── -->
+    <aside class="queue-panel">
+      <div class="queue-header">
+        <h2>換照待審</h2>
+        <div class="queue-count" id="queue-count">載入中...</div>
+      </div>
+      <ul class="queue-list" id="queue-list">
+        <li class="loading-state">
+          <div class="loading-spinner"></div>
+          載入中...
+        </li>
+      </ul>
+    </aside>
+
+    <!-- ── Detail Panel ────────────────────────────────────────────────────── -->
+    <section class="detail-panel" id="detail-panel">
+      <div class="detail-placeholder">
+        ← 從左側選擇申請者開始審核
+      </div>
+    </section>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+  <script>
+    setActiveNavLink()
+
+    // ── State ──────────────────────────────────────────────────────────────────
+    let queue           = []
+    let selectedId      = null   // photo_change_requests.id
+    let currentRequest  = null   // full row from photo_change_requests
+    let currentProfile  = null   // profile row for the requesting user
+    let reviewStartedAt = null
+    let isSubmitting    = false
+    let adminUserId     = null   // set after requireAdmin()
+
+    // ── Init ───────────────────────────────────────────────────────────────────
+    async function init() {
+      const { user } = await requireAdmin()
+      adminUserId = user.id
+      await loadQueue()
+    }
+
+    // ── Load Queue ─────────────────────────────────────────────────────────────
+    async function loadQueue() {
+      const { data, error } = await db
+        .from('photo_change_requests')
+        .select('id, user_id, created_at, profiles!user_id(display_name, birth_date, gender)')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: true })
+
+      if (error) {
+        showToast('無法載入佇列：' + error.message, 'error')
+        return
+      }
+
+      queue = (data || []).map(r => ({
+        id:           r.id,
+        user_id:      r.user_id,
+        created_at:   r.created_at,
+        display_name: r.profiles?.display_name || '未知',
+        birth_date:   r.profiles?.birth_date,
+        gender:       r.profiles?.gender,
+      }))
+
+      renderQueue()
+
+      if (queue.length > 0 && !selectedId) {
+        await selectRequest(queue[0].id)
+      } else if (queue.length === 0) {
+        document.getElementById('detail-panel').innerHTML =
+          '<div class="detail-placeholder">✓ 目前沒有待審核的換照申請</div>'
+      }
+    }
+
+    // ── Render Queue ───────────────────────────────────────────────────────────
+    function renderQueue() {
+      const list  = document.getElementById('queue-list')
+      const count = document.getElementById('queue-count')
+
+      count.textContent = queue.length === 0
+        ? '沒有待審核申請'
+        : `共 ${queue.length} 筆等待中`
+
+      if (queue.length === 0) {
+        list.innerHTML = '<li class="queue-empty">目前無待審核換照申請</li>'
+        return
+      }
+
+      list.innerHTML = queue.map(r => {
+        const emoji    = r.gender === 'female' ? '👩' : r.gender === 'male' ? '👨' : '🧑'
+        const isActive = r.id === selectedId
+        return `
+          <li class="queue-item ${isActive ? 'active' : ''}"
+              onclick="selectRequest('${r.id}')">
+            <div class="queue-avatar-placeholder">${emoji}</div>
+            <div class="queue-info">
+              <div class="queue-name">${escapeHtml(r.display_name)}</div>
+              <div class="queue-meta">${calcAge(r.birth_date)} 歲 · ${escapeHtml(GENDER_LABELS[r.gender] || r.gender)}</div>
+              <div class="queue-meta">${timeAgo(r.created_at)}</div>
+            </div>
+          </li>
+        `
+      }).join('')
+    }
+
+    // ── Select Request ─────────────────────────────────────────────────────────
+    async function selectRequest(id) {
+      if (id === selectedId) return
+      selectedId      = id
+      reviewStartedAt = new Date().toISOString()
+      renderQueue()
+
+      document.getElementById('detail-panel').innerHTML = `
+        <div class="loading-state" style="flex:1;">
+          <div class="loading-spinner"></div>
+          載入資料中...
+        </div>
+      `
+
+      // Fetch the photo change request
+      const { data: req, error: reqErr } = await db
+        .from('photo_change_requests')
+        .select('*')
+        .eq('id', id)
+        .single()
+
+      if (reqErr || !req) {
+        showToast('載入失敗：' + (reqErr?.message || '未知錯誤'), 'error')
+        return
+      }
+      currentRequest = req
+
+      // Fetch profile (current state — display_name, photo_paths, etc.)
+      const { data: profile } = await db
+        .from('profiles')
+        .select('display_name, birth_date, gender, photo_paths')
+        .eq('id', req.user_id)
+        .maybeSingle()
+      currentProfile = profile
+
+      // Fetch original identity verification (for face comparison)
+      const { data: verify } = await db
+        .from('identity_verifications')
+        .select('front_face_path')
+        .eq('user_id', req.user_id)
+        .maybeSingle()
+
+      // Build all signed URL requests in parallel
+      const currentPhotoPaths = profile?.photo_paths || []
+      const newPhotoPaths     = req.new_photo_paths  || []
+
+      const [
+        selfieUrl,
+        originalFaceUrl,
+        ...restUrls
+      ] = await Promise.all([
+        getSignedUrl('verification-photos', req.selfie_path),
+        verify?.front_face_path
+          ? getSignedUrl('verification-photos', verify.front_face_path)
+          : Promise.resolve(null),
+        ...currentPhotoPaths.map(p => getSignedUrl('profile-photos', p)),
+        ...newPhotoPaths.map(p => getSignedUrl('profile-photos', p)),
+      ])
+
+      const currentPhotoUrls = restUrls.slice(0, currentPhotoPaths.length)
+      const newPhotoUrls     = restUrls.slice(currentPhotoPaths.length)
+
+      renderDetail(req, profile, selfieUrl, originalFaceUrl, currentPhotoUrls, newPhotoUrls)
+    }
+
+    // ── Render Detail ──────────────────────────────────────────────────────────
+    function renderDetail(req, profile, selfieUrl, originalFaceUrl, currentPhotoUrls, newPhotoUrls) {
+      const name       = escapeHtml(profile?.display_name || '未知')
+      const age        = calcAge(profile?.birth_date)
+      const genderLabel = escapeHtml(GENDER_LABELS[profile?.gender] || profile?.gender || '')
+
+      // ── Current photos strip
+      const currentPhotosHtml = currentPhotoUrls.length > 0
+        ? `<div class="photos-row">
+            ${currentPhotoUrls.map((url, i) =>
+              url
+                ? `<img class="photo-thumb" src="${url}" alt="現有照片 ${i+1}"
+                        onclick="openLightbox('${url}', '現有照片 ${i+1}')">`
+                : `<div class="photo-placeholder">無法載入</div>`
+            ).join('')}
+           </div>`
+        : `<div style="color:var(--text-second);font-size:13px;">無現有照片</div>`
+
+      // ── Identity comparison grid
+      const identityHtml = `
+        <div class="identity-match-hint">
+          ⚠️ 請比對左右兩張照片，確認為同一人後再做決定
+        </div>
+        <div class="compare-grid">
+          <div class="compare-card">
+            ${originalFaceUrl
+              ? `<img src="${originalFaceUrl}" alt="原始驗證正面照"
+                      onclick="openLightbox('${originalFaceUrl}', '原始驗證正面照（審核時拍攝）')">`
+              : `<div class="photo-placeholder" style="aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;">無驗證照片</div>`
+            }
+            <div class="compare-card-label label-original">原始驗證正面照</div>
+          </div>
+          <div class="compare-card">
+            ${selfieUrl
+              ? `<img src="${selfieUrl}" alt="本次自拍"
+                      onclick="openLightbox('${selfieUrl}', '本次自拍（換照申請時拍攝）')">`
+              : `<div class="photo-placeholder" style="aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;">無自拍</div>`
+            }
+            <div class="compare-card-label label-selfie">本次自拍確認</div>
+          </div>
+        </div>
+      `
+
+      // ── New photos strip
+      const newPhotosHtml = newPhotoUrls.length > 0
+        ? `<div class="photos-row">
+            ${newPhotoUrls.map((url, i) =>
+              url
+                ? `<img class="photo-thumb" src="${url}" alt="新照片 ${i+1}"
+                        onclick="openLightbox('${url}', '申請更換照片 ${i+1}')">`
+                : `<div class="photo-placeholder">無法載入</div>`
+            ).join('')}
+           </div>`
+        : `<div style="color:var(--text-second);font-size:13px;">無新照片</div>`
+
+      document.getElementById('detail-panel').innerHTML = `
+
+        <!-- Header -->
+        <div class="applicant-header">
+          <div>
+            <div class="applicant-name">${name}</div>
+            <div class="applicant-tags">
+              <span class="tag">${age} 歲</span>
+              <span class="tag">${genderLabel}</span>
+              <span class="tag" style="color:var(--text-second);">申請於 ${timeAgo(req.created_at)}</span>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--text-second);text-align:right;line-height:1.8;">
+            <div>${formatDate(req.created_at)}</div>
+            <div style="margin-top:4px;">${req.user_id.slice(0,8)}…</div>
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div class="detail-body">
+
+          <!-- Current photos (reference) -->
+          <div>
+            <div class="section-title" style="margin-bottom:10px;">
+              當前個人照片（共 ${currentPhotoUrls.length} 張）
+              <span style="font-weight:400;color:var(--text-second);margin-left:6px;">點擊可開啟全螢幕</span>
+            </div>
+            ${currentPhotosHtml}
+          </div>
+
+          <!-- Identity comparison -->
+          <div>
+            <div class="section-title" style="margin-bottom:10px;">身份確認</div>
+            ${identityHtml}
+          </div>
+
+          <!-- New photos to approve -->
+          <div>
+            <div class="section-title" style="margin-bottom:10px;">
+              申請更換的照片（共 ${newPhotoUrls.length} 張）
+              <span style="font-weight:400;color:var(--text-second);margin-left:6px;">點擊可開啟全螢幕</span>
+            </div>
+            ${newPhotosHtml}
+          </div>
+
+        </div>
+
+        <!-- Decision Panel -->
+        <div class="decision-panel">
+
+          <label class="review-note-label" id="review-note-label">內部備註（不對用戶顯示）</label>
+          <textarea
+            class="decision-note"
+            id="review-note"
+            placeholder="選填，內部備註"
+          ></textarea>
+
+          <div class="decision-actions">
+            <button class="btn-approve" id="btn-approve" onclick="confirmApprove()">✓ 確認通過</button>
+            <button class="btn-reject"  id="btn-reject"  onclick="confirmReject()">✗ 拒絕換照</button>
+          </div>
+
+          <div class="shortcut-hint">A 通過 · R 拒絕 · ↑↓ 切換申請</div>
+
+        </div>
+      `
+
+      // Wheel → horizontal scroll on photo rows
+      document.querySelectorAll('.photos-row').forEach(row => {
+        row.addEventListener('wheel', e => {
+          if (e.deltaY !== 0) { e.preventDefault(); row.scrollLeft += e.deltaY }
+        }, { passive: false })
+      })
+    }
+
+    // ── Approve ────────────────────────────────────────────────────────────────
+    async function confirmApprove() {
+      if (isSubmitting || !currentRequest) return
+      isSubmitting = true
+
+      const note    = document.getElementById('review-note')?.value.trim()
+      const btnA    = document.getElementById('btn-approve')
+      const btnR    = document.getElementById('btn-reject')
+      const now     = new Date().toISOString()
+      const newPaths = currentRequest.new_photo_paths || []
+
+      btnA.textContent = '處理中...'
+      btnA.disabled = true
+      btnR.disabled = true
+
+      try {
+        // 1. Mark the request as approved
+        const { error: reqErr } = await db
+          .from('photo_change_requests')
+          .update({
+            status:      'approved',
+            reviewed_by: adminUserId,
+            reviewed_at: now,
+            review_note: note || null,
+          })
+          .eq('id', currentRequest.id)
+
+        if (reqErr) throw reqErr
+
+        // 2. Update profiles.photo_paths to the new paths
+        const { error: profileErr } = await db
+          .from('profiles')
+          .update({ photo_paths: newPaths })
+          .eq('id', currentRequest.user_id)
+
+        if (profileErr) throw profileErr
+
+        // 3. Replace profile_photos records
+        //    Delete old rows, then insert new ones with is_verified = true
+        await db.from('profile_photos').delete().eq('user_id', currentRequest.user_id)
+
+        if (newPaths.length > 0) {
+          const insertRows = newPaths.map((storagePath, i) => ({
+            user_id:       currentRequest.user_id,
+            storage_path:  storagePath,
+            display_order: i,
+            is_verified:   true,
+            verified_at:   now,
+            verified_by:   adminUserId,
+          }))
+          const { error: photoErr } = await db.from('profile_photos').insert(insertRows)
+          if (photoErr) throw photoErr
+        }
+
+        const name = escapeHtml(currentProfile?.display_name || '用戶')
+        showToast(`✓ 已通過 ${name} 的換照申請，照片已更新`, 'success')
+        advanceQueue()
+
+      } catch (err) {
+        showToast('操作失敗：' + (err.message || '未知錯誤'), 'error')
+        btnA.textContent = '✓ 確認通過'
+        btnA.disabled = false
+        btnR.disabled = false
+      } finally {
+        isSubmitting = false
+      }
+    }
+
+    // ── Reject ─────────────────────────────────────────────────────────────────
+    async function confirmReject() {
+      if (isSubmitting || !currentRequest) return
+      isSubmitting = true
+
+      const note = document.getElementById('review-note')?.value.trim()
+      const btnA = document.getElementById('btn-approve')
+      const btnR = document.getElementById('btn-reject')
+
+      btnR.textContent = '處理中...'
+      btnR.disabled = true
+      btnA.disabled = true
+
+      try {
+        const { error } = await db
+          .from('photo_change_requests')
+          .update({
+            status:      'rejected',
+            reviewed_by: adminUserId,
+            reviewed_at: new Date().toISOString(),
+            review_note: note || null,
+          })
+          .eq('id', currentRequest.id)
+
+        if (error) throw error
+
+        const name = escapeHtml(currentProfile?.display_name || '用戶')
+        showToast(`✗ 已拒絕 ${name} 的換照申請`, 'info')
+        advanceQueue()
+
+      } catch (err) {
+        showToast('操作失敗：' + (err.message || '未知錯誤'), 'error')
+        btnR.textContent = '✗ 拒絕換照'
+        btnR.disabled = false
+        btnA.disabled = false
+      } finally {
+        isSubmitting = false
+      }
+    }
+
+    // ── Advance to next after decision ─────────────────────────────────────────
+    function advanceQueue() {
+      const prevIdx = queue.findIndex(r => r.id === selectedId)
+      queue         = queue.filter(r => r.id !== selectedId)
+      selectedId    = null
+      currentRequest = null
+      currentProfile = null
+      renderQueue()
+
+      if (queue.length > 0) {
+        const nextIdx = Math.min(prevIdx, queue.length - 1)
+        selectRequest(queue[nextIdx].id)
+      } else {
+        document.getElementById('detail-panel').innerHTML =
+          '<div class="detail-placeholder">✓ 所有換照申請審核完畢！</div>'
+      }
+    }
+
+    // ── Lightbox ───────────────────────────────────────────────────────────────
+    function openLightbox(url, caption) {
+      document.getElementById('lightbox-img').src = url
+      document.getElementById('lightbox-caption').textContent = caption || ''
+      document.getElementById('lightbox').classList.remove('hidden')
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.add('hidden')
+      document.getElementById('lightbox-img').src = ''
+    }
+
+    document.getElementById('lightbox').addEventListener('click', function(e) {
+      if (e.target === this) closeLightbox()
+    })
+
+    // ── Keyboard Shortcuts ─────────────────────────────────────────────────────
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { closeLightbox(); return }
+      if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return
+
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+        e.preventDefault()
+        const idx = queue.findIndex(r => r.id === selectedId)
+        if (idx < queue.length - 1) selectRequest(queue[idx + 1].id)
+        return
+      }
+      if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+        e.preventDefault()
+        const idx = queue.findIndex(r => r.id === selectedId)
+        if (idx > 0) selectRequest(queue[idx - 1].id)
+        return
+      }
+
+      if (e.key === 'a' || e.key === 'A') document.getElementById('btn-approve')?.click()
+      if (e.key === 'r' || e.key === 'R') document.getElementById('btn-reject')?.click()
+    })
+
+    init()
+  </script>
+</body>
+</html>

@@ -23,14 +23,25 @@ class FcmService {
   /// 由 LukoApp.build() 設定，確保每次 rebuild 都持有最新的 ref
   static VoidCallback? _onApplicationStatusChange;
 
+  /// 當收到 photo_change_approved / photo_change_rejected 類型通知時呼叫
+  /// 用於刷新個人資料照片狀態
+  static VoidCallback? _onPhotoChangeComplete;
+
   static void setStatusChangeCallback(VoidCallback callback) {
     _onApplicationStatusChange = callback;
+  }
+
+  static void setPhotoChangeCallback(VoidCallback callback) {
+    _onPhotoChangeComplete = callback;
   }
 
   static void _handleStatusChange(RemoteMessage message) {
     final type = message.data['type'] as String?;
     if (type == 'application_approved' || type == 'application_rejected') {
       _onApplicationStatusChange?.call();
+    }
+    if (type == 'photo_change_approved' || type == 'photo_change_rejected') {
+      _onPhotoChangeComplete?.call();
     }
   }
 

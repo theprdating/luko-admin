@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
@@ -8,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -213,6 +215,25 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
     }
   }
 
+  void _showEmailLoginSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _EmailLoginSheet(
+        onMagicLink: _sendMagicLink,
+      ),
+    );
+  }
+
+  Future<void> _sendMagicLink(String email) async {
+    await Supabase.instance.client.auth.signInWithOtp(
+      email: email,
+      emailRedirectTo: 'com.yuliao.luko://login-callback/',
+      shouldCreateUser: false, // 用戶必須已存在，防止建孤兒帳號
+    );
+  }
+
   Future<void> _signInWithApple() async {
     if (_isSigningIn) return;
     setState(() {
@@ -384,6 +405,21 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                             label: l10n.authContinueWithApple,
                             onTap: _isSigningIn ? null : _signInWithApple,
                             isLoading: _isSigningIn,
+                          ),
+
+                          const SizedBox(height: 16),
+                          GestureDetector(
+                            onTap: _isSigningIn ? null : _showEmailLoginSheet,
+                            child: Text(
+                              AppLocalizations.of(context)!.welcomeEmailLoginButton,
+                              style: GoogleFonts.dmSans(
+                                fontSize: 13,
+                                color: colors.brandCaption,
+                                decoration: TextDecoration.underline,
+                                decorationColor: colors.brandCaption.withValues(alpha: 0.5),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
                           ),
 
                           if (_signInError != null) ...[
@@ -702,6 +738,277 @@ class _AppleButtonState extends State<_AppleButton> {
                     ],
                   ),
                 ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Email 登入 BottomSheet（純 Magic Link）
+//
+// 設計原則：
+//   - 無密碼：輸入 email → 收信點連結 → 登入
+//   - 60 秒 cooldown 存入 SharedPreferences，跨 App 重啟持久有效
+//   - 不論 email 存不存在一律顯示「已寄出」（防 email enumeration 攻擊）
+// ─────────────────────────────────────────────────────────────────────────────
+
+const _kCooldownKey    = 'luko.magic_link_last_sent';
+const _kCooldownSecs   = 60;
+
+class _EmailLoginSheet extends StatefulWidget {
+  const _EmailLoginSheet({required this.onMagicLink});
+  final Future<void> Function(String email) onMagicLink;
+
+  @override
+  State<_EmailLoginSheet> createState() => _EmailLoginSheetState();
+}
+
+class _EmailLoginSheetState extends State<_EmailLoginSheet> {
+  final _emailCtrl = TextEditingController();
+  final _formKey   = GlobalKey<FormState>();
+
+  bool     _isLoading  = false;
+  bool     _magicSent  = false;
+  String   _sentEmail  = '';
+  int      _remaining  = 0;   // cooldown 剩餘秒數（0 = 可以按）
+  Timer?   _ticker;
+
+  @override
+  void initState() {
+    super.initState();
+    _initCooldown();
+  }
+
+  @override
+  void dispose() {
+    _emailCtrl.dispose();
+    _ticker?.cancel();
+    super.dispose();
+  }
+
+  /// 從 SharedPreferences 讀取上次寄送時間，計算剩餘 cooldown
+  Future<void> _initCooldown() async {
+    final prefs     = await SharedPreferences.getInstance();
+    final lastSent  = prefs.getInt(_kCooldownKey) ?? 0;
+    final elapsed   = (DateTime.now().millisecondsSinceEpoch - lastSent) ~/ 1000;
+    final remaining = (_kCooldownSecs - elapsed).clamp(0, _kCooldownSecs);
+    if (remaining > 0 && mounted) {
+      setState(() => _remaining = remaining);
+      _startTicker();
+    }
+  }
+
+  void _startTicker() {
+    _ticker?.cancel();
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      setState(() {
+        _remaining = (_remaining - 1).clamp(0, _kCooldownSecs);
+      });
+      if (_remaining == 0) _ticker?.cancel();
+    });
+  }
+
+  Future<void> _send() async {
+    if (_remaining > 0 || _isLoading) return;
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() { _isLoading = true; });
+    try {
+      await widget.onMagicLink(_emailCtrl.text.trim());
+    } catch (_) {
+      // 不論成功或失敗一律顯示「已寄出」（防 email enumeration）
+    }
+
+    // 記錄寄送時間，啟動 cooldown
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_kCooldownKey, DateTime.now().millisecondsSinceEpoch);
+
+    if (!mounted) return;
+    setState(() { _isLoading = false; _magicSent = true; _sentEmail = _emailCtrl.text.trim(); _remaining = _kCooldownSecs; });
+    _startTicker();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n      = AppLocalizations.of(context)!;
+    final colors    = Theme.of(context).extension<AppColors>()!;
+    final textTheme = Theme.of(context).textTheme;
+    final bottom    = MediaQuery.paddingOf(context).bottom;
+
+    // GestureDetector：點擊輸入欄以外的區域收起鍵盤
+    // viewInsets.bottom：鍵盤高度，動態加入 padding 讓 sheet 隨鍵盤上移
+    final keyboardHeight = MediaQuery.viewInsetsOf(context).bottom;
+
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Container(
+        decoration: BoxDecoration(
+          color: colors.backgroundWarm,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.pagePadding, AppSpacing.lg,
+          AppSpacing.pagePadding, bottom + keyboardHeight + AppSpacing.lg,
+        ),
+        child: _magicSent
+            ? _buildSentState(l10n, colors, textTheme)
+            : _buildForm(l10n, colors, textTheme),
+      ),
+    );
+  }
+
+  // ── 寄出後畫面 ─────────────────────────────────────────────────────────────
+  Widget _buildSentState(AppLocalizations l10n, AppColors colors, TextTheme textTheme) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const SizedBox(height: AppSpacing.md),
+        Icon(Icons.mark_email_read_outlined, size: 48, color: colors.forestGreen),
+        const SizedBox(height: AppSpacing.md),
+        Text(
+          l10n.betaAccountSentTitle,
+          style: GoogleFonts.dmSans(
+            fontSize: 18, fontWeight: FontWeight.w700,
+            color: colors.primaryText,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 6),
+        Text(
+          l10n.betaAccountSentTo(_sentEmail),
+          style: GoogleFonts.dmSans(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: colors.brandGold,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Text(
+          l10n.betaAccountSentBody,
+          style: textTheme.bodyMedium?.copyWith(color: colors.secondaryText, height: 1.6),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        // 重新發送（cooldown 倒數中則 disabled）
+        if (_remaining > 0)
+          Text(
+            l10n.emailLoginResendIn(_remaining),
+            style: textTheme.bodySmall?.copyWith(color: colors.secondaryText),
+            textAlign: TextAlign.center,
+          )
+        else
+          GestureDetector(
+            onTap: () => setState(() => _magicSent = false),
+            child: Text(
+              l10n.emailLoginResend,
+              style: GoogleFonts.dmSans(
+                fontSize: 13,
+                color: colors.brandGold,
+                decoration: TextDecoration.underline,
+                decorationColor: colors.brandGold.withValues(alpha: 0.5),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        const SizedBox(height: AppSpacing.xl),
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: OutlinedButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n.commonConfirm),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+      ],
+    );
+  }
+
+  // ── 輸入 email 表單 ────────────────────────────────────────────────────────
+  Widget _buildForm(AppLocalizations l10n, AppColors colors, TextTheme textTheme) {
+    final canSend = _remaining == 0 && !_isLoading;
+    return Form(
+      key: _formKey,
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              l10n.emailLoginTitle,
+              style: GoogleFonts.dmSans(
+                fontSize: 20, fontWeight: FontWeight.w700,
+                color: colors.primaryText,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              l10n.emailLoginSubtitle,
+              style: textTheme.bodyMedium?.copyWith(
+                color: colors.secondaryText, height: 1.5,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+
+            TextFormField(
+              controller: _emailCtrl,
+              keyboardType: TextInputType.emailAddress,
+              textInputAction: TextInputAction.done,
+              onChanged: (_) => setState(() {}),
+              onFieldSubmitted: (_) => _send(),
+              decoration: InputDecoration(labelText: l10n.emailLoginLabel),
+              validator: (v) =>
+                  (v == null || !RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(v.trim()))
+                      ? l10n.betaAccountEmailInvalid
+                      : null,
+            ),
+
+            const SizedBox(height: AppSpacing.xl),
+
+            SizedBox(
+              height: 50,
+              child: ElevatedButton(
+                onPressed: canSend ? _send : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colors.forestGreen,
+                  disabledBackgroundColor: colors.forestGreen.withValues(alpha: 0.4),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 20, height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        _remaining > 0
+                            ? l10n.emailLoginResendIn(_remaining)
+                            : l10n.emailLoginSendLink,
+                        style: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.w600,
+                        ),
+                      ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+
+            // OAuth 提示：引導 Google/Apple 用戶用正確入口
+            Text(
+              l10n.emailLoginOAuthHint,
+              style: textTheme.bodySmall?.copyWith(
+                color: colors.secondaryText.withValues(alpha: 0.7),
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+          ],
         ),
       ),
     );

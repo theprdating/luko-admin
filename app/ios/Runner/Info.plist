@@ -66,6 +66,12 @@
               <string>com.googleusercontent.apps.512544088843-m8515d4ka3j8hk9g0i8e7712tgpjnug5</string>
             </array>
           </dict>
+          <dict>
+            <key>CFBundleURLSchemes</key>
+            <array>
+              <string>com.yuliao.luko</string>
+            </array>
+          </dict>
         </array>
 
 	</dict>

@@ -22,6 +22,9 @@
   "commonLoading": "載入中...",
   "@commonLoading": { "description": "通用載入文字" },
 
+  "commonSaving": "儲存中...",
+  "@commonSaving": { "description": "通用儲存載入文字" },
+
   "commonError": "發生錯誤，請再試一次。",
   "@commonError": { "description": "通用錯誤訊息" },
 
@@ -58,6 +61,48 @@
   "authContinueWithApple": "使用 Apple 繼續",
   "@authContinueWithApple": { "description": "Apple OAuth 登入按鈕" },
 
+  "welcomeEmailLoginButton": "以 Email 登入",
+  "@welcomeEmailLoginButton": { "description": "Email 登入入口按鈕" },
+
+  "emailLoginTitle": "Email 登入",
+  "@emailLoginTitle": { "description": "Email 登入 BottomSheet 標題" },
+
+  "emailLoginSubtitle": "此入口供已有帳號的封測用戶使用。\n輸入註冊信箱，我們將寄送登入連結。",
+  "@emailLoginSubtitle": { "description": "Email 登入 BottomSheet 說明文字" },
+
+  "emailLoginLabel": "電子信箱",
+  "@emailLoginLabel": { "description": "Email 輸入框標籤" },
+
+  "emailLoginSendLink": "寄送登入連結",
+  "@emailLoginSendLink": { "description": "Magic link 寄送按鈕" },
+
+  "emailLoginResend": "重新發送",
+  "@emailLoginResend": { "description": "Magic link 重新發送按鈕" },
+
+  "emailLoginResendIn": "{seconds} 秒後可重新發送",
+  "@emailLoginResendIn": {
+    "description": "Magic link cooldown 倒數文字",
+    "placeholders": { "seconds": { "type": "int" } }
+  },
+
+  "emailLoginOAuthHint": "尚未申請帳號？請返回使用 Google 或 Apple 進行申請。\n曾以 Google / Apple 登入的用戶請返回使用對應按鈕。",
+  "@emailLoginOAuthHint": { "description": "引導未註冊用戶及 OAuth 用戶回到正確入口的提示文字" },
+
+  "betaAccountEmailInvalid": "請輸入有效的電子信箱",
+  "@betaAccountEmailInvalid": { "description": "Email 格式錯誤提示" },
+
+  "betaAccountSentTitle": "登入連結已發送",
+  "@betaAccountSentTitle": { "description": "Magic Link 寄出後的成功標題" },
+
+  "betaAccountSentTo": "已寄至 {email}",
+  "@betaAccountSentTo": {
+    "description": "顯示 magic link 寄送目標信箱",
+    "placeholders": { "email": { "type": "String" } }
+  },
+
+  "betaAccountSentBody": "請查收信箱，點擊連結後 App 將自動開啟並完成登入。\n連結 60 分鐘內有效。",
+  "@betaAccountSentBody": { "description": "Magic Link 寄出後的說明文字" },
+
   "authConsentSuffix": " 與 {privacy}",
   "@authConsentSuffix": {
     "description": "同意文字後綴（接在 authConsentPrefix + termsLabel 之後）",
@@ -70,7 +115,7 @@
   "approvedGateTitle": "申請通過",
   "@approvedGateTitle": { "description": "審核通過頁主標題" },
 
-  "approvedGateBody": "恭喜！你已通過 PR Dating 的資格審核。\n接下來，綁定手機號碼以完成帳號設置。",
+  "approvedGateBody": "恭喜！你已通過 PR Dating 的資格審核，歡迎加入。\n接下來，綁定手機號碼以完成帳號設置。",
   "@approvedGateBody": { "description": "審核通過頁說明文字（通用備用）" },
 
   "approvedGateBodyTop": "您的形象符合 PR Dating 的精選標準，歡迎加入。\n你可終生免費使用所有功能。\n接下來，綁定手機號碼以完成帳號設置。",
@@ -369,17 +414,86 @@
   "verifyActionShowNine": "用手比出數字 9",
   "@verifyActionShowNine": { "description": "認證動作：比數字 9（食指彎曲鉤起）" },
 
-  "applyBioTitle": "自我介紹",
-  "@applyBioTitle": { "description": "申請 Step 5 標題" },
+  "applyInterestsTitle": "你喜歡什麼？",
+  "@applyInterestsTitle": { "description": "申請 Step 5 標題" },
 
-  "applyBioSubtitle": "簡短介紹一下自己（選填）",
+  "applyInterestsSubtitle": "至少選 {min} 項，幫助更好的配對",
+  "@applyInterestsSubtitle": {
+    "description": "申請 Step 5 說明",
+    "placeholders": { "min": { "type": "int" } }
+  },
+
+  "applyInterestsSelected": "已選 {count}",
+  "@applyInterestsSelected": {
+    "description": "興趣已選計數",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "applyInterestsShortfall": "還差 {remaining} 項就可以繼續",
+  "@applyInterestsShortfall": {
+    "description": "興趣未達最低數量提示",
+    "placeholders": { "remaining": { "type": "int" } }
+  },
+
+  "applyInterestsCategoryMax": "此類別最多選 {max} 項",
+  "@applyInterestsCategoryMax": {
+    "description": "類別超過上限提示",
+    "placeholders": { "max": { "type": "int" } }
+  },
+
+  "applyInterestsAddCustomTitle": "新增自訂興趣",
+  "@applyInterestsAddCustomTitle": { "description": "自訂興趣 BottomSheet 標題" },
+
+  "applyInterestsAddCustomHint": "輸入興趣名稱",
+  "@applyInterestsAddCustomHint": { "description": "自訂興趣輸入框 placeholder" },
+
+  "applyInterestsAddButton": "新增",
+  "@applyInterestsAddButton": { "description": "新增自訂興趣確認按鈕" },
+
+  "applyQuestionsTitle": "讓對方更了解你",
+  "@applyQuestionsTitle": { "description": "申請 Step 6 標題" },
+
+  "applyQuestionsSubtitle": "至少回答 1 題，沒有標準答案",
+  "@applyQuestionsSubtitle": { "description": "申請 Step 6 說明" },
+
+  "applyQuestionsAnswered": "已答 {count} 題",
+  "@applyQuestionsAnswered": {
+    "description": "問題已回答計數",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "applyQuestionsMinRequired": "回答至少 1 題再繼續",
+  "@applyQuestionsMinRequired": { "description": "問題未達最低數量提示" },
+
+  "applyQuestionsAnswerHint": "分享你的想法...",
+  "@applyQuestionsAnswerHint": { "description": "問題回答輸入框 placeholder" },
+
+  "applyQuestionsAnswerSave": "儲存",
+  "@applyQuestionsAnswerSave": { "description": "儲存問題回答按鈕" },
+
+  "applyQuestionsAnswerClear": "清除回答",
+  "@applyQuestionsAnswerClear": { "description": "清除問題回答按鈕" },
+
+  "applyBioTitle": "自我介紹",
+  "@applyBioTitle": { "description": "申請 Step 7 標題" },
+
+  "applyBioSubtitle": "介紹一下自己（選填）",
   "@applyBioSubtitle": { "description": "申請 Step 4 說明" },
 
   "applyBioHint": "分享你的興趣、生活方式或任何想說的話...",
   "@applyBioHint": { "description": "Bio 輸入框 placeholder" },
 
-  "applyBioHelper": "最多 150 字",
+  "applyBioHelper": "最多 500 字",
   "@applyBioHelper": { "description": "Bio 字數說明" },
+
+  "applyLeaveDialogTitle": "確定要離開？",
+  "@applyLeaveDialogTitle": { "description": "申請流程返回確認 Dialog 標題" },
+
+  "applyLeaveDialogBody": "離開將會登出，下次重新登入後可繼續申請。",
+  "@applyLeaveDialogBody": { "description": "申請流程返回確認 Dialog 說明" },
+
+  "applyLeaveDialogConfirm": "離開並登出",
+  "@applyLeaveDialogConfirm": { "description": "申請流程返回確認按鈕" },
 
   "applyConfirmTitle": "確認送出",
   "@applyConfirmTitle": { "description": "申請 Step 5 標題" },
@@ -438,11 +552,11 @@
   "reviewRejectedBody": "您目前暫時未符合我們的社群標準。歡迎在 30 天後重新申請。",
   "@reviewRejectedBody": { "description": "審核未通過頁面說明（備用）" },
 
-  "reviewRejectedTitleSoft": "感謝你的申請",
-  "@reviewRejectedTitleSoft": { "description": "拒絕頁面標題 — 不通過（hard）" },
+  "reviewRejectedTitleHard": "感謝你的申請",
+  "@reviewRejectedTitleHard": { "description": "拒絕頁面標題 — 不通過（hard）" },
 
-  "reviewRejectedBodySoft": "感謝你的申請。為確保每位成員都能擁有最佳的配對體驗，我們對申請照片有基本的品質要求。\n以下是一些建議，希望對你有所幫助：",
-  "@reviewRejectedBodySoft": { "description": "拒絕頁面說明 — 不通過（hard）" },
+  "reviewRejectedBodyHard": "感謝你的申請。為確保每位成員都能擁有最佳的配對體驗，我們對申請照片有基本的品質要求。\n以下是一些建議，希望對你有所幫助：",
+  "@reviewRejectedBodyHard": { "description": "拒絕頁面說明 — 不通過（hard）" },
 
   "reviewRejectedTitlePotential": "差一點點！",
   "@reviewRejectedTitlePotential": { "description": "拒絕頁面標題 — 有潛力" },
@@ -452,6 +566,21 @@
 
   "reviewAdminFeedbackTitle": "審核建議",
   "@reviewAdminFeedbackTitle": { "description": "差一點拒絕頁面：審核員給用戶的建議卡片標題" },
+
+  "reviewRejectedTagPhotoBlurry": "建議提供清晰、光線充足的照片",
+  "@reviewRejectedTagPhotoBlurry": { "description": "審核標籤：照片模糊或光線不足" },
+
+  "reviewRejectedTagMessyBackground": "建議在整潔或有質感的空間拍攝",
+  "@reviewRejectedTagMessyBackground": { "description": "審核標籤：背景雜亂" },
+
+  "reviewRejectedTagCasualStyle": "建議展現經過打理的穿搭與造型",
+  "@reviewRejectedTagCasualStyle": { "description": "審核標籤：穿搭過於隨便" },
+
+  "reviewRejectedTagFaceUnclear": "建議確保主照片能清楚看見臉部",
+  "@reviewRejectedTagFaceUnclear": { "description": "審核標籤：臉部不清晰" },
+
+  "reviewRejectedTagTooFewPhotos": "建議提供至少 3 張不同角度的照片",
+  "@reviewRejectedTagTooFewPhotos": { "description": "審核標籤：照片數量不足" },
 
   "reviewRejectedTip1": "靠近窗戶或在戶外自然光下拍攝",
   "@reviewRejectedTip1": { "description": "改善建議 1" },
@@ -477,6 +606,54 @@
   "reviewReapplyExhaustedBody": "每個帳號最多可申請 3 次，此帳號已達上限。感謝你對 PR Dating 的支持。",
   "@reviewReapplyExhaustedBody": { "description": "已用完所有申請次數時的說明文字" },
 
+  "reviewExhaustedSignOut": "登出",
+  "@reviewExhaustedSignOut": { "description": "機會用完頁面的登出按鈕" },
+
+  "reviewExhaustedContactUs": "如有任何疑問，請聯繫我們",
+  "@reviewExhaustedContactUs": { "description": "機會用完頁面的聯絡我們提示（點擊複製信箱）" },
+
+  "reviewExhaustedEmailCopied": "信箱已複製",
+  "@reviewExhaustedEmailCopied": { "description": "複製信箱後的 SnackBar 提示" },
+
+  "reviewDeleteRequestButton": "申請刪除帳號",
+  "@reviewDeleteRequestButton": { "description": "被拒頁面底部的刪除帳號入口（小字）" },
+
+  "reviewDeleteDialogTitle": "確認刪除帳號？",
+  "@reviewDeleteDialogTitle": { "description": "刪除帳號確認 Dialog 標題" },
+
+  "reviewDeleteDialogBody": "你的帳號資料將於 90 天後永久清除。這段期間，你可以登入並取消此申請。90 天後你可以以全新身份重新申請。",
+  "@reviewDeleteDialogBody": { "description": "刪除帳號確認 Dialog 說明文字" },
+
+  "reviewDeleteDialogConfirm": "確認申請",
+  "@reviewDeleteDialogConfirm": { "description": "刪除帳號確認按鈕" },
+
+  "reviewDeleteDialogCancel": "取消",
+  "@reviewDeleteDialogCancel": { "description": "刪除帳號取消按鈕" },
+
+  "pendingDeletionTitle": "帳號刪除已排程",
+  "@pendingDeletionTitle": { "description": "待刪除狀態頁面標題" },
+
+  "pendingDeletionBody": "你的所有資料將於以下日期永久清除。屆時你可以以全新身份重新申請。",
+  "@pendingDeletionBody": { "description": "待刪除狀態頁面說明文字" },
+
+  "pendingDeletionDateLabel": "預計刪除日期",
+  "@pendingDeletionDateLabel": { "description": "待刪除頁面的日期標籤" },
+
+  "pendingDeletionCancelButton": "取消刪除申請",
+  "@pendingDeletionCancelButton": { "description": "取消刪除申請的按鈕" },
+
+  "pendingDeletionSignOut": "登出",
+  "@pendingDeletionSignOut": { "description": "待刪除頁面的登出按鈕" },
+
+  "pendingDeletionCancelSuccess": "刪除申請已取消",
+  "@pendingDeletionCancelSuccess": { "description": "取消刪除申請成功後的 SnackBar 提示" },
+
+  "reviewPendingContactUs": "如有任何問題，歡迎聯繫我們",
+  "@reviewPendingContactUs": { "description": "等待審核頁面底部的聯繫我們提示（點擊複製信箱）" },
+
+  "reviewPendingEmailCopied": "信箱已複製",
+  "@reviewPendingEmailCopied": { "description": "等待審核頁複製信箱後的 SnackBar 提示" },
+
   "discoverTitle": "探索",
   "@discoverTitle": { "description": "探索分頁標題" },
 
@@ -485,6 +662,20 @@
 
   "discoverEmptySubtitle": "稍後再回來看看新的用戶吧。",
   "@discoverEmptySubtitle": { "description": "探索頁空狀態副標題" },
+
+  "discoverMidnightTitle": "今日精選準備中",
+  "@discoverMidnightTitle": { "description": "探索頁等待每日凌晨刷新的標題" },
+
+  "discoverMidnightSubtitle": "PR Dating 每天台灣時間凌晨 12:00 精選今日配對\n（你當地時間 {localTime}）",
+  "@discoverMidnightSubtitle": {
+    "description": "探索頁等待刷新的說明文字，包含用戶當地等效時間",
+    "placeholders": {
+      "localTime": { "type": "String", "description": "換算成用戶裝置時區後的時間，例如 05:00" }
+    }
+  },
+
+  "discoverMidnightCountdownLabel": "距離下次刷新",
+  "@discoverMidnightCountdownLabel": { "description": "探索頁倒數計時標籤" },
 
   "matchTitle": "配對",
   "@matchTitle": { "description": "配對分頁標題" },
@@ -640,5 +831,260 @@
   "@reviewRejectedHardTip2": { "description": "不通過建議 2" },
 
   "reviewRejectedHardTip3": "多元面向的照片能展現更完整的你",
-  "@reviewRejectedHardTip3": { "description": "不通過建議 3" }
+  "@reviewRejectedHardTip3": { "description": "不通過建議 3" },
+
+  "profileAgeYears": "{age} 歲",
+  "@profileAgeYears": { "description": "年齡顯示", "placeholders": { "age": { "type": "int" } } },
+
+  "profileSeeking": "尋找",
+  "@profileSeeking": { "description": "想認識標籤" },
+
+  "profileSeekingMale": "男性",
+  "@profileSeekingMale": { "description": "尋找男性" },
+
+  "profileSeekingFemale": "女性",
+  "@profileSeekingFemale": { "description": "尋找女性" },
+
+  "profileSeekingOther": "所有人",
+  "@profileSeekingOther": { "description": "尋找所有人" },
+
+  "profileGenderMale": "男",
+  "@profileGenderMale": { "description": "男性" },
+
+  "profileGenderFemale": "女",
+  "@profileGenderFemale": { "description": "女性" },
+
+  "profileGenderOther": "其他",
+  "@profileGenderOther": { "description": "其他性別" },
+
+  "profileSectionBio": "關於我",
+  "@profileSectionBio": { "description": "個人資料－關於我標題" },
+
+  "profileSectionInterests": "興趣",
+  "@profileSectionInterests": { "description": "個人資料－興趣標題" },
+
+  "profileSectionQuestions": "個人問答",
+  "@profileSectionQuestions": { "description": "個人資料－問答標題" },
+
+  "profileNoBio": "尚未填寫自我介紹",
+  "@profileNoBio": { "description": "尚未填寫 bio 的提示" },
+
+  "profileNoInterests": "尚未設定興趣",
+  "@profileNoInterests": { "description": "尚未設定興趣的提示" },
+
+  "profileNoQuestions": "尚未回答任何問題",
+  "@profileNoQuestions": { "description": "尚未回答問題的提示" },
+
+  "profileLoadError": "無法載入個人資料",
+  "@profileLoadError": { "description": "個人資料載入失敗" },
+
+  "profileEditButton": "編輯資料",
+  "@profileEditButton": { "description": "個人資料頁編輯按鈕" },
+
+  "editProfileTitle": "編輯資料",
+  "@editProfileTitle": { "description": "編輯資料頁標題" },
+
+  "editProfileSectionPhotos": "照片",
+  "@editProfileSectionPhotos": { "description": "照片區塊標題" },
+
+  "editProfileSectionBasic": "基本資料",
+  "@editProfileSectionBasic": { "description": "基本資料區塊標題" },
+
+  "editProfileSectionSeeking": "想認識",
+  "@editProfileSectionSeeking": { "description": "想認識區塊標題" },
+
+  "editProfileSectionInterests": "興趣",
+  "@editProfileSectionInterests": { "description": "興趣區塊標題" },
+
+  "editProfileSectionQuestions": "個人問答",
+  "@editProfileSectionQuestions": { "description": "問答區塊標題" },
+
+  "editProfileNameLabel": "顯示名稱",
+  "@editProfileNameLabel": { "description": "顯示名稱欄位標籤" },
+
+  "editProfileBioLabel": "自我介紹",
+  "@editProfileBioLabel": { "description": "自我介紹欄位標籤" },
+
+  "editProfileBioHint": "介紹一下自己...",
+  "@editProfileBioHint": { "description": "自我介紹輸入提示" },
+
+  "editProfileBioHelper": "選填，最多 {max} 字",
+  "@editProfileBioHelper": { "description": "自我介紹字數說明", "placeholders": { "max": { "type": "int" } } },
+
+  "editProfileSeekingMale": "男性",
+  "@editProfileSeekingMale": { "description": "想認識男性" },
+
+  "editProfileSeekingFemale": "女性",
+  "@editProfileSeekingFemale": { "description": "想認識女性" },
+
+  "editProfileSeekingOther": "不限",
+  "@editProfileSeekingOther": { "description": "想認識不限" },
+
+  "editProfilePhotoChangeTitle": "更換照片需重新審核",
+  "@editProfilePhotoChangeTitle": { "description": "照片更換警告標題" },
+
+  "editProfilePhotoChangeBody": "更換照片後，需要重拍兩張驗證照片確認是本人。\n審核期間（約 1–3 個工作天），您將繼續使用現有照片與他人配對。",
+  "@editProfilePhotoChangeBody": { "description": "照片更換警告說明" },
+
+  "editProfilePhotoChangeContinue": "繼續更換",
+  "@editProfilePhotoChangeContinue": { "description": "照片更換確認按鈕" },
+
+  "editProfileInterestsCount": "已選 {count} 個興趣",
+  "@editProfileInterestsCount": { "description": "興趣已選數量", "placeholders": { "count": { "type": "int" } } },
+
+  "editProfileInterestsEdit": "前往編輯",
+  "@editProfileInterestsEdit": { "description": "前往編輯興趣" },
+
+  "editProfileQuestionsCount": "已回答 {count} 個問題",
+  "@editProfileQuestionsCount": { "description": "問答已回答數量", "placeholders": { "count": { "type": "int" } } },
+
+  "editProfileQuestionsEdit": "前往編輯",
+  "@editProfileQuestionsEdit": { "description": "前往編輯問答" },
+
+  "editProfileUnsavedTitle": "放棄變更？",
+  "@editProfileUnsavedTitle": { "description": "未儲存變更對話框標題" },
+
+  "editProfileUnsavedMessage": "有尚未儲存的變更，離開後將會遺失。",
+  "@editProfileUnsavedMessage": { "description": "未儲存變更對話框內容" },
+
+  "editProfileUnsavedDiscard": "放棄變更",
+  "@editProfileUnsavedDiscard": { "description": "放棄變更確認按鈕" },
+
+  "editProfileSaved": "已儲存",
+  "@editProfileSaved": { "description": "儲存成功提示" },
+
+  "editProfileSaveFailed": "儲存失敗，請再試一次",
+  "@editProfileSaveFailed": { "description": "儲存失敗提示" },
+
+  "editProfilePhotoPendingBanner": "照片審核中（1–3 個工作天），配對繼續使用原有照片",
+  "@editProfilePhotoPendingBanner": { "description": "照片審核中橫幅" },
+
+  "settingsTitle": "設定",
+  "@settingsTitle": { "description": "設定頁標題" },
+
+  "settingsSectionAccount": "帳號",
+  "@settingsSectionAccount": { "description": "帳號區塊標題" },
+
+  "settingsSectionPrivacy": "隱私",
+  "@settingsSectionPrivacy": { "description": "隱私區塊標題" },
+
+  "settingsSectionPreferences": "偏好",
+  "@settingsSectionPreferences": { "description": "偏好區塊標題" },
+
+  "settingsSectionSupport": "支援",
+  "@settingsSectionSupport": { "description": "支援區塊標題" },
+
+  "settingsSectionAbout": "關於",
+  "@settingsSectionAbout": { "description": "關於區塊標題" },
+
+  "settingsPhone": "手機號碼",
+  "@settingsPhone": { "description": "手機號碼選項" },
+
+  "settingsNotifications": "推播通知",
+  "@settingsNotifications": { "description": "推播通知選項" },
+
+  "settingsLanguage": "語言",
+  "@settingsLanguage": { "description": "語言選項" },
+
+  "settingsLanguageZh": "繁體中文",
+  "@settingsLanguageZh": { "description": "繁體中文選項" },
+
+  "settingsLanguageEn": "English",
+  "@settingsLanguageEn": { "description": "英文選項" },
+
+  "settingsPrivacy": "隱私政策",
+  "@settingsPrivacy": { "description": "隱私政策選項" },
+
+  "settingsTerms": "服務條款",
+  "@settingsTerms": { "description": "服務條款選項" },
+
+  "settingsContactUs": "聯絡客服",
+  "@settingsContactUs": { "description": "聯絡客服選項" },
+
+  "settingsFaq": "常見問題",
+  "@settingsFaq": { "description": "常見問題選項" },
+
+  "settingsReport": "回報問題",
+  "@settingsReport": { "description": "回報問題選項" },
+
+  "settingsVersion": "版本",
+  "@settingsVersion": { "description": "版本選項" },
+
+  "settingsLogout": "登出",
+  "@settingsLogout": { "description": "登出選項" },
+
+  "settingsLogoutTitle": "確認登出",
+  "@settingsLogoutTitle": { "description": "登出確認對話框標題" },
+
+  "settingsLogoutMessage": "確定要從這台裝置登出嗎？",
+  "@settingsLogoutMessage": { "description": "登出確認對話框內容" },
+
+  "settingsLogoutConfirm": "登出",
+  "@settingsLogoutConfirm": { "description": "登出確認按鈕" },
+
+  "settingsAccountSecurity": "帳號安全",
+  "@settingsAccountSecurity": { "description": "帳號安全選項" },
+
+  "accountSecurityTitle": "帳號安全",
+  "@accountSecurityTitle": { "description": "帳號安全頁標題" },
+
+  "accountSecurityBody": "以下操作將永久影響您的帳號，請謹慎操作。",
+  "@accountSecurityBody": { "description": "帳號安全頁說明" },
+
+  "accountSecurityDeleteTitle": "刪除帳號",
+  "@accountSecurityDeleteTitle": { "description": "刪除帳號區塊標題" },
+
+  "accountSecurityDeleteDesc": "刪除帳號後，您的所有資料、配對及對話紀錄將永久刪除，無法復原。\n如果只是需要暫時休息，建議先考慮暫停帳號。",
+  "@accountSecurityDeleteDesc": { "description": "刪除帳號說明" },
+
+  "accountSecurityDeleteButton": "永久刪除帳號",
+  "@accountSecurityDeleteButton": { "description": "刪除帳號按鈕" },
+
+  "editPhotosTitle": "管理照片",
+  "@editPhotosTitle": { "description": "管理照片頁標題" },
+
+  "editPhotosSubtitle": "長按照片可調整順序。最少 2 張，最多 9 張。",
+  "@editPhotosSubtitle": { "description": "管理照片頁說明" },
+
+  "editPhotosUploading": "上傳中...",
+  "@editPhotosUploading": { "description": "管理照片頁上傳進行中文字" },
+
+  "editPhotosSuccessMessage": "照片已送出審核，審核期間配對繼續進行",
+  "@editPhotosSuccessMessage": { "description": "照片送出審核成功提示" },
+
+  "editPhotosUploadFailed": "上傳失敗，請再試一次",
+  "@editPhotosUploadFailed": { "description": "照片上傳失敗提示" },
+
+  "editPhotosPendingStatus": "照片審核中（1–3 個工作天）\n配對繼續使用原有照片",
+  "@editPhotosPendingStatus": { "description": "管理照片按鈕下方的審核中狀態說明" },
+
+  "editReverifyTitle": "拍攝驗證照片",
+  "@editReverifyTitle": { "description": "換照驗證頁標題" },
+
+  "editReverifySubtitle": "確認是本人後，新照片才會送出審核。\n驗證照片僅供審核人員查閱，不對外顯示。",
+  "@editReverifySubtitle": { "description": "換照驗證頁說明" },
+
+  "editReverifySubmit": "送出",
+  "@editReverifySubmit": { "description": "換照驗證送出按鈕" },
+
+  "editReverifyUploading": "送出中...",
+  "@editReverifyUploading": { "description": "換照驗證送出進行中文字" },
+
+  "editReverifySuccess": "照片更換申請已送出，審核期間配對繼續進行",
+  "@editReverifySuccess": { "description": "換照驗證送出成功提示" },
+
+  "editReverifyFailed": "送出失敗，請再試一次",
+  "@editReverifyFailed": { "description": "換照驗證送出失敗提示" },
+
+  "betaApplyInfoSubtitle": "歡迎回來！確認或調整您的基本資料。",
+  "@betaApplyInfoSubtitle": { "description": "Beta apply info page subtitle" },
+
+  "betaApplyBioSubtitle": "這是您封測時的自我介紹，可直接使用或重新編輯。",
+  "@betaApplyBioSubtitle": { "description": "Beta apply bio page subtitle" },
+
+  "betaApplyPhotosLockedTitle": "照片暫時鎖定",
+  "@betaApplyPhotosLockedTitle": { "description": "Beta photos locked title" },
+
+  "betaApplyPhotosLockedBody": "為了確保是本人，目前暫時無法更換照片。進入 APP 後可以在個人資料頁自由更換。",
+  "@betaApplyPhotosLockedBody": { "description": "Beta photos locked body text" }
 }

@@ -22,6 +22,9 @@
   "commonLoading": "Loading...",
   "@commonLoading": { "description": "Generic loading text" },
 
+  "commonSaving": "Saving...",
+  "@commonSaving": { "description": "Generic saving loading text" },
+
   "commonError": "Something went wrong. Please try again.",
   "@commonError": { "description": "Generic error message" },
 
@@ -58,6 +61,48 @@
   "authContinueWithApple": "Continue with Apple",
   "@authContinueWithApple": { "description": "Apple OAuth sign-in button" },
 
+  "welcomeEmailLoginButton": "Sign in with Email",
+  "@welcomeEmailLoginButton": { "description": "Email login entry button" },
+
+  "emailLoginTitle": "Sign In with Email",
+  "@emailLoginTitle": { "description": "Email login bottom sheet title" },
+
+  "emailLoginSubtitle": "This is for existing beta accounts only.\nEnter your registered email and we'll send you a sign-in link.",
+  "@emailLoginSubtitle": { "description": "Email login bottom sheet subtitle" },
+
+  "emailLoginLabel": "Email",
+  "@emailLoginLabel": { "description": "Email input label" },
+
+  "emailLoginSendLink": "Send Login Link",
+  "@emailLoginSendLink": { "description": "Magic link send button" },
+
+  "emailLoginResend": "Resend",
+  "@emailLoginResend": { "description": "Magic link resend button" },
+
+  "emailLoginResendIn": "Resend in {seconds}s",
+  "@emailLoginResendIn": {
+    "description": "Magic link cooldown countdown text",
+    "placeholders": { "seconds": { "type": "int" } }
+  },
+
+  "emailLoginOAuthHint": "Don't have an account yet? Go back and sign up with Google or Apple.\nIf you previously signed in with Google or Apple, please use those buttons instead.",
+  "@emailLoginOAuthHint": { "description": "Hint guiding unregistered users and OAuth users back to the correct entry" },
+
+  "betaAccountEmailInvalid": "Please enter a valid email address",
+  "@betaAccountEmailInvalid": { "description": "Invalid email error" },
+
+  "betaAccountSentTitle": "Login Link Sent",
+  "@betaAccountSentTitle": { "description": "Magic link sent success title" },
+
+  "betaAccountSentTo": "Sent to {email}",
+  "@betaAccountSentTo": {
+    "description": "Shows the email address the magic link was sent to",
+    "placeholders": { "email": { "type": "String" } }
+  },
+
+  "betaAccountSentBody": "Check your inbox and tap the link — the app will open automatically.\nThe link expires in 60 minutes.",
+  "@betaAccountSentBody": { "description": "Magic link sent body text" },
+
   "authConsentSuffix": " and {privacy}",
   "@authConsentSuffix": {
     "description": "Consent text suffix (appended after authConsentPrefix + termsLabel)",
@@ -70,7 +115,7 @@
   "approvedGateTitle": "You're In",
   "@approvedGateTitle": { "description": "Approval gate page main title" },
 
-  "approvedGateBody": "Congratulations! You've passed the PR Dating review.\nOne last step — link your phone number to finish setting up your account.",
+  "approvedGateBody": "Congratulations! You've been approved to join PR Dating — welcome aboard.\nNext, link your phone number to complete your account setup.",
   "@approvedGateBody": { "description": "Approval gate page body text (generic fallback)" },
 
   "approvedGateBodyTop": "Your profile meets PR Dating's community standards — welcome aboard.\nYou'll have free access to all features for life.\nOne last step — link your phone number to finish setting up your account.",
@@ -369,17 +414,86 @@
   "verifyActionShowNine": "Show the number 9 with your hand",
   "@verifyActionShowNine": { "description": "Verification action: show number 9 (index finger curled)" },
 
-  "applyBioTitle": "About You",
-  "@applyBioTitle": { "description": "Apply Step 5 title" },
+  "applyInterestsTitle": "What are you into?",
+  "@applyInterestsTitle": { "description": "Apply Step 5 title" },
 
-  "applyBioSubtitle": "Tell us a little about yourself (optional)",
+  "applyInterestsSubtitle": "Pick at least {min} to help with matching",
+  "@applyInterestsSubtitle": {
+    "description": "Apply Step 5 subtitle",
+    "placeholders": { "min": { "type": "int" } }
+  },
+
+  "applyInterestsSelected": "{count} selected",
+  "@applyInterestsSelected": {
+    "description": "Interests selected count",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "applyInterestsShortfall": "{remaining} more to go",
+  "@applyInterestsShortfall": {
+    "description": "Interests below minimum prompt",
+    "placeholders": { "remaining": { "type": "int" } }
+  },
+
+  "applyInterestsCategoryMax": "This category allows max {max} picks",
+  "@applyInterestsCategoryMax": {
+    "description": "Category limit reached prompt",
+    "placeholders": { "max": { "type": "int" } }
+  },
+
+  "applyInterestsAddCustomTitle": "Add a custom interest",
+  "@applyInterestsAddCustomTitle": { "description": "Custom interest bottom sheet title" },
+
+  "applyInterestsAddCustomHint": "Enter interest name",
+  "@applyInterestsAddCustomHint": { "description": "Custom interest input placeholder" },
+
+  "applyInterestsAddButton": "Add",
+  "@applyInterestsAddButton": { "description": "Add custom interest confirm button" },
+
+  "applyQuestionsTitle": "Let them get to know you",
+  "@applyQuestionsTitle": { "description": "Apply Step 6 title" },
+
+  "applyQuestionsSubtitle": "Answer at least 1 — there are no wrong answers",
+  "@applyQuestionsSubtitle": { "description": "Apply Step 6 subtitle" },
+
+  "applyQuestionsAnswered": "{count} answered",
+  "@applyQuestionsAnswered": {
+    "description": "Questions answered count",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "applyQuestionsMinRequired": "Answer at least 1 question to continue",
+  "@applyQuestionsMinRequired": { "description": "Questions below minimum prompt" },
+
+  "applyQuestionsAnswerHint": "Share your thoughts...",
+  "@applyQuestionsAnswerHint": { "description": "Question answer input placeholder" },
+
+  "applyQuestionsAnswerSave": "Save",
+  "@applyQuestionsAnswerSave": { "description": "Save question answer button" },
+
+  "applyQuestionsAnswerClear": "Clear answer",
+  "@applyQuestionsAnswerClear": { "description": "Clear question answer button" },
+
+  "applyBioTitle": "About You",
+  "@applyBioTitle": { "description": "Apply Step 7 title" },
+
+  "applyBioSubtitle": "Tell us about yourself (optional)",
   "@applyBioSubtitle": { "description": "Apply Step 4 subtitle" },
 
   "applyBioHint": "Share your interests, lifestyle, or anything you'd like others to know...",
   "@applyBioHint": { "description": "Bio input placeholder" },
 
-  "applyBioHelper": "Up to 150 characters",
+  "applyBioHelper": "Up to 500 characters",
   "@applyBioHelper": { "description": "Bio character limit helper" },
+
+  "applyLeaveDialogTitle": "Leave Application?",
+  "@applyLeaveDialogTitle": { "description": "Confirm dialog title when leaving apply flow" },
+
+  "applyLeaveDialogBody": "You'll be signed out. You can continue your application next time you sign in.",
+  "@applyLeaveDialogBody": { "description": "Confirm dialog body when leaving apply flow" },
+
+  "applyLeaveDialogConfirm": "Leave & Sign Out",
+  "@applyLeaveDialogConfirm": { "description": "Confirm button when leaving apply flow" },
 
   "applyConfirmTitle": "Review & Submit",
   "@applyConfirmTitle": { "description": "Apply Step 5 title" },
@@ -438,11 +552,11 @@
   "reviewRejectedBody": "Your profile doesn't meet our community standards at this time. You're welcome to reapply in 30 days.",
   "@reviewRejectedBody": { "description": "Review rejected screen body text (fallback)" },
 
-  "reviewRejectedTitleSoft": "Thank You for Applying",
-  "@reviewRejectedTitleSoft": { "description": "Rejected screen title — hard rejection" },
+  "reviewRejectedTitleHard": "Thank You for Applying",
+  "@reviewRejectedTitleHard": { "description": "Rejected screen title — hard rejection" },
 
-  "reviewRejectedBodySoft": "Thank you for your application. To ensure every member has the best possible matching experience, we have basic quality standards for application photos.\nHere are some tips that might be helpful:",
-  "@reviewRejectedBodySoft": { "description": "Rejected screen body — hard rejection" },
+  "reviewRejectedBodyHard": "Thank you for your application. To ensure every member has the best possible matching experience, we have basic quality standards for application photos.\nHere are some tips that might be helpful:",
+  "@reviewRejectedBodyHard": { "description": "Rejected screen body — hard rejection" },
 
   "reviewRejectedTitlePotential": "Almost There!",
   "@reviewRejectedTitlePotential": { "description": "Rejected screen title — potential tier" },
@@ -452,6 +566,21 @@
 
   "reviewAdminFeedbackTitle": "Review Feedback",
   "@reviewAdminFeedbackTitle": { "description": "Soft-rejected page: admin feedback card title" },
+
+  "reviewRejectedTagPhotoBlurry": "Try submitting clear, well-lit photos",
+  "@reviewRejectedTagPhotoBlurry": { "description": "Rejection tag: photo blurry or poor lighting" },
+
+  "reviewRejectedTagMessyBackground": "Try shooting in a tidy or visually appealing space",
+  "@reviewRejectedTagMessyBackground": { "description": "Rejection tag: messy background" },
+
+  "reviewRejectedTagCasualStyle": "Consider presenting a more put-together look and style",
+  "@reviewRejectedTagCasualStyle": { "description": "Rejection tag: casual/ungroomed style" },
+
+  "reviewRejectedTagFaceUnclear": "Make sure your main photo shows your face clearly",
+  "@reviewRejectedTagFaceUnclear": { "description": "Rejection tag: face not clearly visible" },
+
+  "reviewRejectedTagTooFewPhotos": "Try including at least 3 photos from different angles",
+  "@reviewRejectedTagTooFewPhotos": { "description": "Rejection tag: too few photos" },
 
   "reviewRejectedTip1": "Shoot near a window or outdoors in natural light",
   "@reviewRejectedTip1": { "description": "Improvement tip 1" },
@@ -477,6 +606,54 @@
   "reviewReapplyExhaustedBody": "Each account is limited to 3 application attempts. This account has reached the limit. Thank you for your interest in PR Dating.",
   "@reviewReapplyExhaustedBody": { "description": "Body shown when all application attempts are used up" },
 
+  "reviewExhaustedSignOut": "Sign Out",
+  "@reviewExhaustedSignOut": { "description": "Sign out button on exhausted page" },
+
+  "reviewExhaustedContactUs": "Questions? Contact us",
+  "@reviewExhaustedContactUs": { "description": "Contact us hint on exhausted page (tap to copy email)" },
+
+  "reviewExhaustedEmailCopied": "Email copied",
+  "@reviewExhaustedEmailCopied": { "description": "SnackBar shown after copying support email" },
+
+  "reviewDeleteRequestButton": "Delete Account",
+  "@reviewDeleteRequestButton": { "description": "Subtle delete account entry at bottom of rejected page" },
+
+  "reviewDeleteDialogTitle": "Delete Account?",
+  "@reviewDeleteDialogTitle": { "description": "Delete account confirmation dialog title" },
+
+  "reviewDeleteDialogBody": "Your account data will be permanently deleted 90 days from now. During this period, you can log in and cancel this request. After 90 days, you may reapply with a fresh start.",
+  "@reviewDeleteDialogBody": { "description": "Delete account confirmation dialog body" },
+
+  "reviewDeleteDialogConfirm": "Confirm",
+  "@reviewDeleteDialogConfirm": { "description": "Delete account confirm button" },
+
+  "reviewDeleteDialogCancel": "Cancel",
+  "@reviewDeleteDialogCancel": { "description": "Delete account cancel button" },
+
+  "pendingDeletionTitle": "Deletion Scheduled",
+  "@pendingDeletionTitle": { "description": "Pending deletion page title" },
+
+  "pendingDeletionBody": "All your data will be permanently deleted on the date below. After that, you may reapply with a fresh start.",
+  "@pendingDeletionBody": { "description": "Pending deletion page body" },
+
+  "pendingDeletionDateLabel": "Scheduled for",
+  "@pendingDeletionDateLabel": { "description": "Date label on pending deletion page" },
+
+  "pendingDeletionCancelButton": "Cancel Deletion",
+  "@pendingDeletionCancelButton": { "description": "Cancel deletion request button" },
+
+  "pendingDeletionSignOut": "Sign Out",
+  "@pendingDeletionSignOut": { "description": "Sign out button on pending deletion page" },
+
+  "pendingDeletionCancelSuccess": "Deletion request cancelled",
+  "@pendingDeletionCancelSuccess": { "description": "SnackBar after successfully cancelling deletion" },
+
+  "reviewPendingContactUs": "Questions? Feel free to contact us",
+  "@reviewPendingContactUs": { "description": "Contact us hint at bottom of pending page (tap to copy email)" },
+
+  "reviewPendingEmailCopied": "Email copied",
+  "@reviewPendingEmailCopied": { "description": "SnackBar after copying email on pending page" },
+
   "discoverTitle": "Discover",
   "@discoverTitle": { "description": "Discover tab title" },
 
@@ -485,6 +662,20 @@
 
   "discoverEmptySubtitle": "Check back later for new profiles.",
   "@discoverEmptySubtitle": { "description": "Empty state subtitle on discover page" },
+
+  "discoverMidnightTitle": "Today's picks are on their way",
+  "@discoverMidnightTitle": { "description": "Discover page waiting-for-midnight-refresh title" },
+
+  "discoverMidnightSubtitle": "PR Dating refreshes your daily matches at midnight Taiwan time\n({localTime} your local time)",
+  "@discoverMidnightSubtitle": {
+    "description": "Discover page waiting-for-refresh body text, includes local equivalent time",
+    "placeholders": {
+      "localTime": { "type": "String", "description": "Refresh time converted to the user's device timezone, e.g. 05:00" }
+    }
+  },
+
+  "discoverMidnightCountdownLabel": "Next refresh in",
+  "@discoverMidnightCountdownLabel": { "description": "Discover page countdown label" },
 
   "matchTitle": "Matches",
   "@matchTitle": { "description": "Match tab title" },
@@ -640,5 +831,260 @@
   "@reviewRejectedHardTip2": { "description": "Hard rejection tip 2" },
 
   "reviewRejectedHardTip3": "A variety of photos can show different sides of who you are",
-  "@reviewRejectedHardTip3": { "description": "Hard rejection tip 3" }
+  "@reviewRejectedHardTip3": { "description": "Hard rejection tip 3" },
+
+  "profileAgeYears": "{age}",
+  "@profileAgeYears": { "description": "Age display", "placeholders": { "age": { "type": "int" } } },
+
+  "profileSeeking": "Looking for",
+  "@profileSeeking": { "description": "Seeking label" },
+
+  "profileSeekingMale": "Men",
+  "@profileSeekingMale": { "description": "Seeking men" },
+
+  "profileSeekingFemale": "Women",
+  "@profileSeekingFemale": { "description": "Seeking women" },
+
+  "profileSeekingOther": "Everyone",
+  "@profileSeekingOther": { "description": "Seeking everyone" },
+
+  "profileGenderMale": "Male",
+  "@profileGenderMale": { "description": "Male gender" },
+
+  "profileGenderFemale": "Female",
+  "@profileGenderFemale": { "description": "Female gender" },
+
+  "profileGenderOther": "Other",
+  "@profileGenderOther": { "description": "Other gender" },
+
+  "profileSectionBio": "About",
+  "@profileSectionBio": { "description": "Profile bio section title" },
+
+  "profileSectionInterests": "Interests",
+  "@profileSectionInterests": { "description": "Profile interests section title" },
+
+  "profileSectionQuestions": "Q&A",
+  "@profileSectionQuestions": { "description": "Profile Q&A section title" },
+
+  "profileNoBio": "No bio yet",
+  "@profileNoBio": { "description": "Empty bio placeholder" },
+
+  "profileNoInterests": "No interests set",
+  "@profileNoInterests": { "description": "Empty interests placeholder" },
+
+  "profileNoQuestions": "No questions answered",
+  "@profileNoQuestions": { "description": "Empty questions placeholder" },
+
+  "profileLoadError": "Could not load profile",
+  "@profileLoadError": { "description": "Profile load error message" },
+
+  "profileEditButton": "Edit Profile",
+  "@profileEditButton": { "description": "Profile page edit button" },
+
+  "editProfileTitle": "Edit Profile",
+  "@editProfileTitle": { "description": "Edit profile page title" },
+
+  "editProfileSectionPhotos": "Photos",
+  "@editProfileSectionPhotos": { "description": "Photos section title" },
+
+  "editProfileSectionBasic": "Basic Info",
+  "@editProfileSectionBasic": { "description": "Basic info section title" },
+
+  "editProfileSectionSeeking": "Looking for",
+  "@editProfileSectionSeeking": { "description": "Seeking section title" },
+
+  "editProfileSectionInterests": "Interests",
+  "@editProfileSectionInterests": { "description": "Interests section title" },
+
+  "editProfileSectionQuestions": "Q&A",
+  "@editProfileSectionQuestions": { "description": "Q&A section title" },
+
+  "editProfileNameLabel": "Display Name",
+  "@editProfileNameLabel": { "description": "Display name field label" },
+
+  "editProfileBioLabel": "Bio",
+  "@editProfileBioLabel": { "description": "Bio field label" },
+
+  "editProfileBioHint": "Tell us about yourself...",
+  "@editProfileBioHint": { "description": "Bio input hint" },
+
+  "editProfileBioHelper": "Optional, max {max} characters",
+  "@editProfileBioHelper": { "description": "Bio character limit helper", "placeholders": { "max": { "type": "int" } } },
+
+  "editProfileSeekingMale": "Men",
+  "@editProfileSeekingMale": { "description": "Seeking men" },
+
+  "editProfileSeekingFemale": "Women",
+  "@editProfileSeekingFemale": { "description": "Seeking women" },
+
+  "editProfileSeekingOther": "Everyone",
+  "@editProfileSeekingOther": { "description": "Seeking everyone" },
+
+  "editProfilePhotoChangeTitle": "Photo Change Requires Review",
+  "@editProfilePhotoChangeTitle": { "description": "Photo change warning title" },
+
+  "editProfilePhotoChangeBody": "After changing photos, we'll re-verify your identity.\nDuring review (1–3 business days), your current photos remain active for matching.",
+  "@editProfilePhotoChangeBody": { "description": "Photo change warning body" },
+
+  "editProfilePhotoChangeContinue": "Proceed",
+  "@editProfilePhotoChangeContinue": { "description": "Photo change confirm button" },
+
+  "editProfileInterestsCount": "{count} interests selected",
+  "@editProfileInterestsCount": { "description": "Interests count", "placeholders": { "count": { "type": "int" } } },
+
+  "editProfileInterestsEdit": "Edit",
+  "@editProfileInterestsEdit": { "description": "Edit interests button" },
+
+  "editProfileQuestionsCount": "{count} questions answered",
+  "@editProfileQuestionsCount": { "description": "Questions count", "placeholders": { "count": { "type": "int" } } },
+
+  "editProfileQuestionsEdit": "Edit",
+  "@editProfileQuestionsEdit": { "description": "Edit questions button" },
+
+  "editProfileUnsavedTitle": "Discard changes?",
+  "@editProfileUnsavedTitle": { "description": "Unsaved changes dialog title" },
+
+  "editProfileUnsavedMessage": "You have unsaved changes. They'll be lost if you leave.",
+  "@editProfileUnsavedMessage": { "description": "Unsaved changes dialog body" },
+
+  "editProfileUnsavedDiscard": "Discard",
+  "@editProfileUnsavedDiscard": { "description": "Discard changes confirm button" },
+
+  "editProfileSaved": "Saved",
+  "@editProfileSaved": { "description": "Save success message" },
+
+  "editProfileSaveFailed": "Save failed. Please try again.",
+  "@editProfileSaveFailed": { "description": "Save failed message" },
+
+  "editProfilePhotoPendingBanner": "Photos under review (1–3 days) — current photos remain active for matching",
+  "@editProfilePhotoPendingBanner": { "description": "Photo review pending banner" },
+
+  "settingsTitle": "Settings",
+  "@settingsTitle": { "description": "Settings page title" },
+
+  "settingsSectionAccount": "Account",
+  "@settingsSectionAccount": { "description": "Account section title" },
+
+  "settingsSectionPrivacy": "Privacy",
+  "@settingsSectionPrivacy": { "description": "Privacy section title" },
+
+  "settingsSectionPreferences": "Preferences",
+  "@settingsSectionPreferences": { "description": "Preferences section title" },
+
+  "settingsSectionSupport": "Support",
+  "@settingsSectionSupport": { "description": "Support section title" },
+
+  "settingsSectionAbout": "About",
+  "@settingsSectionAbout": { "description": "About section title" },
+
+  "settingsPhone": "Phone Number",
+  "@settingsPhone": { "description": "Phone number option" },
+
+  "settingsNotifications": "Push Notifications",
+  "@settingsNotifications": { "description": "Push notifications option" },
+
+  "settingsLanguage": "Language",
+  "@settingsLanguage": { "description": "Language option" },
+
+  "settingsLanguageZh": "Traditional Chinese",
+  "@settingsLanguageZh": { "description": "Traditional Chinese option" },
+
+  "settingsLanguageEn": "English",
+  "@settingsLanguageEn": { "description": "English option" },
+
+  "settingsPrivacy": "Privacy Policy",
+  "@settingsPrivacy": { "description": "Privacy policy option" },
+
+  "settingsTerms": "Terms of Service",
+  "@settingsTerms": { "description": "Terms of service option" },
+
+  "settingsContactUs": "Contact Support",
+  "@settingsContactUs": { "description": "Contact support option" },
+
+  "settingsFaq": "FAQ",
+  "@settingsFaq": { "description": "FAQ option" },
+
+  "settingsReport": "Report a Problem",
+  "@settingsReport": { "description": "Report a problem option" },
+
+  "settingsVersion": "Version",
+  "@settingsVersion": { "description": "Version option" },
+
+  "settingsLogout": "Log Out",
+  "@settingsLogout": { "description": "Log out option" },
+
+  "settingsLogoutTitle": "Log Out",
+  "@settingsLogoutTitle": { "description": "Log out dialog title" },
+
+  "settingsLogoutMessage": "Are you sure you want to log out of this device?",
+  "@settingsLogoutMessage": { "description": "Log out dialog message" },
+
+  "settingsLogoutConfirm": "Log Out",
+  "@settingsLogoutConfirm": { "description": "Log out confirm button" },
+
+  "settingsAccountSecurity": "Account Security",
+  "@settingsAccountSecurity": { "description": "Account security option" },
+
+  "accountSecurityTitle": "Account Security",
+  "@accountSecurityTitle": { "description": "Account security page title" },
+
+  "accountSecurityBody": "The following actions will permanently affect your account. Please proceed carefully.",
+  "@accountSecurityBody": { "description": "Account security page body" },
+
+  "accountSecurityDeleteTitle": "Delete Account",
+  "@accountSecurityDeleteTitle": { "description": "Delete account section title" },
+
+  "accountSecurityDeleteDesc": "Deleting your account will permanently remove all your data, matches, and messages. This cannot be undone.\nIf you just need a break, consider pausing your account instead.",
+  "@accountSecurityDeleteDesc": { "description": "Delete account description" },
+
+  "accountSecurityDeleteButton": "Permanently Delete Account",
+  "@accountSecurityDeleteButton": { "description": "Delete account button" },
+
+  "editPhotosTitle": "Manage Photos",
+  "@editPhotosTitle": { "description": "Edit photos page title" },
+
+  "editPhotosSubtitle": "Long-press to reorder. Min 2, max 9 photos.",
+  "@editPhotosSubtitle": { "description": "Edit photos page subtitle" },
+
+  "editPhotosUploading": "Uploading...",
+  "@editPhotosUploading": { "description": "Edit photos page uploading text" },
+
+  "editPhotosSuccessMessage": "Photos submitted for review. Matching continues in the meantime.",
+  "@editPhotosSuccessMessage": { "description": "Photos submitted success message" },
+
+  "editPhotosUploadFailed": "Upload failed. Please try again.",
+  "@editPhotosUploadFailed": { "description": "Photo upload failed message" },
+
+  "editPhotosPendingStatus": "Photos under review (1–3 days)\nCurrent photos remain active for matching",
+  "@editPhotosPendingStatus": { "description": "Pending status text shown below manage photos button" },
+
+  "editReverifyTitle": "Verification Photos",
+  "@editReverifyTitle": { "description": "Photo re-verify page title" },
+
+  "editReverifySubtitle": "We need 2 quick photos to confirm it's you before submitting your new photos for review.\nVerification photos are for our review team only and will never be shown publicly.",
+  "@editReverifySubtitle": { "description": "Photo re-verify page subtitle" },
+
+  "editReverifySubmit": "Submit",
+  "@editReverifySubmit": { "description": "Photo re-verify submit button" },
+
+  "editReverifyUploading": "Submitting...",
+  "@editReverifyUploading": { "description": "Photo re-verify submitting text" },
+
+  "editReverifySuccess": "Photo update submitted for review. Matching continues in the meantime.",
+  "@editReverifySuccess": { "description": "Photo re-verify success message" },
+
+  "editReverifyFailed": "Submission failed. Please try again.",
+  "@editReverifyFailed": { "description": "Photo re-verify failed message" },
+
+  "betaApplyInfoSubtitle": "Welcome back! Confirm or update your basic info.",
+  "@betaApplyInfoSubtitle": { "description": "Beta apply info page subtitle" },
+
+  "betaApplyBioSubtitle": "Here's your bio from the beta — feel free to edit it.",
+  "@betaApplyBioSubtitle": { "description": "Beta apply bio page subtitle" },
+
+  "betaApplyPhotosLockedTitle": "Photos Locked",
+  "@betaApplyPhotosLockedTitle": { "description": "Beta photos locked title" },
+
+  "betaApplyPhotosLockedBody": "To confirm your identity, photos can't be changed right now. You can update them in your profile after joining the app.",
+  "@betaApplyPhotosLockedBody": { "description": "Beta photos locked body text" }
 }

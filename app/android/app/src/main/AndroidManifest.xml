@@ -40,6 +40,13 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- Supabase Magic Link deep link -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="com.yuliao.luko" android:host="login-callback"/>
+            </intent-filter>
         </activity>
         <!-- image_cropper：UCrop 裁切 Activity（必須宣告，否則 Android 端裁切功能無法啟動）-->
         <activity

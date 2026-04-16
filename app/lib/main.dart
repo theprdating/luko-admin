@@ -9,12 +9,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/analytics/analytics_provider.dart';
 import 'core/analytics/analytics_service.dart';
+import 'core/providers/locale_provider.dart';
 import 'core/providers/shared_prefs_provider.dart';
 import 'core/router/app_router.dart';
 import 'core/services/fcm_service.dart';
 import 'core/supabase/supabase_config.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/providers/auth_provider.dart';
+import 'features/profile/providers/profile_provider.dart';
 import 'l10n/app_localizations.dart';
 
 Future<void> main() async {
@@ -28,7 +30,11 @@ Future<void> main() async {
     url: SupabaseConfig.url,
     anonKey: SupabaseConfig.anonKey,
     debug: kDebugMode,
+    authOptions: const FlutterAuthClientOptions(
+      authFlowType: AuthFlowType.pkce,  // 加這行
+    ),
   );
+
 
   // ── FCM 初始化（Supabase 之後，確保 auth.currentUser 可讀）──────────────
   await FcmService.init();
@@ -91,8 +97,17 @@ class LukoApp extends ConsumerWidget {
     // FCM 審核結果通知 → 刷新 App 狀態機，觸發 router redirect
     FcmService.setStatusChangeCallback(() => ref.invalidate(appUserStatusProvider));
 
-    // routerProvider 持有 GoRouter 實例（含 redirect 邏輯）
+    // FCM 換照審核結果 → 刷新個人資料照片
+    FcmService.setPhotoChangeCallback(() {
+      ref.invalidate(myProfileProvider);
+      ref.invalidate(myProfilePhotoUrlsProvider);
+      ref.invalidate(myProfilePhotoThumbnailUrlsProvider);
+      ref.invalidate(myProfilePhotoPendingProvider);
+    });
+
     final router = ref.watch(routerProvider);
+    // null = 尚未手動設定，由 localeResolutionCallback 跟隨裝置語言
+    final savedLocale = ref.watch(localeProvider);
 
     return MaterialApp.router(
       title: 'PR Dating',
@@ -114,14 +129,11 @@ class LukoApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [
-        Locale('zh', 'TW'), // 繁體中文（zh_TW → GlobalMaterialLocalizations 使用繁體）
-        Locale('en'),       // English
+        Locale('zh', 'TW'),
+        Locale('en'),
       ],
-      // 測試用：強制英文。確認後改回 null（自動跟隨裝置語言）
-      // locale: const Locale('en'),
-      locale: null,
-      // zh/zh_TW/zh_HK 等中文 locale 一律導向 zh_TW（避免落入 zh 簡體）
-      // 其餘不支援語言 fallback 至英文
+      // 已手動設定語言：直接使用。未設定（null）：跟隨裝置語言。
+      locale: savedLocale,
       localeResolutionCallback: (locale, supportedLocales) {
         if (locale == null) return const Locale('en');
         if (locale.languageCode == 'zh') return const Locale('zh', 'TW');

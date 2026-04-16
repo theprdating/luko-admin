@@ -30,6 +30,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get commonLoading => '載入中...';
 
   @override
+  String get commonSaving => '儲存中...';
+
+  @override
   String get commonError => '發生錯誤，請再試一次。';
 
   @override
@@ -66,6 +69,47 @@ class AppLocalizationsZh extends AppLocalizations {
   String get authContinueWithApple => '使用 Apple 繼續';
 
   @override
+  String get welcomeEmailLoginButton => '以 Email 登入';
+
+  @override
+  String get emailLoginTitle => 'Email 登入';
+
+  @override
+  String get emailLoginSubtitle => '此入口供已有帳號的封測用戶使用。\n輸入註冊信箱，我們將寄送登入連結。';
+
+  @override
+  String get emailLoginLabel => '電子信箱';
+
+  @override
+  String get emailLoginSendLink => '寄送登入連結';
+
+  @override
+  String get emailLoginResend => '重新發送';
+
+  @override
+  String emailLoginResendIn(int seconds) {
+    return '$seconds 秒後可重新發送';
+  }
+
+  @override
+  String get emailLoginOAuthHint =>
+      '尚未申請帳號？請返回使用 Google 或 Apple 進行申請。\n曾以 Google / Apple 登入的用戶請返回使用對應按鈕。';
+
+  @override
+  String get betaAccountEmailInvalid => '請輸入有效的電子信箱';
+
+  @override
+  String get betaAccountSentTitle => '登入連結已發送';
+
+  @override
+  String betaAccountSentTo(String email) {
+    return '已寄至 $email';
+  }
+
+  @override
+  String get betaAccountSentBody => '請查收信箱，點擊連結後 App 將自動開啟並完成登入。\n連結 60 分鐘內有效。';
+
+  @override
   String authConsentSuffix(String privacy) {
     return ' 與 $privacy';
   }
@@ -77,7 +121,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get approvedGateTitle => '申請通過';
 
   @override
-  String get approvedGateBody => '恭喜！你已通過 PR Dating 的資格審核。\n接下來，綁定手機號碼以完成帳號設置。';
+  String get approvedGateBody =>
+      '恭喜！你已通過 PR Dating 的資格審核，歡迎加入。\n接下來，綁定手機號碼以完成帳號設置。';
 
   @override
   String get approvedGateBodyTop =>
@@ -368,16 +413,80 @@ class AppLocalizationsZh extends AppLocalizations {
   String get verifyActionShowNine => '用手比出數字 9';
 
   @override
+  String get applyInterestsTitle => '你喜歡什麼？';
+
+  @override
+  String applyInterestsSubtitle(int min) {
+    return '至少選 $min 項，幫助更好的配對';
+  }
+
+  @override
+  String applyInterestsSelected(int count) {
+    return '已選 $count';
+  }
+
+  @override
+  String applyInterestsShortfall(int remaining) {
+    return '還差 $remaining 項就可以繼續';
+  }
+
+  @override
+  String applyInterestsCategoryMax(int max) {
+    return '此類別最多選 $max 項';
+  }
+
+  @override
+  String get applyInterestsAddCustomTitle => '新增自訂興趣';
+
+  @override
+  String get applyInterestsAddCustomHint => '輸入興趣名稱';
+
+  @override
+  String get applyInterestsAddButton => '新增';
+
+  @override
+  String get applyQuestionsTitle => '讓對方更了解你';
+
+  @override
+  String get applyQuestionsSubtitle => '至少回答 1 題，沒有標準答案';
+
+  @override
+  String applyQuestionsAnswered(int count) {
+    return '已答 $count 題';
+  }
+
+  @override
+  String get applyQuestionsMinRequired => '回答至少 1 題再繼續';
+
+  @override
+  String get applyQuestionsAnswerHint => '分享你的想法...';
+
+  @override
+  String get applyQuestionsAnswerSave => '儲存';
+
+  @override
+  String get applyQuestionsAnswerClear => '清除回答';
+
+  @override
   String get applyBioTitle => '自我介紹';
 
   @override
-  String get applyBioSubtitle => '簡短介紹一下自己（選填）';
+  String get applyBioSubtitle => '介紹一下自己（選填）';
 
   @override
   String get applyBioHint => '分享你的興趣、生活方式或任何想說的話...';
 
   @override
-  String get applyBioHelper => '最多 150 字';
+  String get applyBioHelper => '最多 500 字';
+
+  @override
+  String get applyLeaveDialogTitle => '確定要離開？';
+
+  @override
+  String get applyLeaveDialogBody => '離開將會登出，下次重新登入後可繼續申請。';
+
+  @override
+  String get applyLeaveDialogConfirm => '離開並登出';
 
   @override
   String get applyConfirmTitle => '確認送出';
@@ -438,10 +547,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reviewRejectedBody => '您目前暫時未符合我們的社群標準。歡迎在 30 天後重新申請。';
 
   @override
-  String get reviewRejectedTitleSoft => '感謝你的申請';
+  String get reviewRejectedTitleHard => '感謝你的申請';
 
   @override
-  String get reviewRejectedBodySoft =>
+  String get reviewRejectedBodyHard =>
       '感謝你的申請。為確保每位成員都能擁有最佳的配對體驗，我們對申請照片有基本的品質要求。\n以下是一些建議，希望對你有所幫助：';
 
   @override
@@ -453,6 +562,21 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get reviewAdminFeedbackTitle => '審核建議';
+
+  @override
+  String get reviewRejectedTagPhotoBlurry => '建議提供清晰、光線充足的照片';
+
+  @override
+  String get reviewRejectedTagMessyBackground => '建議在整潔或有質感的空間拍攝';
+
+  @override
+  String get reviewRejectedTagCasualStyle => '建議展現經過打理的穿搭與造型';
+
+  @override
+  String get reviewRejectedTagFaceUnclear => '建議確保主照片能清楚看見臉部';
+
+  @override
+  String get reviewRejectedTagTooFewPhotos => '建議提供至少 3 張不同角度的照片';
 
   @override
   String get reviewRejectedTip1 => '靠近窗戶或在戶外自然光下拍攝';
@@ -479,6 +603,55 @@ class AppLocalizationsZh extends AppLocalizations {
       '每個帳號最多可申請 3 次，此帳號已達上限。感謝你對 PR Dating 的支持。';
 
   @override
+  String get reviewExhaustedSignOut => '登出';
+
+  @override
+  String get reviewExhaustedContactUs => '如有任何疑問，請聯繫我們';
+
+  @override
+  String get reviewExhaustedEmailCopied => '信箱已複製';
+
+  @override
+  String get reviewDeleteRequestButton => '申請刪除帳號';
+
+  @override
+  String get reviewDeleteDialogTitle => '確認刪除帳號？';
+
+  @override
+  String get reviewDeleteDialogBody =>
+      '你的帳號資料將於 90 天後永久清除。這段期間，你可以登入並取消此申請。90 天後你可以以全新身份重新申請。';
+
+  @override
+  String get reviewDeleteDialogConfirm => '確認申請';
+
+  @override
+  String get reviewDeleteDialogCancel => '取消';
+
+  @override
+  String get pendingDeletionTitle => '帳號刪除已排程';
+
+  @override
+  String get pendingDeletionBody => '你的所有資料將於以下日期永久清除。屆時你可以以全新身份重新申請。';
+
+  @override
+  String get pendingDeletionDateLabel => '預計刪除日期';
+
+  @override
+  String get pendingDeletionCancelButton => '取消刪除申請';
+
+  @override
+  String get pendingDeletionSignOut => '登出';
+
+  @override
+  String get pendingDeletionCancelSuccess => '刪除申請已取消';
+
+  @override
+  String get reviewPendingContactUs => '如有任何問題，歡迎聯繫我們';
+
+  @override
+  String get reviewPendingEmailCopied => '信箱已複製';
+
+  @override
   String get discoverTitle => '探索';
 
   @override
@@ -486,6 +659,17 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get discoverEmptySubtitle => '稍後再回來看看新的用戶吧。';
+
+  @override
+  String get discoverMidnightTitle => '今日精選準備中';
+
+  @override
+  String discoverMidnightSubtitle(String localTime) {
+    return 'PR Dating 每天台灣時間凌晨 12:00 精選今日配對\n（你當地時間 $localTime）';
+  }
+
+  @override
+  String get discoverMidnightCountdownLabel => '距離下次刷新';
 
   @override
   String get matchTitle => '配對';
@@ -659,4 +843,258 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get reviewRejectedHardTip3 => '多元面向的照片能展現更完整的你';
+
+  @override
+  String profileAgeYears(int age) {
+    return '$age 歲';
+  }
+
+  @override
+  String get profileSeeking => '尋找';
+
+  @override
+  String get profileSeekingMale => '男性';
+
+  @override
+  String get profileSeekingFemale => '女性';
+
+  @override
+  String get profileSeekingOther => '所有人';
+
+  @override
+  String get profileGenderMale => '男';
+
+  @override
+  String get profileGenderFemale => '女';
+
+  @override
+  String get profileGenderOther => '其他';
+
+  @override
+  String get profileSectionBio => '關於我';
+
+  @override
+  String get profileSectionInterests => '興趣';
+
+  @override
+  String get profileSectionQuestions => '個人問答';
+
+  @override
+  String get profileNoBio => '尚未填寫自我介紹';
+
+  @override
+  String get profileNoInterests => '尚未設定興趣';
+
+  @override
+  String get profileNoQuestions => '尚未回答任何問題';
+
+  @override
+  String get profileLoadError => '無法載入個人資料';
+
+  @override
+  String get editProfileTitle => '編輯資料';
+
+  @override
+  String get editProfileSectionPhotos => '照片';
+
+  @override
+  String get editProfileSectionBasic => '基本資料';
+
+  @override
+  String get editProfileSectionSeeking => '想認識';
+
+  @override
+  String get editProfileSectionInterests => '興趣';
+
+  @override
+  String get editProfileSectionQuestions => '個人問答';
+
+  @override
+  String get editProfileNameLabel => '顯示名稱';
+
+  @override
+  String get editProfileBioLabel => '自我介紹';
+
+  @override
+  String get editProfileBioHint => '介紹一下自己...';
+
+  @override
+  String editProfileBioHelper(int max) {
+    return '選填，最多 $max 字';
+  }
+
+  @override
+  String get editProfileSeekingMale => '男性';
+
+  @override
+  String get editProfileSeekingFemale => '女性';
+
+  @override
+  String get editProfileSeekingOther => '不限';
+
+  @override
+  String get editProfilePhotoChangeTitle => '更換照片需重新審核';
+
+  @override
+  String get editProfilePhotoChangeBody =>
+      '更換照片後，需要重拍兩張驗證照片確認是本人。\n審核期間（約 1–3 個工作天），您將繼續使用現有照片與他人配對。';
+
+  @override
+  String get editProfilePhotoChangeContinue => '繼續更換';
+
+  @override
+  String editProfileInterestsCount(int count) {
+    return '已選 $count 個興趣';
+  }
+
+  @override
+  String get editProfileInterestsEdit => '前往編輯';
+
+  @override
+  String editProfileQuestionsCount(int count) {
+    return '已回答 $count 個問題';
+  }
+
+  @override
+  String get editProfileQuestionsEdit => '前往編輯';
+
+  @override
+  String get editProfileUnsavedTitle => '放棄變更？';
+
+  @override
+  String get editProfileUnsavedMessage => '有尚未儲存的變更，離開後將會遺失。';
+
+  @override
+  String get editProfileUnsavedDiscard => '放棄變更';
+
+  @override
+  String get editProfileSaved => '已儲存';
+
+  @override
+  String get editProfileSaveFailed => '儲存失敗，請再試一次';
+
+  @override
+  String get editProfilePhotoPendingBanner => '照片審核中（1–3 個工作天），配對繼續使用原有照片';
+
+  @override
+  String get settingsSectionAccount => '帳號';
+
+  @override
+  String get settingsSectionPrivacy => '隱私';
+
+  @override
+  String get settingsSectionPreferences => '偏好';
+
+  @override
+  String get settingsSectionSupport => '支援';
+
+  @override
+  String get settingsSectionAbout => '關於';
+
+  @override
+  String get settingsPhone => '手機號碼';
+
+  @override
+  String get settingsNotifications => '推播通知';
+
+  @override
+  String get settingsLanguageZh => '繁體中文';
+
+  @override
+  String get settingsLanguageEn => 'English';
+
+  @override
+  String get settingsPrivacy => '隱私政策';
+
+  @override
+  String get settingsTerms => '服務條款';
+
+  @override
+  String get settingsContactUs => '聯絡客服';
+
+  @override
+  String get settingsFaq => '常見問題';
+
+  @override
+  String get settingsReport => '回報問題';
+
+  @override
+  String get settingsVersion => '版本';
+
+  @override
+  String get settingsLogoutTitle => '確認登出';
+
+  @override
+  String get settingsLogoutMessage => '確定要從這台裝置登出嗎？';
+
+  @override
+  String get settingsLogoutConfirm => '登出';
+
+  @override
+  String get settingsAccountSecurity => '帳號安全';
+
+  @override
+  String get accountSecurityTitle => '帳號安全';
+
+  @override
+  String get accountSecurityBody => '以下操作將永久影響您的帳號，請謹慎操作。';
+
+  @override
+  String get accountSecurityDeleteTitle => '刪除帳號';
+
+  @override
+  String get accountSecurityDeleteDesc =>
+      '刪除帳號後，您的所有資料、配對及對話紀錄將永久刪除，無法復原。\n如果只是需要暫時休息，建議先考慮暫停帳號。';
+
+  @override
+  String get accountSecurityDeleteButton => '永久刪除帳號';
+
+  @override
+  String get editPhotosTitle => '管理照片';
+
+  @override
+  String get editPhotosSubtitle => '長按照片可調整順序。最少 2 張，最多 9 張。';
+
+  @override
+  String get editPhotosUploading => '上傳中...';
+
+  @override
+  String get editPhotosSuccessMessage => '照片已送出審核，審核期間配對繼續進行';
+
+  @override
+  String get editPhotosUploadFailed => '上傳失敗，請再試一次';
+
+  @override
+  String get editPhotosPendingStatus => '照片審核中（1–3 個工作天）\n配對繼續使用原有照片';
+
+  @override
+  String get editReverifyTitle => '拍攝驗證照片';
+
+  @override
+  String get editReverifySubtitle => '確認是本人後，新照片才會送出審核。\n驗證照片僅供審核人員查閱，不對外顯示。';
+
+  @override
+  String get editReverifySubmit => '送出';
+
+  @override
+  String get editReverifyUploading => '送出中...';
+
+  @override
+  String get editReverifySuccess => '照片更換申請已送出，審核期間配對繼續進行';
+
+  @override
+  String get editReverifyFailed => '送出失敗，請再試一次';
+
+  @override
+  String get betaApplyInfoSubtitle => '歡迎回來！確認或調整您的基本資料。';
+
+  @override
+  String get betaApplyBioSubtitle => '這是您封測時的自我介紹，可直接使用或重新編輯。';
+
+  @override
+  String get betaApplyPhotosLockedTitle => '照片暫時鎖定';
+
+  @override
+  String get betaApplyPhotosLockedBody =>
+      '為了確保是本人，目前暫時無法更換照片。進入 APP 後可以在個人資料頁自由更換。';
 }

@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/domain/app_user_status.dart';
 import '../providers/shared_prefs_provider.dart';
 import '../../features/auth/presentation/pages/apply/apply_bio_page.dart';
+import '../../features/auth/presentation/pages/apply/apply_interests_page.dart'
+    show ApplyInterestsPage, ApplyQuestionsPage;
 import '../../features/auth/presentation/pages/apply/apply_verify_page.dart';
 import '../../features/auth/presentation/pages/apply/apply_confirm_page.dart';
 import '../../features/auth/presentation/pages/apply/apply_info_page.dart';
@@ -28,8 +30,12 @@ import '../../features/chat/presentation/pages/chat_room_page.dart';
 import '../../features/chat/presentation/pages/messages_page.dart';
 import '../../features/discover/presentation/pages/discover_page.dart';
 import '../../features/match/presentation/pages/matches_page.dart';
+import '../../features/auth/presentation/pages/pending_deletion_page.dart';
+import '../../features/profile/presentation/pages/account_security_page.dart';
 import '../../features/profile/presentation/pages/delete_account_page.dart';
+import '../../features/profile/presentation/pages/edit_photos_page.dart';
 import '../../features/profile/presentation/pages/edit_profile_page.dart';
+import '../../features/profile/presentation/pages/edit_reverify_page.dart';
 import '../../features/profile/presentation/pages/my_profile_page.dart';
 import '../../features/profile/presentation/pages/settings_page.dart';
 import '../../features/profile/presentation/pages/user_profile_page.dart';
@@ -46,6 +52,7 @@ abstract class AppRoutes {
   static const applyInfo       = 'apply-info';
   static const applyPhotos     = 'apply-photos';
   static const applyVerify     = 'apply-verify';
+  static const profileSetupInterests = 'profile-setup-interests';
   static const applyBio        = 'apply-bio';
   static const applyConfirm    = 'apply-confirm';
   static const reviewPending   = 'review-pending';
@@ -59,8 +66,14 @@ abstract class AppRoutes {
   static const me              = 'me';
   static const editProfile     = 'edit-profile';
   static const userProfile     = 'user-profile';
-  static const settings        = 'settings';
-  static const deleteAccount   = 'delete-account';
+  static const settings         = 'settings';
+  static const accountSecurity  = 'account-security';
+  static const deleteAccount    = 'delete-account';
+  static const editPhotos        = 'edit-photos';
+  static const editReverify      = 'edit-reverify';
+  static const editInterests    = 'edit-interests';
+  static const editQuestions    = 'edit-questions';
+  static const deletionPending  = 'deletion-pending';
   static const terms              = 'terms';
   static const privacy            = 'privacy';
   static const devStatePicker       = 'dev-state-picker';
@@ -89,6 +102,8 @@ class _RouterNotifier extends ChangeNotifier {
     _ref.listen(appUserStatusProvider, (_, __) => notifyListeners());
     // 監聽重新申請模式（rejected 用戶重填申請流程時放行 /apply/*）
     _ref.listen(reapplyModeProvider, (_, __) => notifyListeners());
+    // 監聽 Beta 用戶暫時 pending 狀態（送出後 2.5 秒自動轉 approved）
+    _ref.listen(betaPendingProvider, (_, __) => notifyListeners());
   }
 
   final Ref _ref;
@@ -127,6 +142,14 @@ class _RouterNotifier extends ChangeNotifier {
         _ => _ref.read(onboardingSeenProvider) ? '/welcome' : '/onboarding',
       },
 
+      // 封測用戶：精簡申請流程（不含手機、真人驗證步驟）
+      AppUserStatus.betaOnboarding =>
+          (path.startsWith('/apply') &&
+           path != '/apply/phone' &&
+           path != '/apply/verify')
+          ? null
+          : '/apply/info',
+
       // OAuth 已登入，申請流程進行中（填寫資料步驟）
       // /apply/phone 不在正常申請流程中（使用 signInWithOtp 會提前設定 user.phone，
       // 導致 post-approval 的恭喜頁面被跳過）→ 一律導回 /apply/info
@@ -135,11 +158,20 @@ class _RouterNotifier extends ChangeNotifier {
 
       // 審核通過，手機尚未綁定（一次性儀式）
       // 先顯示告知頁（/review/approved），用戶點 CTA 後才進 /verify/phone
+      // Beta 用戶送出後短暫顯示 /review/pending，再轉 /review/approved
       AppUserStatus.phoneVerificationRequired => switch (path) {
         '/review/approved' => null,
         '/verify/phone'    => null,
-        _ => '/review/approved',
+        '/review/pending'  => _ref.read(betaPendingProvider) ? null : '/review/approved',
+        // Beta 用戶送出後 betaPendingProvider=true，router 自動導向 /review/pending；
+        // 2.5s 後 pending_page 重置 betaPendingProvider=false，再轉 /review/approved
+        _ => _ref.read(betaPendingProvider) ? '/review/pending' : '/review/approved',
       },
+
+      // 手機已綁定，但興趣/問題尚未填寫（一次性個人資料設置）
+      // 鎖定在 /profile-setup/interests（questions 是 push 在其上的頁面）
+      AppUserStatus.profileSetupRequired =>
+          path == '/profile-setup/interests' ? null : '/profile-setup/interests',
 
       // 等待審核：只允許停在 /review/pending
       AppUserStatus.pending => path == '/review/pending' ? null : '/review/pending',
@@ -150,15 +182,20 @@ class _RouterNotifier extends ChangeNotifier {
         (path.startsWith('/apply') && _ref.read(reapplyModeProvider))
       ) ? null : '/review/rejected',
 
+      // 刪除申請已提出：鎖定在 /review/deletion-pending
+      AppUserStatus.pendingDeletion =>
+          path == '/review/deletion-pending' ? null : '/review/deletion-pending',
+
       // 已通過，但條款需更新：強制停在 /terms-update
       AppUserStatus.termsRequired => path == '/terms-update' ? null : '/terms-update',
 
-      // 已通過且條款最新：不允許停在 auth / apply / review / verify 頁面
+      // 已通過且條款最新：不允許停在 auth / apply / review / verify / setup 頁面
       // path == '/' 是冷啟動的暫時 splash，需一併導向（否則 approved 用戶會卡在空白頁）
       AppUserStatus.approved => (
         path == '/' ||
         path.startsWith('/apply') ||
         path.startsWith('/review') ||
+        path.startsWith('/profile-setup') ||
         path == '/onboarding' ||
         path == '/welcome' ||
         path == '/verify/phone' ||
@@ -260,6 +297,17 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, __) => const ApplyConfirmPage(),
       ),
       GoRoute(
+        path: '/profile-setup/interests',
+        name: AppRoutes.profileSetupInterests,
+        pageBuilder: (_, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const ApplyInterestsPage(),
+          transitionsBuilder: (_, animation, __, child) =>
+              FadeTransition(opacity: animation, child: child),
+          transitionDuration: const Duration(milliseconds: 400),
+        ),
+      ),
+      GoRoute(
         path: '/review/pending',
         name: AppRoutes.reviewPending,
         builder: (_, __) => const PendingPage(),
@@ -282,6 +330,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/review/rejected',
         name: AppRoutes.reviewRejected,
         builder: (_, __) => const RejectedPage(),
+      ),
+      GoRoute(
+        path: '/review/deletion-pending',
+        name: AppRoutes.deletionPending,
+        builder: (_, __) => const PendingDeletionPage(),
       ),
       GoRoute(
         path: '/welcome-in',
@@ -353,9 +406,37 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, __) => const SettingsPage(),
       ),
       GoRoute(
+        path: '/settings/security',
+        name: AppRoutes.accountSecurity,
+        builder: (_, __) => const AccountSecurityPage(),
+      ),
+      GoRoute(
         path: '/settings/delete',
         name: AppRoutes.deleteAccount,
         builder: (_, __) => const DeleteAccountPage(),
+      ),
+      GoRoute(
+        path: '/me/edit/photos',
+        name: AppRoutes.editPhotos,
+        builder: (_, __) => const EditPhotosPage(),
+      ),
+      GoRoute(
+        path: '/me/edit/photos/reverify',
+        name: AppRoutes.editReverify,
+        builder: (_, state) {
+          final data = state.extra as PendingPhotoData;
+          return EditReverifyPage(pendingData: data);
+        },
+      ),
+      GoRoute(
+        path: '/me/edit/interests',
+        name: AppRoutes.editInterests,
+        builder: (_, __) => const ApplyInterestsPage(isEditMode: true),
+      ),
+      GoRoute(
+        path: '/me/edit/questions',
+        name: AppRoutes.editQuestions,
+        builder: (_, __) => const ApplyQuestionsPage(isEditMode: true),
       ),
 
       // ── 法律文件（全狀態均可進入，redirect 邏輯已於上方放行）─────────

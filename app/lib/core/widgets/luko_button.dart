@@ -30,6 +30,7 @@ class LukoButton extends StatelessWidget {
     required this.onPressed,
     this.isLoading = false,
     this.isFullWidth = true,
+    this.icon,
   }) : _variant = _ButtonVariant.primary;
 
   /// 次要按鈕：透明背景 + forestGreen 邊框
@@ -39,7 +40,8 @@ class LukoButton extends StatelessWidget {
     required this.onPressed,
     this.isLoading = false,
     this.isFullWidth = true,
-  }) : _variant = _ButtonVariant.secondary;
+  })  : _variant = _ButtonVariant.secondary,
+        icon = null;
 
   /// 幽靈按鈕：純文字，用於低優先級動作
   const LukoButton.ghost({
@@ -48,12 +50,14 @@ class LukoButton extends StatelessWidget {
     required this.onPressed,
     this.isLoading = false,
     this.isFullWidth = false,
-  }) : _variant = _ButtonVariant.ghost;
+  })  : _variant = _ButtonVariant.ghost,
+        icon = null;
 
   final String label;
   final VoidCallback? onPressed;
   final bool isLoading;
   final bool isFullWidth;
+  final IconData? icon;
   final _ButtonVariant _variant;
 
   static const double _height = 52.0;
@@ -68,6 +72,7 @@ class LukoButton extends StatelessWidget {
           colors: colors, label: label,
           onPressed: isLoading ? null : onPressed,
           isLoading: isLoading,
+          icon: icon,
         ),
       _ButtonVariant.secondary => _SecondaryButton(
           colors: colors, label: label,
@@ -95,12 +100,14 @@ class _PrimaryButton extends StatelessWidget {
     required this.label,
     required this.onPressed,
     required this.isLoading,
+    this.icon,
   });
 
   final AppColors colors;
   final String label;
   final VoidCallback? onPressed;
   final bool isLoading;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -121,6 +128,7 @@ class _PrimaryButton extends StatelessWidget {
         label: label,
         isLoading: isLoading,
         contentColor: Colors.white,
+        icon: icon,
       ),
     );
   }
@@ -194,11 +202,13 @@ class _ButtonContent extends StatelessWidget {
     required this.label,
     required this.isLoading,
     required this.contentColor,
+    this.icon,
   });
 
   final String label;
   final bool isLoading;
   final Color contentColor;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -213,13 +223,26 @@ class _ButtonContent extends StatelessWidget {
       );
     }
 
-    return Text(
+    final text = Text(
       label,
       style: Theme.of(context).textTheme.labelLarge?.copyWith(
         color: contentColor,
         fontWeight: FontWeight.w600,
       ),
     );
+
+    if (icon != null) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 18, color: contentColor),
+          const SizedBox(width: 8),
+          text,
+        ],
+      );
+    }
+
+    return text;
   }
 }
 

@@ -7,12 +7,14 @@ import '../../../../../core/constants/app_spacing.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/luko_button.dart';
 import '../../../../../l10n/app_localizations.dart';
+import '../../../domain/app_user_status.dart';
 import '../../../providers/apply_provider.dart';
+import '../../../providers/auth_provider.dart';
 
 /// 申請 Step 5 — 自我介紹（選填）
 ///
 /// 路由：/apply/bio（正式）或 /dev/apply-bio（開發測試）
-/// 最多 150 字，可略過直接前往 Step 6
+/// 最多 500 字，可略過直接前往 Step 6
 class ApplyBioPage extends ConsumerStatefulWidget {
   const ApplyBioPage({super.key, this.isDevMode = false});
 
@@ -24,7 +26,7 @@ class ApplyBioPage extends ConsumerStatefulWidget {
 }
 
 class _ApplyBioPageState extends ConsumerState<ApplyBioPage> {
-  static const int _maxLength = 150;
+  static const int _maxLength = 500;
 
   late final TextEditingController _controller;
 
@@ -54,7 +56,22 @@ class _ApplyBioPageState extends ConsumerState<ApplyBioPage> {
     final colors = Theme.of(context).extension<AppColors>()!;
     final textTheme = Theme.of(context).textTheme;
 
-    return Scaffold(
+    final isBetaMode = ref.watch(appUserStatusProvider).when(
+      data: (s) => s == AppUserStatus.betaOnboarding,
+      loading: () => false,
+      error: (_, __) => false,
+    );
+
+    final backRoute = widget.isDevMode
+        ? '/dev/apply-verify'
+        : (isBetaMode ? '/apply/photos' : '/apply/verify');
+
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) context.go(backRoute);
+      },
+      child: Scaffold(
       backgroundColor: colors.backgroundWarm,
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
@@ -62,12 +79,10 @@ class _ApplyBioPageState extends ConsumerState<ApplyBioPage> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new),
-          onPressed: () => context.go(
-            widget.isDevMode ? '/dev/apply-verify' : '/apply/verify',
-          ),
+          onPressed: () => context.go(backRoute),
         ),
         title: Text(
-          l10n.applyStep(5, 6),
+          isBetaMode ? l10n.applyStep(3, 3) : l10n.applyStep(5, 6),
           style: textTheme.labelMedium?.copyWith(
             color: colors.secondaryText,
           ),
@@ -99,7 +114,7 @@ class _ApplyBioPageState extends ConsumerState<ApplyBioPage> {
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                l10n.applyBioSubtitle,
+                isBetaMode ? l10n.betaApplyBioSubtitle : l10n.applyBioSubtitle,
                 style: textTheme.bodyMedium?.copyWith(
                   color: colors.secondaryText,
                 ),
@@ -132,7 +147,7 @@ class _ApplyBioPageState extends ConsumerState<ApplyBioPage> {
           ),
           child: Row(
             children: [
-              // 略過
+              // 略過（Beta 模式仍顯示，讓用戶可清除 bio）
               Expanded(
                 child: LukoButton.secondary(
                   label: l10n.commonSkip,
@@ -158,7 +173,8 @@ class _ApplyBioPageState extends ConsumerState<ApplyBioPage> {
           ),
         ),
       ),
-    );
+      ), // Scaffold
+    );   // PopScope
   }
 }
 

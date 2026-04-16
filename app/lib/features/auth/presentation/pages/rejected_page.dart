@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../core/auth/sign_out.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/supabase/supabase_provider.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -10,6 +12,8 @@ import '../../../../core/widgets/exit_on_double_back_scope.dart';
 import '../../../../core/widgets/luko_button.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../providers/apply_provider.dart';
+import '../../providers/auth_provider.dart';
+import '../pages/legal_scaffold.dart';
 
 const _kMaxAttempts = 3;
 
@@ -34,9 +38,10 @@ class RejectedPage extends ConsumerStatefulWidget {
 }
 
 class _RejectedPageState extends ConsumerState<RejectedPage> {
-  String? _rejectionType;    // 'soft' | 'hard' | null
+  String? _rejectionType;       // 'soft' | 'hard' | null
   String? _reviewNote;
-  int _applicationCount = 1; // 目前第幾次申請（1–3）
+  List<String> _rejectionTags = [];
+  int _applicationCount = 1;    // 目前第幾次申請（1–3）
   bool _isLoading = true;
 
   @override
@@ -63,7 +68,7 @@ class _RejectedPageState extends ConsumerState<RejectedPage> {
 
       final row = await supabase
           .from('applications')
-          .select('rejection_type, review_note, application_count')
+          .select('rejection_type, review_note, rejection_tags, application_count')
           .eq('user_id', userId)
           .maybeSingle();
 
@@ -71,12 +76,81 @@ class _RejectedPageState extends ConsumerState<RejectedPage> {
       setState(() {
         _rejectionType    = row?['rejection_type'] as String?;
         _reviewNote       = row?['review_note'] as String?;
+        _rejectionTags    = List<String>.from(row?['rejection_tags'] as List? ?? []);
         _applicationCount = (row?['application_count'] as int?) ?? 1;
         _isLoading        = false;
       });
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[RejectedPage] _loadData failed: $e');
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _requestDeletion() async {
+    final supabase = ref.read(supabaseProvider);
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      // upsert：若之前申請過又取消，直接覆蓋舊記錄
+      await supabase.from('deletion_requests').upsert({
+        'user_id': userId,
+        'requested_at': DateTime.now().toIso8601String(),
+        'scheduled_for': DateTime.now()
+            .add(const Duration(days: 90))
+            .toIso8601String(),
+        'cancelled_at': null,
+      });
+
+      if (!mounted) return;
+
+      // Router 監聽 appUserStatusProvider，自動導向 /review/deletion-pending
+      ref.invalidate(appUserStatusProvider);
+    } catch (e) {
+      debugPrint('[RejectedPage] _requestDeletion failed: $e');
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _showDeleteDialog() async {
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).extension<AppColors>()!;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: colors.cardSurface,
+        title: Text(
+          l10n.reviewDeleteDialogTitle,
+          style: TextStyle(color: colors.primaryText, fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          l10n.reviewDeleteDialogBody,
+          style: TextStyle(color: colors.secondaryText, height: 1.6),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(
+              l10n.reviewDeleteDialogCancel,
+              style: TextStyle(color: colors.secondaryText),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              l10n.reviewDeleteDialogConfirm,
+              style: TextStyle(color: colors.error, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) await _requestDeletion();
   }
 
   Future<void> _reapply() async {
@@ -109,6 +183,8 @@ class _RejectedPageState extends ConsumerState<RejectedPage> {
         gender:             (row['gender']         as String?)    ?? '',
         seeking:            List<String>.from(row['seeking']      as List? ?? []),
         uploadedPhotoPaths: List<String>.from(row['photo_paths']  as List? ?? []),
+        interests:          List<String>.from(row['interests']    as List? ?? []),
+        questionAnswers:    const [],  // 問題答案不從 DB 預填，讓用戶重新填寫
         bio:                (row['bio']            as String?)    ?? '',
       );
 
@@ -116,9 +192,11 @@ class _RejectedPageState extends ConsumerState<RejectedPage> {
       ref.read(reapplyModeProvider.notifier).state = true;
 
       if (mounted) context.go('/apply/info');
-    } on PostgrestException {
+    } on PostgrestException catch (e) {
+      debugPrint('[RejectedPage] _reapply PostgrestException: $e');
       if (mounted) setState(() => _isLoading = false);
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[RejectedPage] _reapply failed: $e');
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -166,7 +244,7 @@ class _RejectedPageState extends ConsumerState<RejectedPage> {
                 Text(
                   isPotential
                       ? l10n.reviewRejectedTitlePotential
-                      : l10n.reviewRejectedTitleSoft,
+                      : l10n.reviewRejectedTitleHard,
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     color: colors.primaryText,
                     fontWeight: FontWeight.w700,
@@ -179,7 +257,7 @@ class _RejectedPageState extends ConsumerState<RejectedPage> {
                 Text(
                   isPotential
                       ? l10n.reviewRejectedBodyPotential
-                      : l10n.reviewRejectedBodySoft,
+                      : l10n.reviewRejectedBodyHard,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: colors.secondaryText,
                     height: 1.65,
@@ -200,7 +278,11 @@ class _RejectedPageState extends ConsumerState<RejectedPage> {
                     ),
                     const SizedBox(height: AppSpacing.md),
                   ],
-                  _ImprovementTips(colors: colors, l10n: l10n),
+                  _ImprovementTips(
+                    colors: colors,
+                    l10n: l10n,
+                    rejectionTags: _rejectionTags,
+                  ),
                 ] else ...[
                   const SizedBox(height: AppSpacing.xl),
                   _ImprovementTips(colors: colors, l10n: l10n, isHard: true),
@@ -215,9 +297,20 @@ class _RejectedPageState extends ConsumerState<RejectedPage> {
                     l10n: l10n,
                     applicationCount: _applicationCount,
                     onReapply: _reapply,
+                    onDeleteAccount: _showDeleteDialog,
                   )
                 else
                   const Center(child: CircularProgressIndicator()),
+
+                // ── 機會用完時：登出 / 聯繫我們 ──────────────────────────
+                if (!_isLoading && _applicationCount >= _kMaxAttempts) ...[
+                  const SizedBox(height: AppSpacing.xl),
+                  _ExhaustedFooter(
+                    colors: colors,
+                    l10n: l10n,
+                    onDeleteAccount: _showDeleteDialog,
+                  ),
+                ],
 
                 const SizedBox(height: AppSpacing.xxl),
               ],
@@ -311,28 +404,51 @@ class _AdminFeedbackCard extends StatelessWidget {
 
 // ── 改善建議卡片 ──────────────────────────────────────────────────────────────
 //
-// isHard = false（soft / 差一點）：使用針對性改善建議（照片光線、清晰度等）
+// isHard = false（soft / 差一點）：
+//   若後台有勾選 rejection_tags → 動態顯示對應建議
+//   否則 fallback 到固定 tip1/2/3
 // isHard = true（hard / 不通過）：使用中性建議，避免讓用戶感覺被評論外貌
 
 class _ImprovementTips extends StatelessWidget {
-  const _ImprovementTips({required this.colors, required this.l10n, this.isHard = false});
+  const _ImprovementTips({
+    required this.colors,
+    required this.l10n,
+    this.isHard = false,
+    this.rejectionTags = const [],
+  });
   final AppColors colors;
   final AppLocalizations l10n;
   final bool isHard;
+  final List<String> rejectionTags;
+
+  String? _tagTip(String tag) => switch (tag) {
+    'photo_blurry'     => l10n.reviewRejectedTagPhotoBlurry,
+    'messy_background' => l10n.reviewRejectedTagMessyBackground,
+    'casual_style'     => l10n.reviewRejectedTagCasualStyle,
+    'face_unclear'     => l10n.reviewRejectedTagFaceUnclear,
+    'too_few_photos'   => l10n.reviewRejectedTagTooFewPhotos,
+    _                  => null,
+  };
 
   @override
   Widget build(BuildContext context) {
-    final tips = isHard
-        ? [
-            l10n.reviewRejectedHardTip1,
-            l10n.reviewRejectedHardTip2,
-            l10n.reviewRejectedHardTip3,
-          ]
-        : [
-            l10n.reviewRejectedTip1,
-            l10n.reviewRejectedTip2,
-            l10n.reviewRejectedTip3,
-          ];
+    List<String> tips;
+    if (isHard) {
+      tips = [
+        l10n.reviewRejectedHardTip1,
+        l10n.reviewRejectedHardTip2,
+        l10n.reviewRejectedHardTip3,
+      ];
+    } else {
+      final tagTips = rejectionTags.map(_tagTip).whereType<String>().toList();
+      tips = tagTips.isNotEmpty
+          ? tagTips
+          : [
+              l10n.reviewRejectedTip1,
+              l10n.reviewRejectedTip2,
+              l10n.reviewRejectedTip3,
+            ];
+    }
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -397,12 +513,14 @@ class _ReapplyCard extends StatelessWidget {
     required this.l10n,
     required this.applicationCount,
     required this.onReapply,
+    required this.onDeleteAccount,
   });
 
   final AppColors colors;
   final AppLocalizations l10n;
   final int applicationCount;
   final VoidCallback onReapply;
+  final VoidCallback onDeleteAccount;
 
   bool get _attemptsExhausted => applicationCount >= _kMaxAttempts;
   int get _attemptsRemaining  => (_kMaxAttempts - applicationCount).clamp(0, _kMaxAttempts);
@@ -411,22 +529,51 @@ class _ReapplyCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: colors.cardSurface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colors.divider),
-      ),
-      child: _attemptsExhausted
-          ? _ExhaustedState(colors: colors, l10n: l10n, textTheme: textTheme)
-          : _ReapplyAvailableState(
-              colors: colors,
-              l10n: l10n,
-              textTheme: textTheme,
-              attemptsRemaining: _attemptsRemaining,
-              onReapply: onReapply,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          decoration: BoxDecoration(
+            color: colors.cardSurface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: colors.divider),
+          ),
+          child: _attemptsExhausted
+              ? _ExhaustedState(colors: colors, l10n: l10n, textTheme: textTheme)
+              : _ReapplyAvailableState(
+                  colors: colors,
+                  l10n: l10n,
+                  textTheme: textTheme,
+                  attemptsRemaining: _attemptsRemaining,
+                  onReapply: onReapply,
+                ),
+        ),
+        // 刪除帳號入口（僅在未用完機會時顯示，用完時由 _ExhaustedFooter 處理）
+        // 使用極小字 + secondaryText 色：刻意低調，避免轉移重新申請的注意力
+        if (!_attemptsExhausted) ...[
+          const SizedBox(height: AppSpacing.md),
+          Center(
+            child: GestureDetector(
+              onTap: onDeleteAccount,
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg,
+                  vertical: AppSpacing.sm,
+                ),
+                child: Text(
+                  l10n.reviewDeleteRequestButton,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: colors.secondaryText.withValues(alpha: 0.6),
+                  ),
+                ),
+              ),
             ),
+          ),
+        ],
+      ],
     );
   }
 }
@@ -490,12 +637,12 @@ class _ReapplyAvailableState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Icon(Icons.refresh_rounded, size: 32, color: colors.forestGreen),
-        const SizedBox(height: AppSpacing.sm),
         LukoButton.primary(
           label: l10n.reviewReapplyButton,
           onPressed: onReapply,
+          icon: Icons.refresh_rounded,
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
@@ -504,6 +651,121 @@ class _ReapplyAvailableState extends StatelessWidget {
             color: colors.secondaryText,
           ),
           textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+}
+
+// ── 機會用完後的底部操作區 ────────────────────────────────────────────────────
+//
+// 只在 applicationCount >= _kMaxAttempts 時顯示。
+//
+// 設計決策：不提供 App 內自助刪除帳號按鈕。
+// 原因：刪除後可重新用同一身分申請，等同繞過 3 次上限。
+// 合規做法：刪除請求走信箱人工處理（Apple 接受 email 作為刪除管道）；
+//           帳號資料 90 天後由後端 cron job 自動清除（符合個資法）。
+class _ExhaustedFooter extends StatelessWidget {
+  const _ExhaustedFooter({
+    required this.colors,
+    required this.l10n,
+    required this.onDeleteAccount,
+  });
+
+  final AppColors colors;
+  final AppLocalizations l10n;
+  final VoidCallback onDeleteAccount;
+
+  Future<void> _onSignOut() => signOutAll();
+  // Router 監聽 Supabase session 變化，登出後自動導向 /welcome
+
+  Future<void> _onCopyEmail(BuildContext context) async {
+    await Clipboard.setData(const ClipboardData(text: kLegalEmail));
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(l10n.reviewExhaustedEmailCopied),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Divider(color: colors.divider),
+        const SizedBox(height: AppSpacing.lg),
+
+        // 聯繫我們（點擊複製信箱）
+        // 文案包含刪除帳號提示，作為合規的刪除管道
+        GestureDetector(
+          onTap: () => _onCopyEmail(context),
+          behavior: HitTestBehavior.opaque,
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.mail_outline_rounded,
+                    size: 14,
+                    color: colors.secondaryText,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    l10n.reviewExhaustedContactUs,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: colors.secondaryText,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 2),
+              Text(
+                kLegalEmail,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: colors.secondaryText.withValues(alpha: 0.6),
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.lg),
+
+        // 登出
+        LukoButton.secondary(
+          label: l10n.reviewExhaustedSignOut,
+          onPressed: _onSignOut,
+        ),
+
+        const SizedBox(height: AppSpacing.md),
+
+        // 刪除帳號（低調入口，90天軟刪除，期間可取消）
+        Center(
+          child: GestureDetector(
+            onTap: onDeleteAccount,
+            behavior: HitTestBehavior.opaque,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.sm,
+              ),
+              child: Text(
+                l10n.reviewDeleteRequestButton,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: colors.secondaryText.withValues(alpha: 0.6),
+                ),
+              ),
+            ),
+          ),
         ),
       ],
     );

@@ -140,6 +140,12 @@ abstract class AppLocalizations {
   /// **'Loading...'**
   String get commonLoading;
 
+  /// Generic saving loading text
+  ///
+  /// In en, this message translates to:
+  /// **'Saving...'**
+  String get commonSaving;
+
   /// Generic error message
   ///
   /// In en, this message translates to:
@@ -212,6 +218,78 @@ abstract class AppLocalizations {
   /// **'Continue with Apple'**
   String get authContinueWithApple;
 
+  /// Email login entry button
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with Email'**
+  String get welcomeEmailLoginButton;
+
+  /// Email login bottom sheet title
+  ///
+  /// In en, this message translates to:
+  /// **'Sign In with Email'**
+  String get emailLoginTitle;
+
+  /// Email login bottom sheet subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'This is for existing beta accounts only.\nEnter your registered email and we\'ll send you a sign-in link.'**
+  String get emailLoginSubtitle;
+
+  /// Email input label
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get emailLoginLabel;
+
+  /// Magic link send button
+  ///
+  /// In en, this message translates to:
+  /// **'Send Login Link'**
+  String get emailLoginSendLink;
+
+  /// Magic link resend button
+  ///
+  /// In en, this message translates to:
+  /// **'Resend'**
+  String get emailLoginResend;
+
+  /// Magic link cooldown countdown text
+  ///
+  /// In en, this message translates to:
+  /// **'Resend in {seconds}s'**
+  String emailLoginResendIn(int seconds);
+
+  /// Hint guiding unregistered users and OAuth users back to the correct entry
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t have an account yet? Go back and sign up with Google or Apple.\nIf you previously signed in with Google or Apple, please use those buttons instead.'**
+  String get emailLoginOAuthHint;
+
+  /// Invalid email error
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid email address'**
+  String get betaAccountEmailInvalid;
+
+  /// Magic link sent success title
+  ///
+  /// In en, this message translates to:
+  /// **'Login Link Sent'**
+  String get betaAccountSentTitle;
+
+  /// Shows the email address the magic link was sent to
+  ///
+  /// In en, this message translates to:
+  /// **'Sent to {email}'**
+  String betaAccountSentTo(String email);
+
+  /// Magic link sent body text
+  ///
+  /// In en, this message translates to:
+  /// **'Check your inbox and tap the link — the app will open automatically.\nThe link expires in 60 minutes.'**
+  String get betaAccountSentBody;
+
   /// Consent text suffix (appended after authConsentPrefix + termsLabel)
   ///
   /// In en, this message translates to:
@@ -233,7 +311,7 @@ abstract class AppLocalizations {
   /// Approval gate page body text (generic fallback)
   ///
   /// In en, this message translates to:
-  /// **'Congratulations! You\'ve passed the PR Dating review.\nOne last step — link your phone number to finish setting up your account.'**
+  /// **'Congratulations! You\'ve been approved to join PR Dating — welcome aboard.\nNext, link your phone number to complete your account setup.'**
   String get approvedGateBody;
 
   /// Approval gate page body — top tier (lifetime free)
@@ -785,13 +863,103 @@ abstract class AppLocalizations {
   /// Apply Step 5 title
   ///
   /// In en, this message translates to:
+  /// **'What are you into?'**
+  String get applyInterestsTitle;
+
+  /// Apply Step 5 subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Pick at least {min} to help with matching'**
+  String applyInterestsSubtitle(int min);
+
+  /// Interests selected count
+  ///
+  /// In en, this message translates to:
+  /// **'{count} selected'**
+  String applyInterestsSelected(int count);
+
+  /// Interests below minimum prompt
+  ///
+  /// In en, this message translates to:
+  /// **'{remaining} more to go'**
+  String applyInterestsShortfall(int remaining);
+
+  /// Category limit reached prompt
+  ///
+  /// In en, this message translates to:
+  /// **'This category allows max {max} picks'**
+  String applyInterestsCategoryMax(int max);
+
+  /// Custom interest bottom sheet title
+  ///
+  /// In en, this message translates to:
+  /// **'Add a custom interest'**
+  String get applyInterestsAddCustomTitle;
+
+  /// Custom interest input placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Enter interest name'**
+  String get applyInterestsAddCustomHint;
+
+  /// Add custom interest confirm button
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get applyInterestsAddButton;
+
+  /// Apply Step 6 title
+  ///
+  /// In en, this message translates to:
+  /// **'Let them get to know you'**
+  String get applyQuestionsTitle;
+
+  /// Apply Step 6 subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Answer at least 1 — there are no wrong answers'**
+  String get applyQuestionsSubtitle;
+
+  /// Questions answered count
+  ///
+  /// In en, this message translates to:
+  /// **'{count} answered'**
+  String applyQuestionsAnswered(int count);
+
+  /// Questions below minimum prompt
+  ///
+  /// In en, this message translates to:
+  /// **'Answer at least 1 question to continue'**
+  String get applyQuestionsMinRequired;
+
+  /// Question answer input placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Share your thoughts...'**
+  String get applyQuestionsAnswerHint;
+
+  /// Save question answer button
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get applyQuestionsAnswerSave;
+
+  /// Clear question answer button
+  ///
+  /// In en, this message translates to:
+  /// **'Clear answer'**
+  String get applyQuestionsAnswerClear;
+
+  /// Apply Step 7 title
+  ///
+  /// In en, this message translates to:
   /// **'About You'**
   String get applyBioTitle;
 
   /// Apply Step 4 subtitle
   ///
   /// In en, this message translates to:
-  /// **'Tell us a little about yourself (optional)'**
+  /// **'Tell us about yourself (optional)'**
   String get applyBioSubtitle;
 
   /// Bio input placeholder
@@ -803,8 +971,26 @@ abstract class AppLocalizations {
   /// Bio character limit helper
   ///
   /// In en, this message translates to:
-  /// **'Up to 150 characters'**
+  /// **'Up to 500 characters'**
   String get applyBioHelper;
+
+  /// Confirm dialog title when leaving apply flow
+  ///
+  /// In en, this message translates to:
+  /// **'Leave Application?'**
+  String get applyLeaveDialogTitle;
+
+  /// Confirm dialog body when leaving apply flow
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll be signed out. You can continue your application next time you sign in.'**
+  String get applyLeaveDialogBody;
+
+  /// Confirm button when leaving apply flow
+  ///
+  /// In en, this message translates to:
+  /// **'Leave & Sign Out'**
+  String get applyLeaveDialogConfirm;
 
   /// Apply Step 5 title
   ///
@@ -924,13 +1110,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Thank You for Applying'**
-  String get reviewRejectedTitleSoft;
+  String get reviewRejectedTitleHard;
 
   /// Rejected screen body — hard rejection
   ///
   /// In en, this message translates to:
   /// **'Thank you for your application. To ensure every member has the best possible matching experience, we have basic quality standards for application photos.\nHere are some tips that might be helpful:'**
-  String get reviewRejectedBodySoft;
+  String get reviewRejectedBodyHard;
 
   /// Rejected screen title — potential tier
   ///
@@ -949,6 +1135,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Review Feedback'**
   String get reviewAdminFeedbackTitle;
+
+  /// Rejection tag: photo blurry or poor lighting
+  ///
+  /// In en, this message translates to:
+  /// **'Try submitting clear, well-lit photos'**
+  String get reviewRejectedTagPhotoBlurry;
+
+  /// Rejection tag: messy background
+  ///
+  /// In en, this message translates to:
+  /// **'Try shooting in a tidy or visually appealing space'**
+  String get reviewRejectedTagMessyBackground;
+
+  /// Rejection tag: casual/ungroomed style
+  ///
+  /// In en, this message translates to:
+  /// **'Consider presenting a more put-together look and style'**
+  String get reviewRejectedTagCasualStyle;
+
+  /// Rejection tag: face not clearly visible
+  ///
+  /// In en, this message translates to:
+  /// **'Make sure your main photo shows your face clearly'**
+  String get reviewRejectedTagFaceUnclear;
+
+  /// Rejection tag: too few photos
+  ///
+  /// In en, this message translates to:
+  /// **'Try including at least 3 photos from different angles'**
+  String get reviewRejectedTagTooFewPhotos;
 
   /// Improvement tip 1
   ///
@@ -992,6 +1208,102 @@ abstract class AppLocalizations {
   /// **'Each account is limited to 3 application attempts. This account has reached the limit. Thank you for your interest in PR Dating.'**
   String get reviewReapplyExhaustedBody;
 
+  /// Sign out button on exhausted page
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Out'**
+  String get reviewExhaustedSignOut;
+
+  /// Contact us hint on exhausted page (tap to copy email)
+  ///
+  /// In en, this message translates to:
+  /// **'Questions? Contact us'**
+  String get reviewExhaustedContactUs;
+
+  /// SnackBar shown after copying support email
+  ///
+  /// In en, this message translates to:
+  /// **'Email copied'**
+  String get reviewExhaustedEmailCopied;
+
+  /// Subtle delete account entry at bottom of rejected page
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get reviewDeleteRequestButton;
+
+  /// Delete account confirmation dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account?'**
+  String get reviewDeleteDialogTitle;
+
+  /// Delete account confirmation dialog body
+  ///
+  /// In en, this message translates to:
+  /// **'Your account data will be permanently deleted 90 days from now. During this period, you can log in and cancel this request. After 90 days, you may reapply with a fresh start.'**
+  String get reviewDeleteDialogBody;
+
+  /// Delete account confirm button
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get reviewDeleteDialogConfirm;
+
+  /// Delete account cancel button
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get reviewDeleteDialogCancel;
+
+  /// Pending deletion page title
+  ///
+  /// In en, this message translates to:
+  /// **'Deletion Scheduled'**
+  String get pendingDeletionTitle;
+
+  /// Pending deletion page body
+  ///
+  /// In en, this message translates to:
+  /// **'All your data will be permanently deleted on the date below. After that, you may reapply with a fresh start.'**
+  String get pendingDeletionBody;
+
+  /// Date label on pending deletion page
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled for'**
+  String get pendingDeletionDateLabel;
+
+  /// Cancel deletion request button
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Deletion'**
+  String get pendingDeletionCancelButton;
+
+  /// Sign out button on pending deletion page
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Out'**
+  String get pendingDeletionSignOut;
+
+  /// SnackBar after successfully cancelling deletion
+  ///
+  /// In en, this message translates to:
+  /// **'Deletion request cancelled'**
+  String get pendingDeletionCancelSuccess;
+
+  /// Contact us hint at bottom of pending page (tap to copy email)
+  ///
+  /// In en, this message translates to:
+  /// **'Questions? Feel free to contact us'**
+  String get reviewPendingContactUs;
+
+  /// SnackBar after copying email on pending page
+  ///
+  /// In en, this message translates to:
+  /// **'Email copied'**
+  String get reviewPendingEmailCopied;
+
   /// Discover tab title
   ///
   /// In en, this message translates to:
@@ -1009,6 +1321,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Check back later for new profiles.'**
   String get discoverEmptySubtitle;
+
+  /// Discover page waiting-for-midnight-refresh title
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s picks are on their way'**
+  String get discoverMidnightTitle;
+
+  /// Discover page waiting-for-refresh body text, includes local equivalent time
+  ///
+  /// In en, this message translates to:
+  /// **'PR Dating refreshes your daily matches at midnight Taiwan time\n({localTime} your local time)'**
+  String discoverMidnightSubtitle(String localTime);
+
+  /// Discover page countdown label
+  ///
+  /// In en, this message translates to:
+  /// **'Next refresh in'**
+  String get discoverMidnightCountdownLabel;
 
   /// Match tab title
   ///
@@ -1040,7 +1370,7 @@ abstract class AppLocalizations {
   /// **'Profile'**
   String get profileTitle;
 
-  /// Edit profile button
+  /// Profile page edit button
   ///
   /// In en, this message translates to:
   /// **'Edit Profile'**
@@ -1052,16 +1382,16 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get settingsTitle;
 
-  /// Language setting label
+  /// Language option
   ///
   /// In en, this message translates to:
   /// **'Language'**
   String get settingsLanguage;
 
-  /// Logout button
+  /// Log out option
   ///
   /// In en, this message translates to:
-  /// **'Sign Out'**
+  /// **'Log Out'**
   String get settingsLogout;
 
   /// Delete account button
@@ -1351,6 +1681,492 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A variety of photos can show different sides of who you are'**
   String get reviewRejectedHardTip3;
+
+  /// Age display
+  ///
+  /// In en, this message translates to:
+  /// **'{age}'**
+  String profileAgeYears(int age);
+
+  /// Seeking label
+  ///
+  /// In en, this message translates to:
+  /// **'Looking for'**
+  String get profileSeeking;
+
+  /// Seeking men
+  ///
+  /// In en, this message translates to:
+  /// **'Men'**
+  String get profileSeekingMale;
+
+  /// Seeking women
+  ///
+  /// In en, this message translates to:
+  /// **'Women'**
+  String get profileSeekingFemale;
+
+  /// Seeking everyone
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone'**
+  String get profileSeekingOther;
+
+  /// Male gender
+  ///
+  /// In en, this message translates to:
+  /// **'Male'**
+  String get profileGenderMale;
+
+  /// Female gender
+  ///
+  /// In en, this message translates to:
+  /// **'Female'**
+  String get profileGenderFemale;
+
+  /// Other gender
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get profileGenderOther;
+
+  /// Profile bio section title
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get profileSectionBio;
+
+  /// Profile interests section title
+  ///
+  /// In en, this message translates to:
+  /// **'Interests'**
+  String get profileSectionInterests;
+
+  /// Profile Q&A section title
+  ///
+  /// In en, this message translates to:
+  /// **'Q&A'**
+  String get profileSectionQuestions;
+
+  /// Empty bio placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'No bio yet'**
+  String get profileNoBio;
+
+  /// Empty interests placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'No interests set'**
+  String get profileNoInterests;
+
+  /// Empty questions placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'No questions answered'**
+  String get profileNoQuestions;
+
+  /// Profile load error message
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load profile'**
+  String get profileLoadError;
+
+  /// Edit profile page title
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get editProfileTitle;
+
+  /// Photos section title
+  ///
+  /// In en, this message translates to:
+  /// **'Photos'**
+  String get editProfileSectionPhotos;
+
+  /// Basic info section title
+  ///
+  /// In en, this message translates to:
+  /// **'Basic Info'**
+  String get editProfileSectionBasic;
+
+  /// Seeking section title
+  ///
+  /// In en, this message translates to:
+  /// **'Looking for'**
+  String get editProfileSectionSeeking;
+
+  /// Interests section title
+  ///
+  /// In en, this message translates to:
+  /// **'Interests'**
+  String get editProfileSectionInterests;
+
+  /// Q&A section title
+  ///
+  /// In en, this message translates to:
+  /// **'Q&A'**
+  String get editProfileSectionQuestions;
+
+  /// Display name field label
+  ///
+  /// In en, this message translates to:
+  /// **'Display Name'**
+  String get editProfileNameLabel;
+
+  /// Bio field label
+  ///
+  /// In en, this message translates to:
+  /// **'Bio'**
+  String get editProfileBioLabel;
+
+  /// Bio input hint
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us about yourself...'**
+  String get editProfileBioHint;
+
+  /// Bio character limit helper
+  ///
+  /// In en, this message translates to:
+  /// **'Optional, max {max} characters'**
+  String editProfileBioHelper(int max);
+
+  /// Seeking men
+  ///
+  /// In en, this message translates to:
+  /// **'Men'**
+  String get editProfileSeekingMale;
+
+  /// Seeking women
+  ///
+  /// In en, this message translates to:
+  /// **'Women'**
+  String get editProfileSeekingFemale;
+
+  /// Seeking everyone
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone'**
+  String get editProfileSeekingOther;
+
+  /// Photo change warning title
+  ///
+  /// In en, this message translates to:
+  /// **'Photo Change Requires Review'**
+  String get editProfilePhotoChangeTitle;
+
+  /// Photo change warning body
+  ///
+  /// In en, this message translates to:
+  /// **'After changing photos, we\'ll re-verify your identity.\nDuring review (1–3 business days), your current photos remain active for matching.'**
+  String get editProfilePhotoChangeBody;
+
+  /// Photo change confirm button
+  ///
+  /// In en, this message translates to:
+  /// **'Proceed'**
+  String get editProfilePhotoChangeContinue;
+
+  /// Interests count
+  ///
+  /// In en, this message translates to:
+  /// **'{count} interests selected'**
+  String editProfileInterestsCount(int count);
+
+  /// Edit interests button
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get editProfileInterestsEdit;
+
+  /// Questions count
+  ///
+  /// In en, this message translates to:
+  /// **'{count} questions answered'**
+  String editProfileQuestionsCount(int count);
+
+  /// Edit questions button
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get editProfileQuestionsEdit;
+
+  /// Unsaved changes dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Discard changes?'**
+  String get editProfileUnsavedTitle;
+
+  /// Unsaved changes dialog body
+  ///
+  /// In en, this message translates to:
+  /// **'You have unsaved changes. They\'ll be lost if you leave.'**
+  String get editProfileUnsavedMessage;
+
+  /// Discard changes confirm button
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get editProfileUnsavedDiscard;
+
+  /// Save success message
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get editProfileSaved;
+
+  /// Save failed message
+  ///
+  /// In en, this message translates to:
+  /// **'Save failed. Please try again.'**
+  String get editProfileSaveFailed;
+
+  /// Photo review pending banner
+  ///
+  /// In en, this message translates to:
+  /// **'Photos under review (1–3 days) — current photos remain active for matching'**
+  String get editProfilePhotoPendingBanner;
+
+  /// Account section title
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get settingsSectionAccount;
+
+  /// Privacy section title
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get settingsSectionPrivacy;
+
+  /// Preferences section title
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get settingsSectionPreferences;
+
+  /// Support section title
+  ///
+  /// In en, this message translates to:
+  /// **'Support'**
+  String get settingsSectionSupport;
+
+  /// About section title
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get settingsSectionAbout;
+
+  /// Phone number option
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Number'**
+  String get settingsPhone;
+
+  /// Push notifications option
+  ///
+  /// In en, this message translates to:
+  /// **'Push Notifications'**
+  String get settingsNotifications;
+
+  /// Traditional Chinese option
+  ///
+  /// In en, this message translates to:
+  /// **'Traditional Chinese'**
+  String get settingsLanguageZh;
+
+  /// English option
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get settingsLanguageEn;
+
+  /// Privacy policy option
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get settingsPrivacy;
+
+  /// Terms of service option
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Service'**
+  String get settingsTerms;
+
+  /// Contact support option
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Support'**
+  String get settingsContactUs;
+
+  /// FAQ option
+  ///
+  /// In en, this message translates to:
+  /// **'FAQ'**
+  String get settingsFaq;
+
+  /// Report a problem option
+  ///
+  /// In en, this message translates to:
+  /// **'Report a Problem'**
+  String get settingsReport;
+
+  /// Version option
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get settingsVersion;
+
+  /// Log out dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Log Out'**
+  String get settingsLogoutTitle;
+
+  /// Log out dialog message
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to log out of this device?'**
+  String get settingsLogoutMessage;
+
+  /// Log out confirm button
+  ///
+  /// In en, this message translates to:
+  /// **'Log Out'**
+  String get settingsLogoutConfirm;
+
+  /// Account security option
+  ///
+  /// In en, this message translates to:
+  /// **'Account Security'**
+  String get settingsAccountSecurity;
+
+  /// Account security page title
+  ///
+  /// In en, this message translates to:
+  /// **'Account Security'**
+  String get accountSecurityTitle;
+
+  /// Account security page body
+  ///
+  /// In en, this message translates to:
+  /// **'The following actions will permanently affect your account. Please proceed carefully.'**
+  String get accountSecurityBody;
+
+  /// Delete account section title
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get accountSecurityDeleteTitle;
+
+  /// Delete account description
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting your account will permanently remove all your data, matches, and messages. This cannot be undone.\nIf you just need a break, consider pausing your account instead.'**
+  String get accountSecurityDeleteDesc;
+
+  /// Delete account button
+  ///
+  /// In en, this message translates to:
+  /// **'Permanently Delete Account'**
+  String get accountSecurityDeleteButton;
+
+  /// Edit photos page title
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Photos'**
+  String get editPhotosTitle;
+
+  /// Edit photos page subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Long-press to reorder. Min 2, max 9 photos.'**
+  String get editPhotosSubtitle;
+
+  /// Edit photos page uploading text
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading...'**
+  String get editPhotosUploading;
+
+  /// Photos submitted success message
+  ///
+  /// In en, this message translates to:
+  /// **'Photos submitted for review. Matching continues in the meantime.'**
+  String get editPhotosSuccessMessage;
+
+  /// Photo upload failed message
+  ///
+  /// In en, this message translates to:
+  /// **'Upload failed. Please try again.'**
+  String get editPhotosUploadFailed;
+
+  /// Pending status text shown below manage photos button
+  ///
+  /// In en, this message translates to:
+  /// **'Photos under review (1–3 days)\nCurrent photos remain active for matching'**
+  String get editPhotosPendingStatus;
+
+  /// Photo re-verify page title
+  ///
+  /// In en, this message translates to:
+  /// **'Verification Photos'**
+  String get editReverifyTitle;
+
+  /// Photo re-verify page subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'We need 2 quick photos to confirm it\'s you before submitting your new photos for review.\nVerification photos are for our review team only and will never be shown publicly.'**
+  String get editReverifySubtitle;
+
+  /// Photo re-verify submit button
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get editReverifySubmit;
+
+  /// Photo re-verify submitting text
+  ///
+  /// In en, this message translates to:
+  /// **'Submitting...'**
+  String get editReverifyUploading;
+
+  /// Photo re-verify success message
+  ///
+  /// In en, this message translates to:
+  /// **'Photo update submitted for review. Matching continues in the meantime.'**
+  String get editReverifySuccess;
+
+  /// Photo re-verify failed message
+  ///
+  /// In en, this message translates to:
+  /// **'Submission failed. Please try again.'**
+  String get editReverifyFailed;
+
+  /// Beta apply info page subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back! Confirm or update your basic info.'**
+  String get betaApplyInfoSubtitle;
+
+  /// Beta apply bio page subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Here\'s your bio from the beta — feel free to edit it.'**
+  String get betaApplyBioSubtitle;
+
+  /// Beta photos locked title
+  ///
+  /// In en, this message translates to:
+  /// **'Photos Locked'**
+  String get betaApplyPhotosLockedTitle;
+
+  /// Beta photos locked body text
+  ///
+  /// In en, this message translates to:
+  /// **'To confirm your identity, photos can\'t be changed right now. You can update them in your profile after joining the app.'**
+  String get betaApplyPhotosLockedBody;
 }
 
 class _AppLocalizationsDelegate

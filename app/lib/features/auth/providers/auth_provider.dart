@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/supabase/supabase_provider.dart';
@@ -37,8 +38,35 @@ final appUserStatusProvider = FutureProvider<AppUserStatus>((ref) async {
         .eq('user_id', user.id)
         .maybeSingle();
 
+    // ── 刪除請求（最高優先級）────────────────────────────────────────
+    // 任何狀態下，只要有未取消的刪除申請，一律導向待刪除頁面。
+    // 必須在其他狀態判斷之前檢查，避免用戶看到被拒/等待頁而非刪除倒數頁。
+    final deletionRow = await supabase
+        .from('deletion_requests')
+        .select('scheduled_for')
+        .eq('user_id', user.id)
+        .filter('cancelled_at', 'is', null)
+        .maybeSingle();
+
+    if (deletionRow != null) return AppUserStatus.pendingDeletion;
+
     if (row == null) {
-      // 已完成 OTP 驗證，但尚未提交申請（申請流程進行中）
+      // ── Beta 封測遷移：偵測白名單，進入精簡申請流程 ──────────────────────
+      final email = user.email ?? '';
+      if (email.isNotEmpty) {
+        try {
+          final preapproved = await supabase
+              .from('preapproved_emails')
+              .select('email')
+              .eq('email', email)
+              .maybeSingle();
+          if (preapproved != null) {
+            return AppUserStatus.betaOnboarding;
+          }
+        } catch (_) {
+          // 白名單查詢失敗，繼續正常流程
+        }
+      }
       return AppUserStatus.onboarding;
     }
 
@@ -59,7 +87,7 @@ final appUserStatusProvider = FutureProvider<AppUserStatus>((ref) async {
       return AppUserStatus.phoneVerificationRequired;
     }
 
-    // ── 手機已綁定：並行拉取條款版本設定 + 用戶已接受版本 ────────────
+    // ── 手機已綁定：並行拉取條款版本設定 + 用戶 profile ────────────
     final results = await Future.wait([
       supabase
           .from('app_config')
@@ -68,7 +96,7 @@ final appUserStatusProvider = FutureProvider<AppUserStatus>((ref) async {
           .single(),
       supabase
           .from('profiles')
-          .select('terms_accepted_at')
+          .select('terms_accepted_at, interests, question_answers')
           .eq('id', user.id)
           .maybeSingle(),
     ]);
@@ -76,7 +104,20 @@ final appUserStatusProvider = FutureProvider<AppUserStatus>((ref) async {
     final configRow = results[0] as Map<String, dynamic>;
     final termsUpdatedAt = DateTime.tryParse(configRow['value'] as String);
     // maybeSingle() 回傳 Map<String, dynamic>? — 以 dynamic 接收再手動取值
-    final profileRow = results[1];
+    final profileRow = results[1] as Map?;
+
+    // ── 個人資料設置：interests 或 question_answers 為空 → 引導填寫 ────
+    // 必須兩者都完成才算通過 profile setup：
+    //   - interests: 至少 5 項
+    //   - question_answers: 至少 1 題
+    // 只完成其中一步（例如選完興趣但未回答問題）仍視為未完成。
+    final rawInterests = profileRow?['interests'] as List?;
+    final rawQuestionAnswers = profileRow?['question_answers'] as List?;
+    if (rawInterests == null || rawInterests.isEmpty ||
+        rawQuestionAnswers == null || rawQuestionAnswers.isEmpty) {
+      return AppUserStatus.profileSetupRequired;
+    }
+
     final acceptedRaw = profileRow?['terms_accepted_at'] as String?;
     final termsAcceptedAt =
         acceptedRaw != null ? DateTime.tryParse(acceptedRaw) : null;
@@ -95,3 +136,59 @@ final appUserStatusProvider = FutureProvider<AppUserStatus>((ref) async {
     return AppUserStatus.onboarding;
   }
 });
+
+/// 封測用戶資料：preapproved_emails（display_name, gender, seeking, bio）
+/// ＋ profiles.photo_paths（用戶上次的照片路徑，供 apply 流程預填）
+/// null = 非封測用戶或尚未載入
+final betaUserDataProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
+  ref.watch(authStateProvider);
+  final user = ref.read(currentUserProvider);
+  debugPrint('[betaUserData] user=${user?.id} email=${user?.email}');
+  if (user == null) return null;
+  final email = user.email ?? '';
+  if (email.isEmpty) {
+    debugPrint('[betaUserData] email empty → return null');
+    return null;
+  }
+  try {
+    final supabase = ref.read(supabaseProvider);
+
+    final preapproved = await supabase
+        .from('preapproved_emails')
+        .select('display_name, gender, seeking, bio')
+        .eq('email', email)
+        .maybeSingle();
+    debugPrint('[betaUserData] preapproved row=$preapproved');
+    if (preapproved == null) return null;
+
+    // 嘗試從 profiles 取得上次的照片路徑（可能不存在，不影響主流程）
+    List<String> photoPaths = const [];
+    try {
+      final profileRow = await supabase
+          .from('profiles')
+          .select('photo_paths')
+          .eq('id', user.id)
+          .maybeSingle();
+      debugPrint('[betaUserData] profiles row=$profileRow');
+      final raw = profileRow?['photo_paths'] as List?;
+      if (raw != null && raw.isNotEmpty) {
+        photoPaths = raw.cast<String>().toList();
+      }
+    } catch (e) {
+      debugPrint('[betaUserData] profiles fetch error: $e');
+    }
+
+    final result = {
+      ...preapproved,
+      'photo_paths': photoPaths,
+    };
+    debugPrint('[betaUserData] final=$result');
+    return result;
+  } catch (e, st) {
+    debugPrint('[betaUserData] error: $e\n$st');
+    return null;
+  }
+});
+
+/// Beta 用戶送出後暫時讓 /review/pending 顯示的 flag
+final betaPendingProvider = StateProvider<bool>((ref) => false);

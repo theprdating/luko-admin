@@ -476,13 +476,7 @@ class _CaptureView extends StatelessWidget {
     _               => null,
   };
 
-  IconData _icon() => switch (step) {
-    _VerifyStep.frontFace => Icons.face_outlined,
-    _VerifyStep.sideFace  => Icons.face_retouching_natural_outlined,
-    _VerifyStep.action1   => Icons.waving_hand_outlined,
-    _VerifyStep.action2   => Icons.waving_hand_outlined,
-    _VerifyStep.intro     => Icons.camera_alt_outlined,
-  };
+  IconData _icon() => Icons.camera_alt_outlined;
 
   // 步驟編號（1~4，不含 intro）
   int get _stepNumber => switch (step) {
@@ -675,15 +669,7 @@ class _PhotoPlaceholder extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(color: colors.divider, width: 1.5),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 56, color: colors.secondaryText.withValues(alpha: 0.4)),
-          const SizedBox(height: AppSpacing.sm),
-          Icon(Icons.camera_alt_outlined,
-              size: 24, color: colors.secondaryText.withValues(alpha: 0.3)),
-        ],
-      ),
+      child: Icon(icon, size: 56, color: colors.secondaryText.withValues(alpha: 0.4)),
     );
   }
 }

@@ -30,6 +30,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonLoading => 'Loading...';
 
   @override
+  String get commonSaving => 'Saving...';
+
+  @override
   String get commonError => 'Something went wrong. Please try again.';
 
   @override
@@ -67,6 +70,49 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authContinueWithApple => 'Continue with Apple';
 
   @override
+  String get welcomeEmailLoginButton => 'Sign in with Email';
+
+  @override
+  String get emailLoginTitle => 'Sign In with Email';
+
+  @override
+  String get emailLoginSubtitle =>
+      'This is for existing beta accounts only.\nEnter your registered email and we\'ll send you a sign-in link.';
+
+  @override
+  String get emailLoginLabel => 'Email';
+
+  @override
+  String get emailLoginSendLink => 'Send Login Link';
+
+  @override
+  String get emailLoginResend => 'Resend';
+
+  @override
+  String emailLoginResendIn(int seconds) {
+    return 'Resend in ${seconds}s';
+  }
+
+  @override
+  String get emailLoginOAuthHint =>
+      'Don\'t have an account yet? Go back and sign up with Google or Apple.\nIf you previously signed in with Google or Apple, please use those buttons instead.';
+
+  @override
+  String get betaAccountEmailInvalid => 'Please enter a valid email address';
+
+  @override
+  String get betaAccountSentTitle => 'Login Link Sent';
+
+  @override
+  String betaAccountSentTo(String email) {
+    return 'Sent to $email';
+  }
+
+  @override
+  String get betaAccountSentBody =>
+      'Check your inbox and tap the link — the app will open automatically.\nThe link expires in 60 minutes.';
+
+  @override
   String authConsentSuffix(String privacy) {
     return ' and $privacy';
   }
@@ -79,7 +125,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get approvedGateBody =>
-      'Congratulations! You\'ve passed the PR Dating review.\nOne last step — link your phone number to finish setting up your account.';
+      'Congratulations! You\'ve been approved to join PR Dating — welcome aboard.\nNext, link your phone number to complete your account setup.';
 
   @override
   String get approvedGateBodyTop =>
@@ -383,17 +429,84 @@ class AppLocalizationsEn extends AppLocalizations {
   String get verifyActionShowNine => 'Show the number 9 with your hand';
 
   @override
+  String get applyInterestsTitle => 'What are you into?';
+
+  @override
+  String applyInterestsSubtitle(int min) {
+    return 'Pick at least $min to help with matching';
+  }
+
+  @override
+  String applyInterestsSelected(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String applyInterestsShortfall(int remaining) {
+    return '$remaining more to go';
+  }
+
+  @override
+  String applyInterestsCategoryMax(int max) {
+    return 'This category allows max $max picks';
+  }
+
+  @override
+  String get applyInterestsAddCustomTitle => 'Add a custom interest';
+
+  @override
+  String get applyInterestsAddCustomHint => 'Enter interest name';
+
+  @override
+  String get applyInterestsAddButton => 'Add';
+
+  @override
+  String get applyQuestionsTitle => 'Let them get to know you';
+
+  @override
+  String get applyQuestionsSubtitle =>
+      'Answer at least 1 — there are no wrong answers';
+
+  @override
+  String applyQuestionsAnswered(int count) {
+    return '$count answered';
+  }
+
+  @override
+  String get applyQuestionsMinRequired =>
+      'Answer at least 1 question to continue';
+
+  @override
+  String get applyQuestionsAnswerHint => 'Share your thoughts...';
+
+  @override
+  String get applyQuestionsAnswerSave => 'Save';
+
+  @override
+  String get applyQuestionsAnswerClear => 'Clear answer';
+
+  @override
   String get applyBioTitle => 'About You';
 
   @override
-  String get applyBioSubtitle => 'Tell us a little about yourself (optional)';
+  String get applyBioSubtitle => 'Tell us about yourself (optional)';
 
   @override
   String get applyBioHint =>
       'Share your interests, lifestyle, or anything you\'d like others to know...';
 
   @override
-  String get applyBioHelper => 'Up to 150 characters';
+  String get applyBioHelper => 'Up to 500 characters';
+
+  @override
+  String get applyLeaveDialogTitle => 'Leave Application?';
+
+  @override
+  String get applyLeaveDialogBody =>
+      'You\'ll be signed out. You can continue your application next time you sign in.';
+
+  @override
+  String get applyLeaveDialogConfirm => 'Leave & Sign Out';
 
   @override
   String get applyConfirmTitle => 'Review & Submit';
@@ -461,10 +574,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your profile doesn\'t meet our community standards at this time. You\'re welcome to reapply in 30 days.';
 
   @override
-  String get reviewRejectedTitleSoft => 'Thank You for Applying';
+  String get reviewRejectedTitleHard => 'Thank You for Applying';
 
   @override
-  String get reviewRejectedBodySoft =>
+  String get reviewRejectedBodyHard =>
       'Thank you for your application. To ensure every member has the best possible matching experience, we have basic quality standards for application photos.\nHere are some tips that might be helpful:';
 
   @override
@@ -476,6 +589,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reviewAdminFeedbackTitle => 'Review Feedback';
+
+  @override
+  String get reviewRejectedTagPhotoBlurry =>
+      'Try submitting clear, well-lit photos';
+
+  @override
+  String get reviewRejectedTagMessyBackground =>
+      'Try shooting in a tidy or visually appealing space';
+
+  @override
+  String get reviewRejectedTagCasualStyle =>
+      'Consider presenting a more put-together look and style';
+
+  @override
+  String get reviewRejectedTagFaceUnclear =>
+      'Make sure your main photo shows your face clearly';
+
+  @override
+  String get reviewRejectedTagTooFewPhotos =>
+      'Try including at least 3 photos from different angles';
 
   @override
   String get reviewRejectedTip1 =>
@@ -505,6 +638,56 @@ class AppLocalizationsEn extends AppLocalizations {
       'Each account is limited to 3 application attempts. This account has reached the limit. Thank you for your interest in PR Dating.';
 
   @override
+  String get reviewExhaustedSignOut => 'Sign Out';
+
+  @override
+  String get reviewExhaustedContactUs => 'Questions? Contact us';
+
+  @override
+  String get reviewExhaustedEmailCopied => 'Email copied';
+
+  @override
+  String get reviewDeleteRequestButton => 'Delete Account';
+
+  @override
+  String get reviewDeleteDialogTitle => 'Delete Account?';
+
+  @override
+  String get reviewDeleteDialogBody =>
+      'Your account data will be permanently deleted 90 days from now. During this period, you can log in and cancel this request. After 90 days, you may reapply with a fresh start.';
+
+  @override
+  String get reviewDeleteDialogConfirm => 'Confirm';
+
+  @override
+  String get reviewDeleteDialogCancel => 'Cancel';
+
+  @override
+  String get pendingDeletionTitle => 'Deletion Scheduled';
+
+  @override
+  String get pendingDeletionBody =>
+      'All your data will be permanently deleted on the date below. After that, you may reapply with a fresh start.';
+
+  @override
+  String get pendingDeletionDateLabel => 'Scheduled for';
+
+  @override
+  String get pendingDeletionCancelButton => 'Cancel Deletion';
+
+  @override
+  String get pendingDeletionSignOut => 'Sign Out';
+
+  @override
+  String get pendingDeletionCancelSuccess => 'Deletion request cancelled';
+
+  @override
+  String get reviewPendingContactUs => 'Questions? Feel free to contact us';
+
+  @override
+  String get reviewPendingEmailCopied => 'Email copied';
+
+  @override
   String get discoverTitle => 'Discover';
 
   @override
@@ -512,6 +695,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get discoverEmptySubtitle => 'Check back later for new profiles.';
+
+  @override
+  String get discoverMidnightTitle => 'Today\'s picks are on their way';
+
+  @override
+  String discoverMidnightSubtitle(String localTime) {
+    return 'PR Dating refreshes your daily matches at midnight Taiwan time\n($localTime your local time)';
+  }
+
+  @override
+  String get discoverMidnightCountdownLabel => 'Next refresh in';
 
   @override
   String get matchTitle => 'Matches';
@@ -538,7 +732,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsLanguage => 'Language';
 
   @override
-  String get settingsLogout => 'Sign Out';
+  String get settingsLogout => 'Log Out';
 
   @override
   String get settingsDeleteAccount => 'Delete Account';
@@ -698,4 +892,269 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get reviewRejectedHardTip3 =>
       'A variety of photos can show different sides of who you are';
+
+  @override
+  String profileAgeYears(int age) {
+    return '$age';
+  }
+
+  @override
+  String get profileSeeking => 'Looking for';
+
+  @override
+  String get profileSeekingMale => 'Men';
+
+  @override
+  String get profileSeekingFemale => 'Women';
+
+  @override
+  String get profileSeekingOther => 'Everyone';
+
+  @override
+  String get profileGenderMale => 'Male';
+
+  @override
+  String get profileGenderFemale => 'Female';
+
+  @override
+  String get profileGenderOther => 'Other';
+
+  @override
+  String get profileSectionBio => 'About';
+
+  @override
+  String get profileSectionInterests => 'Interests';
+
+  @override
+  String get profileSectionQuestions => 'Q&A';
+
+  @override
+  String get profileNoBio => 'No bio yet';
+
+  @override
+  String get profileNoInterests => 'No interests set';
+
+  @override
+  String get profileNoQuestions => 'No questions answered';
+
+  @override
+  String get profileLoadError => 'Could not load profile';
+
+  @override
+  String get editProfileTitle => 'Edit Profile';
+
+  @override
+  String get editProfileSectionPhotos => 'Photos';
+
+  @override
+  String get editProfileSectionBasic => 'Basic Info';
+
+  @override
+  String get editProfileSectionSeeking => 'Looking for';
+
+  @override
+  String get editProfileSectionInterests => 'Interests';
+
+  @override
+  String get editProfileSectionQuestions => 'Q&A';
+
+  @override
+  String get editProfileNameLabel => 'Display Name';
+
+  @override
+  String get editProfileBioLabel => 'Bio';
+
+  @override
+  String get editProfileBioHint => 'Tell us about yourself...';
+
+  @override
+  String editProfileBioHelper(int max) {
+    return 'Optional, max $max characters';
+  }
+
+  @override
+  String get editProfileSeekingMale => 'Men';
+
+  @override
+  String get editProfileSeekingFemale => 'Women';
+
+  @override
+  String get editProfileSeekingOther => 'Everyone';
+
+  @override
+  String get editProfilePhotoChangeTitle => 'Photo Change Requires Review';
+
+  @override
+  String get editProfilePhotoChangeBody =>
+      'After changing photos, we\'ll re-verify your identity.\nDuring review (1–3 business days), your current photos remain active for matching.';
+
+  @override
+  String get editProfilePhotoChangeContinue => 'Proceed';
+
+  @override
+  String editProfileInterestsCount(int count) {
+    return '$count interests selected';
+  }
+
+  @override
+  String get editProfileInterestsEdit => 'Edit';
+
+  @override
+  String editProfileQuestionsCount(int count) {
+    return '$count questions answered';
+  }
+
+  @override
+  String get editProfileQuestionsEdit => 'Edit';
+
+  @override
+  String get editProfileUnsavedTitle => 'Discard changes?';
+
+  @override
+  String get editProfileUnsavedMessage =>
+      'You have unsaved changes. They\'ll be lost if you leave.';
+
+  @override
+  String get editProfileUnsavedDiscard => 'Discard';
+
+  @override
+  String get editProfileSaved => 'Saved';
+
+  @override
+  String get editProfileSaveFailed => 'Save failed. Please try again.';
+
+  @override
+  String get editProfilePhotoPendingBanner =>
+      'Photos under review (1–3 days) — current photos remain active for matching';
+
+  @override
+  String get settingsSectionAccount => 'Account';
+
+  @override
+  String get settingsSectionPrivacy => 'Privacy';
+
+  @override
+  String get settingsSectionPreferences => 'Preferences';
+
+  @override
+  String get settingsSectionSupport => 'Support';
+
+  @override
+  String get settingsSectionAbout => 'About';
+
+  @override
+  String get settingsPhone => 'Phone Number';
+
+  @override
+  String get settingsNotifications => 'Push Notifications';
+
+  @override
+  String get settingsLanguageZh => 'Traditional Chinese';
+
+  @override
+  String get settingsLanguageEn => 'English';
+
+  @override
+  String get settingsPrivacy => 'Privacy Policy';
+
+  @override
+  String get settingsTerms => 'Terms of Service';
+
+  @override
+  String get settingsContactUs => 'Contact Support';
+
+  @override
+  String get settingsFaq => 'FAQ';
+
+  @override
+  String get settingsReport => 'Report a Problem';
+
+  @override
+  String get settingsVersion => 'Version';
+
+  @override
+  String get settingsLogoutTitle => 'Log Out';
+
+  @override
+  String get settingsLogoutMessage =>
+      'Are you sure you want to log out of this device?';
+
+  @override
+  String get settingsLogoutConfirm => 'Log Out';
+
+  @override
+  String get settingsAccountSecurity => 'Account Security';
+
+  @override
+  String get accountSecurityTitle => 'Account Security';
+
+  @override
+  String get accountSecurityBody =>
+      'The following actions will permanently affect your account. Please proceed carefully.';
+
+  @override
+  String get accountSecurityDeleteTitle => 'Delete Account';
+
+  @override
+  String get accountSecurityDeleteDesc =>
+      'Deleting your account will permanently remove all your data, matches, and messages. This cannot be undone.\nIf you just need a break, consider pausing your account instead.';
+
+  @override
+  String get accountSecurityDeleteButton => 'Permanently Delete Account';
+
+  @override
+  String get editPhotosTitle => 'Manage Photos';
+
+  @override
+  String get editPhotosSubtitle =>
+      'Long-press to reorder. Min 2, max 9 photos.';
+
+  @override
+  String get editPhotosUploading => 'Uploading...';
+
+  @override
+  String get editPhotosSuccessMessage =>
+      'Photos submitted for review. Matching continues in the meantime.';
+
+  @override
+  String get editPhotosUploadFailed => 'Upload failed. Please try again.';
+
+  @override
+  String get editPhotosPendingStatus =>
+      'Photos under review (1–3 days)\nCurrent photos remain active for matching';
+
+  @override
+  String get editReverifyTitle => 'Verification Photos';
+
+  @override
+  String get editReverifySubtitle =>
+      'We need 2 quick photos to confirm it\'s you before submitting your new photos for review.\nVerification photos are for our review team only and will never be shown publicly.';
+
+  @override
+  String get editReverifySubmit => 'Submit';
+
+  @override
+  String get editReverifyUploading => 'Submitting...';
+
+  @override
+  String get editReverifySuccess =>
+      'Photo update submitted for review. Matching continues in the meantime.';
+
+  @override
+  String get editReverifyFailed => 'Submission failed. Please try again.';
+
+  @override
+  String get betaApplyInfoSubtitle =>
+      'Welcome back! Confirm or update your basic info.';
+
+  @override
+  String get betaApplyBioSubtitle =>
+      'Here\'s your bio from the beta — feel free to edit it.';
+
+  @override
+  String get betaApplyPhotosLockedTitle => 'Photos Locked';
+
+  @override
+  String get betaApplyPhotosLockedBody =>
+      'To confirm your identity, photos can\'t be changed right now. You can update them in your profile after joining the app.';
 }

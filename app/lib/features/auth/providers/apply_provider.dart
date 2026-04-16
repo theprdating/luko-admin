@@ -1,7 +1,27 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// 申請流程（Step 1–6）的表單資料
+/// 問題回答（Step 6：問題填寫）
+@immutable
+class QuestionAnswer {
+  const QuestionAnswer({
+    required this.questionId,
+    required this.questionText,
+    required this.answer,
+  });
+
+  final String questionId;
+  final String questionText;
+  final String answer;
+
+  QuestionAnswer copyWith({String? answer}) => QuestionAnswer(
+    questionId: questionId,
+    questionText: questionText,
+    answer: answer ?? this.answer,
+  );
+}
+
+/// 申請流程（Step 1–8）的表單資料
 ///
 /// 跨頁面持久：用戶從 Step 2 返回 Step 3 時，資料不會消失。
 @immutable
@@ -20,6 +40,8 @@ class ApplyFormData {
     this.verificationAction1Path = '',
     this.verificationAction2 = '',
     this.verificationAction2Path = '',
+    this.interests = const [],
+    this.questionAnswers = const [],
     this.bio = '',
   });
 
@@ -63,7 +85,13 @@ class ApplyFormData {
   /// 動作 2 照片本機路徑
   final String verificationAction2Path;
 
-  /// 自我介紹（選填，上限 150 字）
+  /// 興趣標籤列表（Step 5）
+  final List<String> interests;
+
+  /// 問題回答列表（Step 6）
+  final List<QuestionAnswer> questionAnswers;
+
+  /// 自我介紹（選填，上限 500 字）
   final String bio;
 
   /// 四張認證照片是否都已拍攝
@@ -87,6 +115,8 @@ class ApplyFormData {
     String? verificationAction1Path,
     String? verificationAction2,
     String? verificationAction2Path,
+    List<String>? interests,
+    List<QuestionAnswer>? questionAnswers,
     String? bio,
   }) {
     return ApplyFormData(
@@ -103,6 +133,8 @@ class ApplyFormData {
       verificationAction1Path:  verificationAction1Path  ?? this.verificationAction1Path,
       verificationAction2:      verificationAction2      ?? this.verificationAction2,
       verificationAction2Path:  verificationAction2Path  ?? this.verificationAction2Path,
+      interests:                interests                ?? this.interests,
+      questionAnswers:          questionAnswers          ?? this.questionAnswers,
       bio:                      bio                      ?? this.bio,
     );
   }
@@ -159,12 +191,46 @@ class ApplyFormNotifier extends StateNotifier<ApplyFormData> {
     );
   }
 
-  /// Step 5：Bio
+  /// Step 5：興趣標籤
+  void setInterests(List<String> interests) =>
+      state = state.copyWith(interests: interests);
+
+  /// Step 6：問題回答
+  void setQuestionAnswers(List<QuestionAnswer> answers) =>
+      state = state.copyWith(questionAnswers: answers);
+
+  /// Step 7：Bio
   void setBio(String bio) =>
       state = state.copyWith(bio: bio);
 
+  /// Beta 模式：setInfo 後補回 bio + uploadedPhotoPaths（copyWith 不影響其他欄位）
+  void restoreBetaExtras({
+    required String bio,
+    required List<String> uploadedPhotoPaths,
+  }) {
+    state = state.copyWith(bio: bio, uploadedPhotoPaths: uploadedPhotoPaths);
+  }
+
   /// 申請送出後重置（或用戶重新申請時）
   void reset() => state = const ApplyFormData();
+
+  /// Beta 遷移：預填封測資料（display_name, gender, seeking, bio, photo_paths）
+  /// 用戶仍可在申請流程中修改文字欄位；照片在照片頁面鎖定，進 APP 後才可更換
+  void prefillForBeta({
+    required String displayName,
+    required String gender,
+    required List<String> seeking,
+    required String bio,
+    List<String> uploadedPhotoPaths = const [],
+  }) {
+    state = ApplyFormData(
+      displayName:        displayName,
+      gender:             gender,
+      seeking:            seeking,
+      bio:                bio,
+      uploadedPhotoPaths: uploadedPhotoPaths,
+    );
+  }
 
   /// 重新申請：從 DB 預填已有資料，認證照片欄位保持空白（強制重拍）
   void prefillForReapply({
@@ -173,6 +239,8 @@ class ApplyFormNotifier extends StateNotifier<ApplyFormData> {
     required String gender,
     required List<String> seeking,
     required List<String> uploadedPhotoPaths,
+    required List<String> interests,
+    required List<QuestionAnswer> questionAnswers,
     required String bio,
   }) {
     state = ApplyFormData(
@@ -181,6 +249,8 @@ class ApplyFormNotifier extends StateNotifier<ApplyFormData> {
       gender:             gender,
       seeking:            seeking,
       uploadedPhotoPaths: uploadedPhotoPaths,
+      interests:          interests,
+      questionAnswers:    questionAnswers,
       bio:                bio,
       // phone, localPhotoPaths, verification 維持預設空值，
       // 照片頁面可辨識已有上傳路徑；認證步驟強制重拍。

@@ -51,17 +51,7 @@ function reapplyAfter(rejectionType: string): string | null {
   }
 }
 
-function buildApproveEmail(displayName: string, qualityTier: string): { subject: string; html: string } {
-  const isTop = qualityTier === 'top'
-  const tierBlockHtml = isTop
-    ? `<div style="background:#eef7f1;border-radius:10px;padding:14px 16px;margin:20px 0;border:1px solid #b8ddc8;">
-         <p style="font-size:13px;font-weight:700;color:#2d6a4f;margin:0 0 6px;">精選成員 · 終生免費</p>
-         <p style="line-height:1.8;color:#444;margin:0;font-size:14px;">您的形象符合 PR Dating 的精選標準，歡迎加入。<br>您可<strong>終生免費</strong>使用 PR Dating 的所有功能，感謝您的支持！</p>
-       </div>`
-    : `<div style="background:#f5f0e8;border-radius:10px;padding:14px 16px;margin:20px 0;border:1px solid #e0c99a;">
-         <p style="font-size:13px;font-weight:700;color:#8a5c1a;margin:0 0 6px;">5 天免費體驗</p>
-         <p style="line-height:1.8;color:#444;margin:0;font-size:14px;">您通過了我們的基本審核，期待看見您在社群中的表現。<br>您可享有 <strong>5 天免費體驗</strong>，之後可訂閱方案繼續使用完整功能。</p>
-       </div>`
+function buildApproveEmail(displayName: string): { subject: string; html: string } {
   return {
     subject: '恭喜！您已通過 PR Dating 資格審核',
     html: `<!DOCTYPE html>
@@ -74,8 +64,10 @@ function buildApproveEmail(displayName: string, qualityTier: string): { subject:
   <div style="font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;max-width:480px;margin:0 auto;padding:40px 24px;color:#1a1a1a;">
     <p style="font-size:20px;font-weight:600;color:#C9A96E;margin:0 0 24px;">PR DATING</p>
     <h1 style="font-size:22px;font-weight:700;margin:0 0 16px;">恭喜，${displayName}！</h1>
-    <p style="line-height:1.8;color:#444;margin:0 0 4px;">您的申請已通過我們的資格審核。<br>現在可以開啟 App 開始探索了。</p>
-    ${tierBlockHtml}
+    <p style="line-height:1.8;color:#444;margin:0 0 16px;">您的申請已通過我們的資格審核，歡迎加入 PR Dating。</p>
+    <div style="background:#eef7f1;border-radius:10px;padding:14px 16px;margin:20px 0;border:1px solid #b8ddc8;">
+      <p style="line-height:1.8;color:#444;margin:0;font-size:14px;">現在可以開啟 App，完成最後幾個步驟開始探索了。</p>
+    </div>
     <p style="font-size:12px;color:#999;margin:32px 0 0;line-height:1.7;">
       PR Dating 是一個精選制約會社群，每位成員都經過人工審核。<br>
       感謝您成為我們社群的一員。
@@ -404,9 +396,11 @@ serve(async (req) => {
 
   // ── 1. Validate admin ───────────────────────────────────────────────────────
   //
-  // 直接 decode JWT payload（不需要 network call）。
-  // Supabase gateway 已在進入 function 前驗證 JWT 簽章，
-  // 因此這裡只需讀取 claims 判斷 admin 身份即可。
+  // 這個 function 以 --no-verify-jwt 部署（gateway 不驗 JWT 簽章）。
+  // 因此 admin 驗證改為：
+  //   a) decode JWT payload 取得 sub（caller 的 user_id）
+  //   b) 用 service role client 直接從 Auth DB 查 user_metadata.user_role
+  // 這樣即使 JWT 被偽造，攻擊者也無法冒充 admin，因為 DB 才是 source of truth。
 
   const authHeader = req.headers.get('Authorization')
   if (!authHeader?.startsWith('Bearer ')) {
@@ -416,14 +410,12 @@ serve(async (req) => {
   const token = authHeader.slice(7)
 
   let callerUserId: string
-  let callerUserRole: string | undefined
   try {
     const parts = token.split('.')
     if (parts.length !== 3) throw new Error('malformed JWT')
     const padded = parts[1].replace(/-/g, '+').replace(/_/g, '/') + '=='.slice(0, (4 - parts[1].length % 4) % 4)
     const claims = JSON.parse(atob(padded)) as Record<string, unknown>
     callerUserId = claims.sub as string
-    callerUserRole = (claims.user_metadata as Record<string, string> | undefined)?.user_role
     if (!callerUserId) throw new Error('no sub claim')
   } catch (e) {
     console.error('[review-application] JWT decode error:', e)
@@ -433,18 +425,20 @@ serve(async (req) => {
     })
   }
 
-  if (callerUserRole !== 'admin') {
-    return new Response(JSON.stringify({ error: 'Admin access required' }), {
-      status: 403,
-      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
-    })
-  }
-
   // ── 3. Service-role client for DB operations ────────────────────────────────
   const adminDb = createClient(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   )
+
+  // ── Verify admin role from DB (not from JWT payload) ────────────────────────
+  const { data: { user: callerUser }, error: callerErr } = await adminDb.auth.admin.getUserById(callerUserId)
+  if (callerErr || callerUser?.user_metadata?.user_role !== 'admin') {
+    return new Response(JSON.stringify({ error: 'Admin access required' }), {
+      status: 403,
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+    })
+  }
 
   // ── 2. Parse body ───────────────────────────────────────────────────────────
 
@@ -459,9 +453,6 @@ serve(async (req) => {
 
   if (!application_id || !action) {
     return new Response(JSON.stringify({ error: 'Missing application_id or action' }), { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
-  }
-  if (action === 'approve' && !quality_tier) {
-    return new Response(JSON.stringify({ error: "quality_tier required for approve, must be 'top' or 'standard'" }), { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
   }
   if (action === 'reject' && !rejection_type) {
     return new Response(JSON.stringify({ error: 'rejection_type required for reject' }), { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
@@ -546,13 +537,16 @@ serve(async (req) => {
     const compactPaths = profilePhotoPaths.filter(Boolean)
 
     // c) Create profile (upsert in case of re-review edge case)
+    // NOTE: only use compactPaths (profile-photos bucket) — never fall back to
+    // app.photo_paths (application-photos bucket) because those paths don't exist
+    // in profile-photos, causing broken images in-app.
     const { error: profileErr } = await adminDb.from('profiles').upsert({
       id: app.user_id,
       display_name: app.display_name,
       birth_date: app.birth_date,
       gender: app.gender,
       bio: app.bio ?? null,
-      photo_paths: compactPaths.length > 0 ? compactPaths : (app.photo_paths ?? []),
+      photo_paths: compactPaths,
       seeking: app.seeking ?? [],
       is_active: true,
       is_founding_member: true,
@@ -586,23 +580,19 @@ serve(async (req) => {
     }).eq('user_id', app.user_id)
 
     // f) Return immediately, send notifications in background (fire-and-forget)
-    const fcmApproveBody = quality_tier === 'top'
-      ? '您的形象符合 PR Dating 的精選標準，歡迎加入 🎉'
-      : '您通過了我們的基本審核，快來開始 5 天免費體驗吧！'
-
-    const { subject: appSubject, html: appHtml } = buildApproveEmail(app.display_name, quality_tier!)
+    const { subject: appSubject, html: appHtml } = buildApproveEmail(app.display_name)
     Promise.all([
       sendFcmNotification(
         app.user_id,
         '恭喜！申請通過 🎉',
-        fcmApproveBody,
-        { type: 'application_approved', quality_tier: quality_tier! },
+        '您的申請已通過審核，快來開啟 App 開始探索吧！',
+        { type: 'application_approved' },
       ),
       applicantEmail ? sendEmail(applicantEmail, appSubject, appHtml) : Promise.resolve(),
     ]).catch(e => console.error('[review-application] approve notify error:', e))
 
     return new Response(
-      JSON.stringify({ success: true, action: 'approved', quality_tier }),
+      JSON.stringify({ success: true, action: 'approved' }),
       { headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } },
     )
   }

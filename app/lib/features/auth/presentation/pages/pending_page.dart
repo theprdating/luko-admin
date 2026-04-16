@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/exit_on_double_back_scope.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../providers/auth_provider.dart';
+import '../pages/legal_scaffold.dart';
 
 /// 等待審核頁
 ///
@@ -12,17 +16,19 @@ import '../../../../l10n/app_localizations.dart';
 /// 顯示三段式狀態時間軸（申請已送出 → 審核中 → 通知發送）
 /// GoRouter redirect 監聽 appUserStatusProvider：
 /// 審核通過後狀態變 approved → 自動跳轉 /discover
-class PendingPage extends StatefulWidget {
+///
+/// Beta 用戶：betaPendingProvider = true 時，2.5 秒後自動轉 approved
+class PendingPage extends ConsumerStatefulWidget {
   const PendingPage({super.key, this.isDevMode = false});
 
   /// true → 顯示左上返回箭頭回到 /dev/state-picker（僅開發用）
   final bool isDevMode;
 
   @override
-  State<PendingPage> createState() => _PendingPageState();
+  ConsumerState<PendingPage> createState() => _PendingPageState();
 }
 
-class _PendingPageState extends State<PendingPage>
+class _PendingPageState extends ConsumerState<PendingPage>
     with SingleTickerProviderStateMixin {
   late final AnimationController _pulseCtrl;
   late final Animation<double> _pulse;
@@ -39,6 +45,23 @@ class _PendingPageState extends State<PendingPage>
     _pulse = Tween<double>(begin: 0.3, end: 1.0).animate(
       CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut),
     );
+
+    // Beta 用戶：送出後暫時顯示 pending 動畫 2.5 秒，再自動轉 approved
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final isBetaPending = ref.read(betaPendingProvider);
+      if (isBetaPending) {
+        Future.delayed(const Duration(milliseconds: 2500), () {
+          if (!mounted) return;
+          ref.read(betaPendingProvider.notifier).state = false;
+          // 讓 router 重新評估狀態，status 為 phoneVerificationRequired
+          // → router 放行 /review/approved（因 betaPendingProvider 已 false）
+          // 但 claim_beta_approval 已建立 approved 的 applications 記錄，
+          // 所以 appUserStatusProvider 重算後 status = phoneVerificationRequired
+          ref.invalidate(appUserStatusProvider);
+        });
+      }
+    });
   }
 
   @override
@@ -111,10 +134,63 @@ class _PendingPageState extends State<PendingPage>
                 _StatusTimeline(colors: colors, pulse: _pulse, l10n: l10n),
 
                 const Spacer(flex: 3),
+
+                // ── 聯繫我們（極小字，不放刪除按鈕）────────────────────
+                // 等待審核中的用戶仍有機會通過，刻意不放刪除入口避免誘導。
+                // 如需刪除請聯繫信箱，由人工處理。
+                _PendingContactUs(colors: colors, l10n: l10n),
+                const SizedBox(height: AppSpacing.xl),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _PendingContactUs extends StatelessWidget {
+  const _PendingContactUs({required this.colors, required this.l10n});
+  final AppColors colors;
+  final AppLocalizations l10n;
+
+  Future<void> _copyEmail(BuildContext context) async {
+    await Clipboard.setData(const ClipboardData(text: kLegalEmail));
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(l10n.reviewPendingEmailCopied),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _copyEmail(context),
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        children: [
+          Text(
+            l10n.reviewPendingContactUs,
+            style: TextStyle(
+              fontSize: 12,
+              color: colors.secondaryText.withValues(alpha: 0.5),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            kLegalEmail,
+            style: TextStyle(
+              fontSize: 11,
+              color: colors.secondaryText.withValues(alpha: 0.35),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }

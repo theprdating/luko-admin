@@ -7,7 +7,6 @@ import 'package:go_router/go_router.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 
 import '../../../../../core/constants/app_radius.dart';
@@ -16,9 +15,10 @@ import '../../../../../core/supabase/supabase_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/media_permission_helper.dart';
 import '../../../../../core/widgets/luko_button.dart';
-import '../../../../../core/widgets/luko_loading_overlay.dart';
 import '../../../../../l10n/app_localizations.dart';
+import '../../../domain/app_user_status.dart';
 import '../../../providers/apply_provider.dart';
+import '../../../providers/auth_provider.dart';
 
 // ── 平台設定提醒 ──────────────────────────────────────────────────────────────
 //
@@ -68,7 +68,6 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage>
   DefaultAssetPickerBuilderDelegate? _pickerDelegate;
 
   bool _isProcessing  = false; // 壓縮 / 裁切中
-  bool _isUploading   = false; // 上傳中
   bool _isDownloading = false; // 重新申請：從 Storage 下載已有照片中
   String? _error;
 
@@ -284,7 +283,9 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage>
 
         setState(() => _localPaths.add(finalPath));
       }
-      ref.read(applyFormProvider.notifier).setLocalPhotos(List.from(_localPaths));
+      final n = ref.read(applyFormProvider.notifier);
+      n.setLocalPhotos(List.from(_localPaths));
+      n.setUploadedPhotos([]); // 照片已修改，確認頁須重新上傳
     } catch (_) {
       if (mounted) setState(() => _error = AppLocalizations.of(context)!.commonError);
     } finally {
@@ -314,7 +315,9 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage>
       final finalPath = (await _cropImage(compressed)) ?? compressed;
 
       setState(() => _localPaths.add(finalPath));
-      ref.read(applyFormProvider.notifier).setLocalPhotos(List.from(_localPaths));
+      final n = ref.read(applyFormProvider.notifier);
+      n.setLocalPhotos(List.from(_localPaths));
+      n.setUploadedPhotos([]); // 照片已修改，確認頁須重新上傳
     } catch (_) {
       if (mounted) setState(() => _error = AppLocalizations.of(context)!.commonError);
     } finally {
@@ -423,7 +426,9 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage>
 
   void _removePhoto(int index) {
     setState(() => _localPaths.removeAt(index));
-    ref.read(applyFormProvider.notifier).setLocalPhotos(List.from(_localPaths));
+    final n = ref.read(applyFormProvider.notifier);
+    n.setLocalPhotos(List.from(_localPaths));
+    n.setUploadedPhotos([]); // 照片已修改，確認頁須重新上傳
   }
 
   // ── 拖動排序 ───────────────────────────────────────────────────────────────
@@ -435,7 +440,9 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage>
       final insertAt = toIndex.clamp(0, _localPaths.length);
       _localPaths.insert(insertAt, item);
     });
-    ref.read(applyFormProvider.notifier).setLocalPhotos(List.from(_localPaths));
+    final n = ref.read(applyFormProvider.notifier);
+    n.setLocalPhotos(List.from(_localPaths));
+    n.setUploadedPhotos([]); // 順序已修改，確認頁須重新上傳
   }
 
   // ── 重新申請：從 Storage 下載已有照片，還原為本機暫存路徑 ──────────────────
@@ -452,21 +459,25 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage>
       final supabase = ref.read(supabaseProvider);
       final tmpDir   = await getTemporaryDirectory();
       final ts       = DateTime.now().millisecondsSinceEpoch;
-      final localPaths = <String>[];
 
-      for (int i = 0; i < storagePaths.length; i++) {
+      // 並行下載所有照片，總時間 ≈ 最慢的單張（而非所有張數加總）
+      final futures = List.generate(storagePaths.length, (i) async {
         try {
-          final bytes     = await supabase.storage
+          final bytes = await supabase.storage
               .from('application-photos')
               .download(storagePaths[i]);
           final localPath = '${tmpDir.path}/luko_reapply_${ts}_$i.jpg';
           await File(localPath).writeAsBytes(bytes);
-          localPaths.add(localPath);
+          return localPath;
         } catch (e) {
           debugPrint('Reapply photo download [$i] failed: $e');
-          // 單張失敗不中斷，其餘照片繼續下載
+          return null; // 單張失敗回傳 null，不中斷其餘下載
         }
-      }
+      });
+
+      final results = await Future.wait(futures);
+      // 過濾失敗項目，保留原始順序
+      final localPaths = results.whereType<String>().toList();
 
       if (!mounted) return;
       setState(() {
@@ -496,114 +507,13 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage>
   //
   // 4. 加入更詳細的錯誤分類，方便 debug。
 
-  Future<void> _onNext() async {
+  // 照片不在此頁上傳；所有上傳集中在 Step 6（apply_confirm_page.dart）的送出時處理
+  void _onNext(bool isBetaMode) {
     if (widget.isDevMode) {
       context.go('/dev/apply-verify');
       return;
     }
-
-    // 重新申請：用戶未重新選照片但已有上傳路徑，直接沿用不重傳
-    final existingPaths = ref.read(applyFormProvider).uploadedPhotoPaths;
-    if (_localPaths.isEmpty && existingPaths.isNotEmpty) {
-      context.go('/apply/verify');
-      return;
-    }
-
-    if (_localPaths.length < _minPhotos) return;
-
-    if (_isUploading) return;
-
-    setState(() {
-      _isUploading = true;
-      _error = null;
-    });
-
-    try {
-      final supabase = ref.read(supabaseProvider);
-      final user = supabase.auth.currentUser;
-      final userId = user?.id;
-
-      if (user == null || userId == null) {
-        setState(() { _isUploading = false; _error = '用戶未登入，請重新驗證'; });
-        return;
-      }
-
-      final uploadedPaths = <String>[];
-      final sessionTs = DateTime.now().millisecondsSinceEpoch;
-
-      for (int i = 0; i < _localPaths.length; i++) {
-        final file = File(_localPaths[i]);
-
-        if (!file.existsSync()) {
-          debugPrint('Photo not found at index $i: ${_localPaths[i]}');
-          continue;
-        }
-
-        // RLS Policy: (storage.foldername(name))[1] = auth.uid()
-        // → 路徑第一段必須是 userId
-        final storagePath = '$userId/photos/${sessionTs}_$i.jpg';
-
-        debugPrint('Uploading [$i]: $storagePath');
-
-        // ⚠️ storage_client 2.5.0 的 uploadBinary() 在 bucket 設有
-        // allowed_mime_types 時會組裝錯誤的 multipart 請求，回傳 404。
-        // 改用 upload(File) 可繞過此 bug，直接以 File 物件上傳。
-        await supabase.storage
-            .from('application-photos')
-            .upload(
-          storagePath,
-          file,
-          fileOptions: const FileOptions(
-            contentType: 'image/jpeg',
-            upsert: true,
-          ),
-        );
-
-        uploadedPaths.add(storagePath);
-        debugPrint('Uploaded [$i] ✓ → $storagePath');
-      }
-
-      if (uploadedPaths.isEmpty) {
-        throw Exception('所有照片上傳失敗，請確認網路連線');
-      }
-
-      ref.read(applyFormProvider.notifier).setUploadedPhotos(uploadedPaths);
-      if (!mounted) return;
-      context.go('/apply/verify');
-    } on StorageException catch (e, st) {
-      debugPrint('Photo upload StorageException: '
-          'status=${e.statusCode}, msg=${e.message}\n$st');
-      if (!mounted) return;
-      setState(() {
-        _isUploading = false;
-        _error = _storageErrorMessage(e);
-      });
-    } catch (e, st) {
-      debugPrint('Photo upload error: $e\n$st');
-      if (!mounted) return;
-      setState(() {
-        _isUploading = false;
-        _error = AppLocalizations.of(context)!.commonError;
-      });
-    }
-  }
-
-  /// 將 StorageException 轉換為對用戶友善的訊息
-  String _storageErrorMessage(StorageException e) {
-    final l10n = AppLocalizations.of(context)!;
-    switch (e.statusCode) {
-      case '404':
-      // Bucket 不存在：通常是後端設定問題，非用戶操作失誤
-        return '上傳服務暫時無法使用，請稍後再試';
-      case '403':
-      // RLS Policy 拒絕：用戶未登入或 policy 設定不符
-        return '沒有上傳權限，請重新登入後再試';
-      case '413':
-      // 檔案過大
-        return '照片檔案過大，請選擇較小的圖片';
-      default:
-        return l10n.commonError;
-    }
+    context.go(isBetaMode ? '/apply/bio' : '/apply/verify');
   }
 
   // ── Build ──────────────────────────────────────────────────────────────────
@@ -615,14 +525,25 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage>
     final textTheme = Theme.of(context).textTheme;
     final count = _localPaths.length;
     final existingPaths = ref.watch(applyFormProvider).uploadedPhotoPaths;
-    // 允許前進：已有新選照片（≥2）或重新申請保留舊路徑；下載 / 壓縮中停用
-    final canProceed = (count >= _minPhotos || existingPaths.isNotEmpty)
-        && !_isProcessing
-        && !_isDownloading;
 
-    return LukoLoadingOverlay(
-      isLoading: _isUploading,
-      message: l10n.applyPhotosUploading,
+    final isBetaMode = ref.watch(appUserStatusProvider).when(
+      data: (s) => s == AppUserStatus.betaOnboarding,
+      loading: () => false,
+      error: (_, __) => false,
+    );
+
+    // Beta 模式：不需要照片，直接允許前進
+    // 正式模式：已有新選照片（≥2）或重新申請保留舊路徑；下載 / 壓縮中停用
+    final canProceed = isBetaMode ||
+        ((count >= _minPhotos || existingPaths.isNotEmpty)
+        && !_isProcessing
+        && !_isDownloading);
+
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) context.go(widget.isDevMode ? '/dev/apply-info' : '/apply/info');
+      },
       child: Scaffold(
         backgroundColor: colors.backgroundWarm,
         appBar: AppBar(
@@ -636,7 +557,7 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage>
             ),
           ),
           title: Text(
-            l10n.applyStep(3, 6),
+            isBetaMode ? l10n.applyStep(2, 3) : l10n.applyStep(3, 6),
             style: textTheme.labelMedium?.copyWith(color: colors.secondaryText),
           ),
           centerTitle: true,
@@ -665,92 +586,102 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage>
                     l10n.applyPhotosSubtitle,
                     style: textTheme.bodyMedium?.copyWith(color: colors.secondaryText),
                   ),
-
-                  // ── 重新申請：下載失敗後的 fallback 橫幅 ────────────────
-                  // 下載中（_isDownloading）改以 Grid 內 spinner 表達，不顯示橫幅
-                  if (existingPaths.isNotEmpty && _localPaths.isEmpty && !_isDownloading) ...[
-                    const SizedBox(height: AppSpacing.sm),
-                    _ExistingPhotosBanner(
-                      count: existingPaths.length,
-                      colors: colors,
-                      textTheme: textTheme,
-                    ),
-                  ],
-
-                  // ── 有限存取提示橫幅（僅在確認為 limited 時顯示）────────
-                  // _permissionState == null 表示尚未查詢完成，不顯示橫幅
-                  // _permissionState == authorized 表示完整權限，不顯示
-                  // _permissionState == limited 才顯示（iOS 或 Android 14 部分存取）
-                  if (_permissionState == PermissionState.limited) ...[
-                    const SizedBox(height: AppSpacing.sm),
-                    _LimitedAccessBanner(
-                      hint: l10n.applyPhotosLimitedHint,
-                      colors: colors,
-                      textTheme: textTheme,
-                    ),
-                  ],
-
                   const SizedBox(height: AppSpacing.xl),
 
-                  // ── 9 格可拖動照片 Grid（或下載中 spinner）────────────────
-                  // 重新申請時先從 Storage 下載照片（_isDownloading），
-                  // 完成後才渲染可操作的 Grid，避免空格子誤導用戶重新上傳。
-                  if (_isDownloading)
-                    SizedBox(
-                      height: 200,
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          color: colors.forestGreen,
-                          strokeWidth: 2.5,
-                        ),
-                      ),
-                    )
-                  else
-                    _DraggablePhotoGrid(
+                  // ── Beta 模式：顯示鎖定的既有照片 ──────────────────────
+                  if (isBetaMode)
+                    _BetaPhotosCard(
                       localPaths: _localPaths,
-                      maxPhotos: _maxPhotos,
-                      isProcessing: _isProcessing,
+                      isLoading: _isDownloading,
                       colors: colors,
                       l10n: l10n,
-                      onAddTap: count < _maxPhotos ? _showSourcePicker : null,
-                      onRemove: _removePhoto,
-                      onReorder: _reorderPhotos,
+                      textTheme: textTheme,
+                    )
+                  else ...[
+                    // ── 重新申請：下載失敗後的 fallback 橫幅 ────────────────
+                    // 下載中（_isDownloading）改以 Grid 內 spinner 表達，不顯示橫幅
+                    if (existingPaths.isNotEmpty && _localPaths.isEmpty && !_isDownloading) ...[
+                      _ExistingPhotosBanner(
+                        count: existingPaths.length,
+                        colors: colors,
+                        textTheme: textTheme,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                    ],
+
+                    // ── 有限存取提示橫幅（僅在確認為 limited 時顯示）────────
+                    // _permissionState == null 表示尚未查詢完成，不顯示橫幅
+                    // _permissionState == authorized 表示完整權限，不顯示
+                    // _permissionState == limited 才顯示（iOS 或 Android 14 部分存取）
+                    if (_permissionState == PermissionState.limited) ...[
+                      _LimitedAccessBanner(
+                        hint: l10n.applyPhotosLimitedHint,
+                        colors: colors,
+                        textTheme: textTheme,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                    ],
+
+                    // ── 9 格可拖動照片 Grid（或下載中 spinner）────────────────
+                    // 重新申請時先從 Storage 下載照片（_isDownloading），
+                    // 完成後才渲染可操作的 Grid，避免空格子誤導用戶重新上傳。
+                    if (_isDownloading)
+                      SizedBox(
+                        height: 200,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: colors.forestGreen,
+                            strokeWidth: 2.5,
+                          ),
+                        ),
+                      )
+                    else
+                      _DraggablePhotoGrid(
+                        localPaths: _localPaths,
+                        maxPhotos: _maxPhotos,
+                        isProcessing: _isProcessing,
+                        colors: colors,
+                        l10n: l10n,
+                        onAddTap: count < _maxPhotos ? _showSourcePicker : null,
+                        onRemove: _removePhoto,
+                        onReorder: _reorderPhotos,
+                      ),
+
+                    const SizedBox(height: AppSpacing.md),
+
+                    // ── 底部提示列 ─────────────────────────────────────────
+                    Row(
+                      children: [
+                        Text(
+                          'JPG · PNG · HEIC',
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colors.secondaryText,
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          '$count / $_maxPhotos',
+                          style: textTheme.bodySmall?.copyWith(
+                            color: count >= _minPhotos
+                                ? colors.forestGreen
+                                : colors.secondaryText,
+                            fontWeight: count >= _minPhotos
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      ],
                     ),
 
-                  const SizedBox(height: AppSpacing.md),
-
-                  // ── 底部提示列 ─────────────────────────────────────────
-                  Row(
-                    children: [
+                    // ── 錯誤訊息 ──────────────────────────────────────────
+                    if (_error != null) ...[
+                      const SizedBox(height: AppSpacing.sm),
                       Text(
-                        'JPG · PNG · HEIC',
-                        style: textTheme.bodySmall?.copyWith(
-                          color: colors.secondaryText,
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        '$count / $_maxPhotos',
-                        style: textTheme.bodySmall?.copyWith(
-                          color: count >= _minPhotos
-                              ? colors.forestGreen
-                              : colors.secondaryText,
-                          fontWeight: count >= _minPhotos
-                              ? FontWeight.w600
-                              : FontWeight.normal,
-                        ),
+                        _error!,
+                        style: textTheme.bodySmall?.copyWith(color: colors.error),
+                        textAlign: TextAlign.center,
                       ),
                     ],
-                  ),
-
-                  // ── 錯誤訊息 ──────────────────────────────────────────
-                  if (_error != null) ...[
-                    const SizedBox(height: AppSpacing.sm),
-                    Text(
-                      _error!,
-                      style: textTheme.bodySmall?.copyWith(color: colors.error),
-                      textAlign: TextAlign.center,
-                    ),
                   ],
 
                   const SizedBox(height: AppSpacing.xxxl),
@@ -771,9 +702,116 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage>
             ),
             child: LukoButton.primary(
               label: l10n.commonNext,
-              onPressed: canProceed ? _onNext : null,
-              isLoading: _isUploading,
+              onPressed: canProceed ? () => _onNext(isBetaMode) : null,
             ),
+          ),
+        ),
+      ), // Scaffold
+    );   // PopScope
+  }
+}
+
+// ── Beta 模式：照片鎖定卡片（顯示現有照片 + 鎖定說明）────────────────────────────
+
+class _BetaPhotosCard extends StatelessWidget {
+  const _BetaPhotosCard({
+    required this.localPaths,
+    required this.isLoading,
+    required this.colors,
+    required this.l10n,
+    required this.textTheme,
+  });
+
+  final List<String> localPaths;
+  final bool isLoading;
+  final AppColors colors;
+  final AppLocalizations l10n;
+  final TextTheme textTheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: colors.cardSurface,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: colors.divider),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 鎖定說明橫幅
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Icon(Icons.lock_outline_rounded, size: 16,
+                    color: colors.secondaryText),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              Expanded(
+                child: Text(
+                  l10n.betaApplyPhotosLockedBody,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colors.secondaryText, height: 1.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          if (isLoading) ...[
+            const SizedBox(height: AppSpacing.lg),
+            Center(
+              child: SizedBox(
+                width: 28, height: 28,
+                child: CircularProgressIndicator(
+                  color: colors.forestGreen, strokeWidth: 2.5,
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+          ] else if (localPaths.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.md),
+            _LockedPhotoGrid(localPaths: localPaths, colors: colors),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ── Beta 模式：唯讀照片格（不可新增 / 刪除 / 拖動）────────────────────────────────
+
+class _LockedPhotoGrid extends StatelessWidget {
+  const _LockedPhotoGrid({required this.localPaths, required this.colors});
+
+  final List<String> localPaths;
+  final AppColors colors;
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        mainAxisSpacing: 6,
+        crossAxisSpacing: 6,
+        childAspectRatio: 1,
+      ),
+      itemCount: localPaths.length,
+      itemBuilder: (_, i) => ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        child: Image.file(
+          File(localPaths[i]),
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Container(
+            color: colors.forestGreenSubtle,
+            child: Icon(Icons.broken_image_outlined,
+                color: colors.secondaryText, size: 20),
           ),
         ),
       ),
@@ -946,15 +984,26 @@ class _DraggablePhotoGridState extends State<_DraggablePhotoGrid> {
 
   /// 灰階佔位格：純視覺，不可點擊、不接受拖放
   Widget _buildInactiveEmptySlot() {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(AppRadius.card),
-      child: Container(
-        decoration: BoxDecoration(
-          color: widget.colors.forestGreenSubtle.withValues(alpha: 0.4),
-          borderRadius: BorderRadius.circular(AppRadius.card),
-          border: Border.all(
-            color: widget.colors.forestGreen.withValues(alpha: 0.12),
-          ),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            widget.colors.forestGreenSubtle.withValues(alpha: 0.45),
+            widget.colors.forestGreenSubtle.withValues(alpha: 0.2),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(
+          color: widget.colors.forestGreen.withValues(alpha: 0.15),
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          Icons.add_photo_alternate_outlined,
+          size: 22,
+          color: widget.colors.forestGreen.withValues(alpha: 0.2),
         ),
       ),
     );

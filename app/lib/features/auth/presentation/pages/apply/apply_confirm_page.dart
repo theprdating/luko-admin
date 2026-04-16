@@ -18,6 +18,7 @@ import '../../../../../core/widgets/luko_loading_overlay.dart';
 import '../../../../../l10n/app_localizations.dart';
 import '../../../providers/apply_provider.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../domain/app_user_status.dart';
 
 /// 申請 Step 6 — 確認送出
 ///
@@ -106,9 +107,18 @@ class _ApplyConfirmPageState extends ConsumerState<ApplyConfirmPage> {
         return storagePath;
       }
 
-      // ── 1. 申請照片已由 Step 3 上傳完成，直接使用已存的路徑 ─────────────
-      // 避免重複上傳（photos page 已上傳並存入 uploadedPhotoPaths）
-      final uploadedPhotoPaths = form.uploadedPhotoPaths;
+      // ── 1. 上傳申請照片 → application-photos ────────────────────────────
+      // 新申請：localPhotoPaths 有本機照片，uploadedPhotoPaths 為空 → 執行上傳
+      // 重新申請且未修改照片：uploadedPhotoPaths 已有舊路徑 → 直接沿用，不重傳
+      List<String> uploadedPhotoPaths = form.uploadedPhotoPaths;
+      if (uploadedPhotoPaths.isEmpty && form.localPhotoPaths.isNotEmpty) {
+        final uploadFutures = form.localPhotoPaths.asMap().entries.map((e) {
+          final storagePath = '$userId/photos/${ts}_${e.key}.jpg';
+          return uploadFile('application-photos', e.value, storagePath);
+        });
+        uploadedPhotoPaths = await Future.wait(uploadFutures);
+        ref.read(applyFormProvider.notifier).setUploadedPhotos(uploadedPhotoPaths);
+      }
 
       // ── 2. 上傳驗證照片 → verification-photos ───────────────────────────
       final frontStoragePath = await uploadFile(
@@ -194,6 +204,52 @@ class _ApplyConfirmPageState extends ConsumerState<ApplyConfirmPage> {
     }
   }
 
+  // ── Beta 用戶送出（無上傳照片、無真人認證，直接 call RPC）─────────────────────
+  Future<void> _submitBeta() async {
+    if (!_isAgreed || _isSubmitting) return;
+    setState(() { _isSubmitting = true; _submitError = null; });
+
+    try {
+      final supabase = ref.read(supabaseProvider);
+      final form = ref.read(applyFormProvider);
+
+      await supabase.rpc('claim_beta_approval', params: {
+        'p_display_name': form.displayName,
+        'p_gender':       form.gender.isEmpty ? null : form.gender,
+        'p_seeking':      form.seeking.isEmpty ? null : form.seeking,
+        'p_bio':          form.bio.isEmpty ? null : form.bio,
+        'p_photo_paths':  form.uploadedPhotoPaths.isEmpty
+                          ? null
+                          : form.uploadedPhotoPaths,
+        'p_birth_date':   form.birthDate != null
+                          ? form.birthDate!.toIso8601String().substring(0, 10)
+                          : null,
+      });
+
+      // 請求推播通知權限
+      try {
+        await FirebaseMessaging.instance.requestPermission(
+          alert: true, badge: true, sound: true,
+        );
+      } catch (_) {}
+
+      ref.read(applyFormProvider.notifier).reset();
+      // betaPendingProvider=true 讓 router 知道要先停在 /review/pending（而非直接 /review/approved）
+      ref.read(betaPendingProvider.notifier).state = true;
+      // invalidate 觸發 appUserStatusProvider 重算（betaOnboarding → phoneVerificationRequired）
+      // router redirect：phoneVerificationRequired + betaPendingProvider=true → /review/pending
+      // 不可用 context.go('/review/pending')：status 仍是 stale betaOnboarding 時 router 會踢回 /apply/info
+      ref.invalidate(appUserStatusProvider);
+    } catch (e) {
+      debugPrint('Beta submit error: $e');
+      if (!mounted) return;
+      setState(() {
+        _isSubmitting = false;
+        _submitError = AppLocalizations.of(context)!.commonError;
+      });
+    }
+  }
+
   // ── Build ─────────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
@@ -202,7 +258,20 @@ class _ApplyConfirmPageState extends ConsumerState<ApplyConfirmPage> {
     final textTheme = Theme.of(context).textTheme;
     final form = ref.watch(applyFormProvider);
 
-    return LukoLoadingOverlay(
+    final isBetaMode = ref.watch(appUserStatusProvider).when(
+      data: (s) => s == AppUserStatus.betaOnboarding,
+      loading: () => false,
+      error: (_, __) => false,
+    );
+
+    final backRoute = widget.isDevMode ? '/dev/apply-bio' : '/apply/bio';
+
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && !_isSubmitting) context.go(backRoute);
+      },
+      child: LukoLoadingOverlay(
       isLoading: _isSubmitting,
       message: l10n.applyConfirmSubmitting,
       child: Scaffold(
@@ -212,12 +281,10 @@ class _ApplyConfirmPageState extends ConsumerState<ApplyConfirmPage> {
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new),
-            onPressed: () => context.go(
-              widget.isDevMode ? '/dev/apply-bio' : '/apply/bio',
-            ),
+            onPressed: () => context.go(backRoute),
           ),
           title: Text(
-            l10n.applyStep(6, 6),
+            isBetaMode ? l10n.applyStep(3, 3) : l10n.applyStep(6, 6),
             style: textTheme.labelMedium?.copyWith(
               color: colors.secondaryText,
             ),
@@ -251,19 +318,24 @@ class _ApplyConfirmPageState extends ConsumerState<ApplyConfirmPage> {
                 ),
                 const SizedBox(height: AppSpacing.xl),
 
-                // ── 照片縮圖列 ────────────────────────────────────────────
-                _PhotoRow(
-                  localPaths: form.localPhotoPaths,
-                  colors: colors,
-                ),
-                const SizedBox(height: AppSpacing.lg),
+                // ── 照片縮圖列（有照片就顯示）────────────────────────────
+                if (form.localPhotoPaths.isNotEmpty) ...[
+                  _PhotoRow(
+                    localPaths: form.localPhotoPaths,
+                    colors: colors,
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                ],
 
                 // ── 基本資料卡片 ──────────────────────────────────────────
-                _InfoCard(form: form, colors: colors),
+                _InfoCard(form: form, colors: colors, isBetaMode: isBetaMode),
                 const SizedBox(height: AppSpacing.lg),
 
                 // ── 審核說明卡片 ──────────────────────────────────────────
-                _ReviewInfoCard(colors: colors, l10n: l10n),
+                if (isBetaMode)
+                  _BetaReviewInfoCard(colors: colors, l10n: l10n)
+                else
+                  _ReviewInfoCard(colors: colors, l10n: l10n),
                 const SizedBox(height: AppSpacing.xxxl),
               ],
             ),
@@ -305,14 +377,17 @@ class _ApplyConfirmPageState extends ConsumerState<ApplyConfirmPage> {
 
                 LukoButton.primary(
                   label: l10n.applySubmitButton,
-                  onPressed: (_isAgreed && !_isSubmitting) ? _submit : null,
+                  onPressed: (_isAgreed && !_isSubmitting)
+                      ? (isBetaMode ? _submitBeta : _submit)
+                      : null,
                   isLoading: _isSubmitting,
                 ),
               ],
             ),
           ),
         ),
-      ),
+      ),    // LukoLoadingOverlay
+      ),    // PopScope
     );
   }
 }
@@ -355,10 +430,15 @@ class _PhotoRow extends StatelessWidget {
 // ── 基本資料卡片 ──────────────────────────────────────────────────────────────
 
 class _InfoCard extends StatelessWidget {
-  const _InfoCard({required this.form, required this.colors});
+  const _InfoCard({
+    required this.form,
+    required this.colors,
+    this.isBetaMode = false,
+  });
 
   final ApplyFormData form;
   final AppColors colors;
+  final bool isBetaMode;
 
   @override
   Widget build(BuildContext context) {
@@ -374,20 +454,23 @@ class _InfoCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // 名稱、生日、性別
+          // 名稱
           _InfoRow(
             label: l10n.applyNameLabel,
             value: form.displayName,
             colors: colors,
           ),
-          _Divider(colors: colors),
-          _InfoRow(
-            label: l10n.applyBirthDateLabel,
-            value: form.birthDate != null
-                ? _birthDisplay(form.birthDate!)
-                : '—',
-            colors: colors,
-          ),
+          // 生日（Beta 模式略過）
+          if (!isBetaMode) ...[
+            _Divider(colors: colors),
+            _InfoRow(
+              label: l10n.applyBirthDateLabel,
+              value: form.birthDate != null
+                  ? _birthDisplay(form.birthDate!)
+                  : '—',
+              colors: colors,
+            ),
+          ],
           _Divider(colors: colors),
           _InfoRow(
             label: l10n.applyGenderLabel,
@@ -400,7 +483,7 @@ class _InfoCard extends StatelessWidget {
             value: _seekingLabel(l10n, form.seeking),
             colors: colors,
           ),
-          // Bio（若有填寫才顯示）
+          // Bio
           _Divider(colors: colors),
           Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
@@ -601,6 +684,53 @@ class _TermsRowState extends State<_TermsRow> {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ── Beta 審核說明卡片 ─────────────────────────────────────────────────────────
+//
+// Beta 用戶送出後即刻通過，不需等待人工審核
+
+class _BetaReviewInfoCard extends StatelessWidget {
+  const _BetaReviewInfoCard({required this.colors, required this.l10n});
+
+  final AppColors colors;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: colors.forestGreenSubtle,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(
+          color: colors.forestGreen.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.verified_outlined,
+            size: 18,
+            color: colors.forestGreen,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              '封測用戶身份已確認，送出後即刻完成審核。',
+              style: textTheme.bodySmall?.copyWith(
+                color: colors.secondaryText,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

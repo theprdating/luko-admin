@@ -57,7 +57,7 @@ CREATE TABLE applications (
   display_name  TEXT        NOT NULL CHECK (char_length(display_name) BETWEEN 1 AND 20),
   birth_date    DATE        NOT NULL,
   gender        TEXT        NOT NULL CHECK (gender IN ('male', 'female', 'other')),
-  bio           TEXT        CHECK (char_length(bio) <= 150),
+  bio           TEXT        CHECK (char_length(bio) <= 500),
   photo_paths   TEXT[]      NOT NULL,          -- Supabase Storage 路徑陣列
   status        TEXT        NOT NULL DEFAULT 'pending'
                             CHECK (status IN ('pending', 'approved', 'rejected')),

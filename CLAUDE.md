@@ -17,7 +17,29 @@ flutter build apk         # 建置 Android
 supabase migration new <name>   # 建立新 migration
 supabase db push                # 套用 migration 到遠端
 supabase status                 # 確認 local/remote 狀態
+
+# Edge Functions 部署（必須帶 --no-verify-jwt，見下方說明）
+supabase functions deploy review-application --no-verify-jwt
 ```
+
+---
+
+## Edge Function 部署規則
+
+### review-application 必須用 --no-verify-jwt
+
+```bash
+supabase functions deploy review-application --no-verify-jwt
+```
+
+**原因**：Supabase gateway 的 JWT 驗證與 session revocation 機制在某些情況下會讓有效的 user JWT 被 gateway 拒絕（HTTP 401、`execution_id: null`），導致 function 程式碼完全不執行。
+
+**安全補償措施（缺一不可）**：
+- function 內部 decode JWT payload 取得 `sub`（caller user_id）
+- 再用 **service role client** 從 Auth DB 查 `user_metadata.user_role`，確認是 `"admin"`
+- 授權判斷以 DB 為 source of truth，而非信任 JWT payload 的 user_role 宣稱
+
+這樣即使 JWT 被偽造，攻擊者仍無法通過 admin 驗證，因為 DB 才是最終判斷依據。
 
 ---
 

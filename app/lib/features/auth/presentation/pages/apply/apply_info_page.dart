@@ -7,15 +7,18 @@ import '../../../../../core/auth/sign_out.dart';
 import '../../../../../core/constants/app_radius.dart';
 import '../../../../../core/constants/app_spacing.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/widgets/exit_on_double_back_scope.dart';
 import '../../../../../core/widgets/luko_button.dart';
 import '../../../../../core/widgets/luko_text_field.dart';
 import '../../../../../l10n/app_localizations.dart';
+import '../../../domain/app_user_status.dart';
 import '../../../providers/apply_provider.dart';
+import '../../../providers/auth_provider.dart';
 
-/// 申請 Step 2 — 基本資料
+/// 申請 Step 2 — 基本資料（正式）或 Step 1 — 基本資料（Beta 精簡流程）
 ///
 /// 路由：/apply/info（正式流程）或 /dev/apply-info（開發測試）
-/// 填寫：顯示名稱、生日（需滿 18 歲）、性別、想認識的對象
+/// 填寫：顯示名稱、生日（需滿 18 歲，Beta 流程略過）、性別、想認識的對象
 /// 完成後導向 /apply/photos（正式）或 /dev/apply-photos（dev 模式）
 class ApplyInfoPage extends ConsumerStatefulWidget {
   const ApplyInfoPage({super.key, this.isDevMode = false});
@@ -39,16 +42,23 @@ class _ApplyInfoPageState extends ConsumerState<ApplyInfoPage> {
   String? _genderError;
   String? _seekingError;
 
+  /// beta 預填是否已執行（避免 watch 觸發重複覆蓋用戶已修改的值）
+  bool _betaPrefillDone = false;
+
   @override
   void initState() {
     super.initState();
     // Dev 模式不從 provider 預填，避免汙染真實流程的資料
     if (!widget.isDevMode) {
       final saved = ref.read(applyFormProvider);
+      debugPrint('[ApplyInfo] initState saved=$saved displayName=${saved.displayName} gender=${saved.gender} seeking=${saved.seeking}');
       _nameController.text = saved.displayName;
       _birthDate = saved.birthDate;
       _gender = saved.gender;
       _seeking = saved.seeking.isNotEmpty ? saved.seeking.first : '';
+      // 若 applyFormProvider 已有資料（例如用戶返回此頁），視為預填已完成
+      if (saved.displayName.isNotEmpty) _betaPrefillDone = true;
+      debugPrint('[ApplyInfo] initState _betaPrefillDone=$_betaPrefillDone');
     }
   }
 
@@ -108,17 +118,35 @@ class _ApplyInfoPageState extends ConsumerState<ApplyInfoPage> {
   }
 
   // ── 儲存並前進 ──────────────────────────────────────────────────────────────
-  void _onNext(AppLocalizations l10n) {
+  void _onNext(AppLocalizations l10n, {bool isBetaMode = false}) {
     if (!_validate(l10n)) return;
 
+    final notifier = ref.read(applyFormProvider.notifier);
     final seekingList = [_seeking];
 
-    ref.read(applyFormProvider.notifier).setInfo(
-      displayName: _nameController.text.trim(),
-      birthDate: _birthDate!,
-      gender: _gender,
-      seeking: seekingList,
-    );
+    if (isBetaMode) {
+      // Beta 模式：先用 setInfo 存基本資料（含生日），再保留 bio + photos
+      final saved = ref.read(applyFormProvider);
+      notifier.setInfo(
+        displayName: _nameController.text.trim(),
+        birthDate: _birthDate!,
+        gender: _gender,
+        seeking: seekingList,
+      );
+      // setInfo 會 copyWith，不會清掉 bio/uploadedPhotoPaths
+      // 但 prefillForBeta 會重建整個 state，改成直接用 copyWith 補回
+      notifier.restoreBetaExtras(
+        bio: saved.bio,
+        uploadedPhotoPaths: saved.uploadedPhotoPaths,
+      );
+    } else {
+      notifier.setInfo(
+        displayName: _nameController.text.trim(),
+        birthDate: _birthDate!,
+        gender: _gender,
+        seeking: seekingList,
+      );
+    }
 
     context.go(widget.isDevMode ? '/dev/apply-photos' : '/apply/photos');
   }
@@ -130,7 +158,63 @@ class _ApplyInfoPageState extends ConsumerState<ApplyInfoPage> {
     final colors = Theme.of(context).extension<AppColors>()!;
     final textTheme = Theme.of(context).textTheme;
 
-    return Scaffold(
+    final isBetaMode = ref.watch(appUserStatusProvider).when(
+      data: (s) => s == AppUserStatus.betaOnboarding,
+      loading: () => false,
+      error: (_, __) => false,
+    );
+
+    // Beta 預填：betaUserDataProvider 與 appUserStatusProvider 並行 fetch，
+    // 不 gate 在 isBetaMode 後面，避免 magic link 多次 auth event 導致 isBetaMode
+    // 一直停在 loading=false 而永遠不觸發 watch。
+    // betaUserDataProvider 對非白名單用戶回傳 null → whenData no-op，無副作用。
+    if (!_betaPrefillDone && !widget.isDevMode) {
+      final betaAsync = ref.watch(betaUserDataProvider);
+      debugPrint('[ApplyInfo] betaAsync=${betaAsync.runtimeType} value=${betaAsync.valueOrNull} isBetaMode=$isBetaMode');
+      betaAsync.whenData((betaData) {
+        debugPrint('[ApplyInfo] betaData=$betaData _betaPrefillDone=$_betaPrefillDone');
+        if (betaData == null) return;
+        // addPostFrameCallback 確保不在 build 執行期間呼叫 setState
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          debugPrint('[ApplyInfo] postFrame mounted=$mounted _betaPrefillDone=$_betaPrefillDone');
+          if (!mounted || _betaPrefillDone) return;
+          final name = betaData['display_name'] as String? ?? '';
+          final gender = betaData['gender'] as String? ?? '';
+          final rawSeeking = betaData['seeking'] as List?;
+          final seekingFirst = rawSeeking?.isNotEmpty == true
+              ? rawSeeking!.first as String
+              : '';
+          debugPrint('[ApplyInfo] prefilling name=$name gender=$gender seeking=$seekingFirst');
+          // ["male","female"] 在封測資料代表「都可以」，對應 UI 的 'everyone'
+          final resolvedSeeking = (rawSeeking != null &&
+                  rawSeeking.length >= 2 &&
+                  rawSeeking.contains('male') &&
+                  rawSeeking.contains('female'))
+              ? 'everyone'
+              : seekingFirst;
+          _betaPrefillDone = true;
+          setState(() {
+            if (_nameController.text.isEmpty) _nameController.text = name;
+            if (_gender.isEmpty) _gender = gender;
+            if (_seeking.isEmpty) _seeking = resolvedSeeking;
+          });
+          // prefillForBeta 同步到 provider，讓 bio / photos 頁面也能讀到預填資料
+          ref.read(applyFormProvider.notifier).prefillForBeta(
+            displayName: _nameController.text,
+            gender: _gender,
+            seeking: _seeking.isNotEmpty ? [_seeking] : [],
+            bio: betaData['bio'] as String? ?? '',
+            uploadedPhotoPaths:
+                (betaData['photo_paths'] as List?)?.cast<String>().toList() ??
+                const [],
+          );
+        });
+      });
+    }
+
+    // 第一步無上一步：硬體返回鍵攔截為雙按退出 APP
+    return ExitOnDoubleBackScope(
+      child: Scaffold(
       backgroundColor: colors.backgroundWarm,
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
@@ -143,13 +227,34 @@ class _ApplyInfoPageState extends ConsumerState<ApplyInfoPage> {
               context.go('/dev/state-picker');
               return;
             }
+            final confirmed = await showDialog<bool>(
+              context: context,
+              builder: (ctx) {
+                final l10n = AppLocalizations.of(ctx)!;
+                return AlertDialog(
+                  title: Text(l10n.applyLeaveDialogTitle),
+                  content: Text(l10n.applyLeaveDialogBody),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(false),
+                      child: Text(l10n.commonCancel),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(true),
+                      child: Text(l10n.applyLeaveDialogConfirm),
+                    ),
+                  ],
+                );
+              },
+            );
+            if (confirmed != true) return;
             await signOutAll();
             // signOut 後 authStateProvider emit → _RouterNotifier 觸發 redirect
             // GoRouter 自動導向 /onboarding 或 /welcome，無需手動 context.go()
           },
         ),
         title: Text(
-          l10n.applyStep(2, 6),
+          isBetaMode ? l10n.applyStep(1, 3) : l10n.applyStep(2, 6),
           style: textTheme.labelMedium?.copyWith(
             color: colors.secondaryText,
           ),
@@ -181,7 +286,7 @@ class _ApplyInfoPageState extends ConsumerState<ApplyInfoPage> {
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                l10n.applyInfoSubtitle,
+                isBetaMode ? l10n.betaApplyInfoSubtitle : l10n.applyInfoSubtitle,
                 style: textTheme.bodyMedium?.copyWith(
                   color: colors.secondaryText,
                 ),
@@ -204,15 +309,17 @@ class _ApplyInfoPageState extends ConsumerState<ApplyInfoPage> {
               ),
               const SizedBox(height: AppSpacing.lg),
 
-              // ── 生日 ──────────────────────────────────────────────────
-              _BirthDateField(
-                birthDate: _birthDate,
-                errorText: _birthDateError,
-                label: l10n.applyBirthDateLabel,
-                hint: l10n.applyBirthDateHint,
-                onTap: _pickBirthDate,
-              ),
-              const SizedBox(height: AppSpacing.lg),
+              // ── 生日（所有用戶都需填寫）──────────────────────────────────
+              ...[
+                _BirthDateField(
+                  birthDate: _birthDate,
+                  errorText: _birthDateError,
+                  label: l10n.applyBirthDateLabel,
+                  hint: l10n.applyBirthDateHint,
+                  onTap: _pickBirthDate,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+              ],
 
               // ── 性別 ──────────────────────────────────────────────────
               _SelectionRow(
@@ -255,14 +362,15 @@ class _ApplyInfoPageState extends ConsumerState<ApplyInfoPage> {
               // ── 下一步 ────────────────────────────────────────────────
               LukoButton.primary(
                 label: l10n.commonNext,
-                onPressed: () => _onNext(l10n),
+                onPressed: () => _onNext(l10n, isBetaMode: isBetaMode),
               ),
             ],
           ),
         ),
       ),
       ), // GestureDetector
-    );
+    ),   // Scaffold
+    );   // ExitOnDoubleBackScope
   }
 }
 

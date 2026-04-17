@@ -12,6 +12,11 @@
       grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
+    .compare-grid-4 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 10px;
+    }
     .compare-card {
       background: var(--bg-elevated);
       border: 1px solid var(--border);
@@ -56,6 +61,17 @@
       padding: 8px 12px;
       margin-bottom: 12px;
       line-height: 1.5;
+    }
+    .decision-note-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-second);
+      margin-bottom: 6px;
+    }
+    .decision-note-label.label-user {
+      color: #e07b7b;
     }
   </style>
 </head>
@@ -111,12 +127,14 @@
   <script>
     setActiveNavLink()
 
+    // ── Config ─────────────────────────────────────────────────────────────────
+    const FUNCTION_URL = 'https://xzqwzpwpjofpkbewkwzx.supabase.co/functions/v1/review-photo-change'
+
     // ── State ──────────────────────────────────────────────────────────────────
     let queue           = []
     let selectedId      = null   // photo_change_requests.id
     let currentRequest  = null   // full row from photo_change_requests
     let currentProfile  = null   // profile row for the requesting user
-    let reviewStartedAt = null
     let isSubmitting    = false
     let adminUserId     = null   // set after requireAdmin()
 
@@ -193,8 +211,7 @@
     // ── Select Request ─────────────────────────────────────────────────────────
     async function selectRequest(id) {
       if (id === selectedId) return
-      selectedId      = id
-      reviewStartedAt = new Date().toISOString()
+      selectedId = id
       renderQueue()
 
       document.getElementById('detail-panel').innerHTML = `
@@ -217,48 +234,64 @@
       }
       currentRequest = req
 
-      // Fetch profile (current state — display_name, photo_paths, etc.)
+      // Fetch profile (current state + reverify paths for action photo)
       const { data: profile } = await db
         .from('profiles')
-        .select('display_name, birth_date, gender, photo_paths')
+        .select('display_name, birth_date, gender, photo_paths, reverify_photo_paths')
         .eq('id', req.user_id)
         .maybeSingle()
       currentProfile = profile
 
-      // Fetch original identity verification (for face comparison)
+      // Fetch all original identity verification photos (registration-time)
       const { data: verify } = await db
         .from('identity_verifications')
-        .select('front_face_path')
+        .select('front_face_path, side_face_path, action1_path, action1_code, action2_path, action2_code')
         .eq('user_id', req.user_id)
         .maybeSingle()
 
-      // Build all signed URL requests in parallel
-      const currentPhotoPaths = profile?.photo_paths || []
-      const newPhotoPaths     = req.new_photo_paths  || []
+      // Paths
+      const currentPhotoPaths  = profile?.photo_paths         || []
+      const newPhotoPaths      = req.new_photo_paths           || []
+      const reverifyPaths      = profile?.reverify_photo_paths || []
+      // selfie_path stored in profile-photos bucket (same as reverify_photo_paths[0])
+      const selfiePath         = req.selfie_path               || reverifyPaths[0] || null
+      const actionPath         = reverifyPaths[1]              || null
 
-      const [
-        selfieUrl,
-        originalFaceUrl,
-        ...restUrls
-      ] = await Promise.all([
-        getSignedUrl('verification-photos', req.selfie_path),
-        verify?.front_face_path
-          ? getSignedUrl('verification-photos', verify.front_face_path)
-          : Promise.resolve(null),
+      // Original verify paths (verification-photos bucket, may be null)
+      const origPaths = [
+        verify?.front_face_path || null,
+        verify?.side_face_path  || null,
+        verify?.action1_path    || null,
+        verify?.action2_path    || null,
+      ]
+      const origLabels = [
+        '原審核：正面照',
+        '原審核：側面照',
+        `原審核：動作1${verify?.action1_code ? ' (' + verify.action1_code + ')' : ''}`,
+        `原審核：動作2${verify?.action2_code ? ' (' + verify.action2_code + ')' : ''}`,
+      ]
+
+      // Build all signed URLs in parallel
+      const urlPromises = [
+        selfiePath ? getSignedUrl('profile-photos', selfiePath) : Promise.resolve(null),
+        actionPath ? getSignedUrl('profile-photos', actionPath) : Promise.resolve(null),
+        ...origPaths.map(p => p ? getSignedUrl('verification-photos', p) : Promise.resolve(null)),
         ...currentPhotoPaths.map(p => getSignedUrl('profile-photos', p)),
         ...newPhotoPaths.map(p => getSignedUrl('profile-photos', p)),
-      ])
+      ]
 
-      const currentPhotoUrls = restUrls.slice(0, currentPhotoPaths.length)
-      const newPhotoUrls     = restUrls.slice(currentPhotoPaths.length)
+      const [selfieUrl, actionUrl, ...restUrls] = await Promise.all(urlPromises)
+      const origUrls         = restUrls.slice(0, origPaths.length)
+      const currentPhotoUrls = restUrls.slice(origPaths.length, origPaths.length + currentPhotoPaths.length)
+      const newPhotoUrls     = restUrls.slice(origPaths.length + currentPhotoPaths.length)
 
-      renderDetail(req, profile, selfieUrl, originalFaceUrl, currentPhotoUrls, newPhotoUrls)
+      renderDetail(req, profile, selfieUrl, actionUrl, origUrls, origLabels, currentPhotoUrls, newPhotoUrls)
     }
 
     // ── Render Detail ──────────────────────────────────────────────────────────
-    function renderDetail(req, profile, selfieUrl, originalFaceUrl, currentPhotoUrls, newPhotoUrls) {
-      const name       = escapeHtml(profile?.display_name || '未知')
-      const age        = calcAge(profile?.birth_date)
+    function renderDetail(req, profile, selfieUrl, actionUrl, origUrls, origLabels, currentPhotoUrls, newPhotoUrls) {
+      const name        = escapeHtml(profile?.display_name || '未知')
+      const age         = calcAge(profile?.birth_date)
       const genderLabel = escapeHtml(GENDER_LABELS[profile?.gender] || profile?.gender || '')
 
       // ── Current photos strip
@@ -273,28 +306,39 @@
            </div>`
         : `<div style="color:var(--text-second);font-size:13px;">無現有照片</div>`
 
-      // ── Identity comparison grid
+      // ── Identity comparison
+      const makeCompareCard = (url, label, labelClass) => `
+        <div class="compare-card">
+          ${url
+            ? `<img src="${url}" alt="${escapeHtml(label)}" onclick="openLightbox('${url}', '${escapeHtml(label)}')">`
+            : `<div class="photo-placeholder" style="aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-second);">無照片</div>`
+          }
+          <div class="compare-card-label ${labelClass}">${escapeHtml(label)}</div>
+        </div>
+      `
+
+      // Row 1: original 4 verification photos (registration-time)
+      const origCardsHtml = origUrls.map((url, i) =>
+        makeCompareCard(url, origLabels[i], 'label-original')
+      ).join('')
+
+      // Row 2: new selfie + action photo from this change request
+      const newSelfieCardsHtml = [
+        makeCompareCard(selfieUrl,  '換照申請：自拍正面', 'label-selfie'),
+        makeCompareCard(actionUrl,  '換照申請：動作驗證', 'label-selfie'),
+      ].join('')
+
       const identityHtml = `
         <div class="identity-match-hint">
-          ⚠️ 請比對左右兩張照片，確認為同一人後再做決定
+          ⚠️ 比對上下兩排照片，確認為同一人後再做決定
         </div>
-        <div class="compare-grid">
-          <div class="compare-card">
-            ${originalFaceUrl
-              ? `<img src="${originalFaceUrl}" alt="原始驗證正面照"
-                      onclick="openLightbox('${originalFaceUrl}', '原始驗證正面照（審核時拍攝）')">`
-              : `<div class="photo-placeholder" style="aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;">無驗證照片</div>`
-            }
-            <div class="compare-card-label label-original">原始驗證正面照</div>
-          </div>
-          <div class="compare-card">
-            ${selfieUrl
-              ? `<img src="${selfieUrl}" alt="本次自拍"
-                      onclick="openLightbox('${selfieUrl}', '本次自拍（換照申請時拍攝）')">`
-              : `<div class="photo-placeholder" style="aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;">無自拍</div>`
-            }
-            <div class="compare-card-label label-selfie">本次自拍確認</div>
-          </div>
+        <div class="identity-section-title">原始審核照片（註冊時）</div>
+        <div class="compare-grid-4" style="margin-bottom:14px;">
+          ${origCardsHtml}
+        </div>
+        <div class="identity-section-title">本次換照驗證照片</div>
+        <div class="compare-grid" style="max-width:50%;">
+          ${newSelfieCardsHtml}
         </div>
       `
 
@@ -335,7 +379,7 @@
           <div>
             <div class="section-title" style="margin-bottom:10px;">
               當前個人照片（共 ${currentPhotoUrls.length} 張）
-              <span style="font-weight:400;color:var(--text-second);margin-left:6px;">點擊可開啟全螢幕</span>
+              <span style="font-weight:400;color:var(--text-second);margin-left:6px;">點擊開啟全螢幕</span>
             </div>
             ${currentPhotosHtml}
           </div>
@@ -350,7 +394,7 @@
           <div>
             <div class="section-title" style="margin-bottom:10px;">
               申請更換的照片（共 ${newPhotoUrls.length} 張）
-              <span style="font-weight:400;color:var(--text-second);margin-left:6px;">點擊可開啟全螢幕</span>
+              <span style="font-weight:400;color:var(--text-second);margin-left:6px;">點擊開啟全螢幕</span>
             </div>
             ${newPhotosHtml}
           </div>
@@ -360,11 +404,20 @@
         <!-- Decision Panel -->
         <div class="decision-panel">
 
-          <label class="review-note-label" id="review-note-label">內部備註（不對用戶顯示）</label>
+          <div class="decision-note-label label-user">拒絕原因（顯示給用戶，留空則顯示預設訊息）</div>
+          <textarea
+            class="decision-note"
+            id="rejection-reason"
+            placeholder="例：照片模糊、背景雜亂、非本人等"
+            rows="2"
+          ></textarea>
+
+          <div class="decision-note-label" style="margin-top:10px;">內部備註（不對用戶顯示）</div>
           <textarea
             class="decision-note"
             id="review-note"
-            placeholder="選填，內部備註"
+            placeholder="選填"
+            rows="2"
           ></textarea>
 
           <div class="decision-actions">
@@ -385,64 +438,51 @@
       })
     }
 
+    // ── Call edge function ─────────────────────────────────────────────────────
+    async function callReviewEdgeFunction(action) {
+      const token = await getFreshToken()
+      const rejectionReason = document.getElementById('rejection-reason')?.value.trim()
+      const reviewNote      = document.getElementById('review-note')?.value.trim()
+
+      const res = await fetch(FUNCTION_URL, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id:          currentRequest.user_id,
+          request_id:       currentRequest.id,
+          action,
+          review_note:      reviewNote  || null,
+          rejection_reason: rejectionReason || null,
+        }),
+      })
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || `HTTP ${res.status}`)
+      }
+
+      return res.json()
+    }
+
     // ── Approve ────────────────────────────────────────────────────────────────
     async function confirmApprove() {
       if (isSubmitting || !currentRequest) return
       isSubmitting = true
 
-      const note    = document.getElementById('review-note')?.value.trim()
-      const btnA    = document.getElementById('btn-approve')
-      const btnR    = document.getElementById('btn-reject')
-      const now     = new Date().toISOString()
-      const newPaths = currentRequest.new_photo_paths || []
-
+      const btnA = document.getElementById('btn-approve')
+      const btnR = document.getElementById('btn-reject')
       btnA.textContent = '處理中...'
       btnA.disabled = true
       btnR.disabled = true
 
       try {
-        // 1. Mark the request as approved
-        const { error: reqErr } = await db
-          .from('photo_change_requests')
-          .update({
-            status:      'approved',
-            reviewed_by: adminUserId,
-            reviewed_at: now,
-            review_note: note || null,
-          })
-          .eq('id', currentRequest.id)
-
-        if (reqErr) throw reqErr
-
-        // 2. Update profiles.photo_paths to the new paths
-        const { error: profileErr } = await db
-          .from('profiles')
-          .update({ photo_paths: newPaths })
-          .eq('id', currentRequest.user_id)
-
-        if (profileErr) throw profileErr
-
-        // 3. Replace profile_photos records
-        //    Delete old rows, then insert new ones with is_verified = true
-        await db.from('profile_photos').delete().eq('user_id', currentRequest.user_id)
-
-        if (newPaths.length > 0) {
-          const insertRows = newPaths.map((storagePath, i) => ({
-            user_id:       currentRequest.user_id,
-            storage_path:  storagePath,
-            display_order: i,
-            is_verified:   true,
-            verified_at:   now,
-            verified_by:   adminUserId,
-          }))
-          const { error: photoErr } = await db.from('profile_photos').insert(insertRows)
-          if (photoErr) throw photoErr
-        }
-
+        await callReviewEdgeFunction('approve')
         const name = escapeHtml(currentProfile?.display_name || '用戶')
-        showToast(`✓ 已通過 ${name} 的換照申請，照片已更新`, 'success')
+        showToast(`✓ 已通過 ${name} 的換照申請，照片已更新並發送通知`, 'success')
         advanceQueue()
-
       } catch (err) {
         showToast('操作失敗：' + (err.message || '未知錯誤'), 'error')
         btnA.textContent = '✓ 確認通過'
@@ -458,31 +498,17 @@
       if (isSubmitting || !currentRequest) return
       isSubmitting = true
 
-      const note = document.getElementById('review-note')?.value.trim()
       const btnA = document.getElementById('btn-approve')
       const btnR = document.getElementById('btn-reject')
-
       btnR.textContent = '處理中...'
       btnR.disabled = true
       btnA.disabled = true
 
       try {
-        const { error } = await db
-          .from('photo_change_requests')
-          .update({
-            status:      'rejected',
-            reviewed_by: adminUserId,
-            reviewed_at: new Date().toISOString(),
-            review_note: note || null,
-          })
-          .eq('id', currentRequest.id)
-
-        if (error) throw error
-
+        await callReviewEdgeFunction('reject')
         const name = escapeHtml(currentProfile?.display_name || '用戶')
-        showToast(`✗ 已拒絕 ${name} 的換照申請`, 'info')
+        showToast(`✗ 已拒絕 ${name} 的換照申請並通知用戶`, 'info')
         advanceQueue()
-
       } catch (err) {
         showToast('操作失敗：' + (err.message || '未知錯誤'), 'error')
         btnR.textContent = '✗ 拒絕換照'

@@ -167,6 +167,15 @@ class _EditReverifyPageState extends ConsumerState<EditReverifyPage> {
         throw Exception('profiles update matched 0 rows');
       }
 
+      // 4. 建立換照審核申請紀錄（管理員透過此資料表審核）
+      // selfie_path = reverifyPaths[0]（正面照，profile-photos bucket）
+      // 與 profiles.pending_photo_paths 同步；管理員審核時兩者一起讀取。
+      await supabase.from('photo_change_requests').insert({
+        'user_id': userId,
+        'new_photo_paths': pendingPaths,
+        'selfie_path': reverifyPaths[0],
+      });
+
       ref.invalidate(myProfileProvider);
       ref.invalidate(myProfilePhotoUrlsProvider);
       ref.invalidate(myProfilePhotoThumbnailUrlsProvider);

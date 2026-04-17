@@ -37,8 +37,10 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 interface ReviewPhotoBody {
   user_id: string
+  request_id?: string        // photo_change_requests.id — used to mark the row approved/rejected
   action: 'approve' | 'reject'
-  review_note?: string
+  review_note?: string       // 內部備註，不顯示給用戶
+  rejection_reason?: string  // 顯示給用戶的拒絕原因（reject 時使用）；留空則顯示預設訊息
 }
 
 // ── FCM (inlined from review-application) ─────────────────────────────────────
@@ -204,7 +206,7 @@ serve(async (req) => {
     })
   }
 
-  const { user_id, action, review_note } = body
+  const { user_id, request_id, action, review_note, rejection_reason } = body
   if (!user_id || !action) {
     return new Response(JSON.stringify({ error: 'Missing user_id or action' }), {
       status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
@@ -254,6 +256,16 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: updateErr.message }), {
         status: 500, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       })
+    }
+
+    // a2) Mark the photo_change_request row as approved
+    if (request_id) {
+      await adminDb.from('photo_change_requests').update({
+        status: 'approved',
+        reviewed_by: callerUserId,
+        reviewed_at: now,
+        review_note: review_note?.trim() || null,
+      }).eq('id', request_id)
     }
 
     // b) Rebuild profile_photos table (delete all, re-insert new set as verified)
@@ -310,21 +322,32 @@ serve(async (req) => {
       })
     }
 
+    // a2) Mark the photo_change_request row as rejected
+    if (request_id) {
+      await adminDb.from('photo_change_requests').update({
+        status: 'rejected',
+        reviewed_by: callerUserId,
+        reviewed_at: now,
+        review_note: review_note?.trim() || null,
+      }).eq('id', request_id)
+    }
+
     // b) Storage cleanup (fire-and-forget)
     Promise.all([
       deleteProfilePhotos(adminDb, toDelete),
       deleteProfilePhotos(adminDb, reverifyPaths),
     ]).catch(e => console.error('[review-photo-change] storage cleanup error:', e))
 
-    // c) FCM notification（帶管理員備註給用戶看）
-    const rejectBody = review_note?.trim()
-      ? `審核未通過：${review_note.trim()}`
+    // c) FCM notification（rejection_reason 顯示給用戶；留空用預設訊息）
+    const userVisibleReason = rejection_reason?.trim() || review_note?.trim()
+    const rejectBody = userVisibleReason
+      ? `審核未通過：${userVisibleReason}`
       : '照片不符合規範，請重新上傳符合條件的照片。'
     sendFcmNotification(
       adminDb, user_id,
       '照片審核未通過',
       rejectBody,
-      { type: 'photo_change_rejected', review_note: review_note?.trim() ?? '' },
+      { type: 'photo_change_rejected', rejection_reason: userVisibleReason ?? '' },
     ).catch(e => console.error('[review-photo-change] FCM error:', e))
 
     return new Response(

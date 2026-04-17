@@ -258,13 +258,15 @@ serve(async (req) => {
       })
     }
 
-    // a2) Mark the photo_change_request row as approved
+    // a2) Mark the photo_change_request row as approved; null out selfie_path
+    //     (the file will be deleted from storage below, so the path becomes a dead link)
     if (request_id) {
       await adminDb.from('photo_change_requests').update({
         status: 'approved',
         reviewed_by: callerUserId,
         reviewed_at: now,
         review_note: review_note?.trim() || null,
+        selfie_path: null,
       }).eq('id', request_id)
     }
 
@@ -322,13 +324,15 @@ serve(async (req) => {
       })
     }
 
-    // a2) Mark the photo_change_request row as rejected
+    // a2) Mark the photo_change_request row as rejected; null out selfie_path
+    //     (the file will be deleted from storage below, so the path becomes a dead link)
     if (request_id) {
       await adminDb.from('photo_change_requests').update({
         status: 'rejected',
         reviewed_by: callerUserId,
         reviewed_at: now,
         review_note: review_note?.trim() || null,
+        selfie_path: null,
       }).eq('id', request_id)
     }
 

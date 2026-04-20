@@ -156,13 +156,31 @@ function actionLabel(code) {
   return ACTION_LABELS[code] || code || '未知動作'
 }
 
-// ── Signed URL helper ─────────────────────────────────────────────────────────
+// ── Storage URL helpers ───────────────────────────────────────────────────────
+
+const _PROFILE_PHOTOS_PUBLIC = 'https://xzqwzpwpjofpkbewkwzx.supabase.co/storage/v1/object/public/profile-photos/'
+
+// profile-photos is a public bucket — no signed URL needed.
+// Handles both relative paths and full URLs (legacy beta import data).
+function profilePhotoUrl(path) {
+  if (!path) return null
+  if (path.startsWith('https://')) return path
+  return _PROFILE_PHOTOS_PUBLIC + path
+}
 
 async function getSignedUrl(bucket, path, expiresIn = 3600) {
   if (!path) return null
   const { data, error } = await db.storage.from(bucket).createSignedUrl(path, expiresIn)
   if (error) { console.warn(`getSignedUrl(${bucket}, ${path}):`, error.message); return null }
   return data?.signedUrl ?? null
+}
+
+// verification-photos is private, but beta import users have full public URLs stored there.
+// Full URLs (beta import) → use directly; relative paths → signed URL.
+function verifyPhotoUrl(path) {
+  if (!path) return Promise.resolve(null)
+  if (path.startsWith('https://')) return Promise.resolve(path)
+  return getSignedUrl('verification-photos', path)
 }
 
 // ── Active nav link ───────────────────────────────────────────────────────────

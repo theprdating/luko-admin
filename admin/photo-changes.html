@@ -257,7 +257,6 @@
       const selfiePath         = req.selfie_path               || reverifyPaths[0] || null
       const actionPath         = reverifyPaths[1]              || null
 
-      // Original verify paths (verification-photos bucket, may be null)
       const origPaths = [
         verify?.front_face_path || null,
         verify?.side_face_path  || null,
@@ -271,19 +270,14 @@
         `原審核：動作2${verify?.action2_code ? ' (' + verify.action2_code + ')' : ''}`,
       ]
 
-      // Build all signed URLs in parallel
-      const urlPromises = [
-        selfiePath ? getSignedUrl('profile-photos', selfiePath) : Promise.resolve(null),
-        actionPath ? getSignedUrl('profile-photos', actionPath) : Promise.resolve(null),
-        ...origPaths.map(p => p ? getSignedUrl('verification-photos', p) : Promise.resolve(null)),
-        ...currentPhotoPaths.map(p => getSignedUrl('profile-photos', p)),
-        ...newPhotoPaths.map(p => getSignedUrl('profile-photos', p)),
-      ]
+      // profile-photos is public — direct URLs, no API calls needed
+      const selfieUrl        = profilePhotoUrl(selfiePath)
+      const actionUrl        = profilePhotoUrl(actionPath)
+      const currentPhotoUrls = currentPhotoPaths.map(profilePhotoUrl)
+      const newPhotoUrls     = newPhotoPaths.map(profilePhotoUrl)
 
-      const [selfieUrl, actionUrl, ...restUrls] = await Promise.all(urlPromises)
-      const origUrls         = restUrls.slice(0, origPaths.length)
-      const currentPhotoUrls = restUrls.slice(origPaths.length, origPaths.length + currentPhotoPaths.length)
-      const newPhotoUrls     = restUrls.slice(origPaths.length + currentPhotoPaths.length)
+      // verifyPhotoUrl handles both relative paths (signed URL) and full URLs (beta import)
+      const origUrls = await Promise.all(origPaths.map(verifyPhotoUrl))
 
       renderDetail(req, profile, selfieUrl, actionUrl, origUrls, origLabels, currentPhotoUrls, newPhotoUrls)
     }
@@ -430,10 +424,18 @@
         </div>
       `
 
-      // Wheel → horizontal scroll on photo rows
+      // Wheel → horizontal scroll on photo rows.
+      // Release back to vertical page scroll at edges:
+      //   scrolling up  at left  edge → page scrolls up
+      //   scrolling down at right edge → page scrolls down
       document.querySelectorAll('.photos-row').forEach(row => {
         row.addEventListener('wheel', e => {
-          if (e.deltaY !== 0) { e.preventDefault(); row.scrollLeft += e.deltaY }
+          if (e.deltaY === 0) return
+          const atLeft  = row.scrollLeft <= 0
+          const atRight = row.scrollLeft >= row.scrollWidth - row.clientWidth - 1
+          if ((atLeft && e.deltaY < 0) || (atRight && e.deltaY > 0)) return
+          e.preventDefault()
+          row.scrollLeft += e.deltaY
         }, { passive: false })
       })
     }

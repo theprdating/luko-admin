@@ -387,7 +387,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                             if (_seeking.contains('male')) {
                               _seeking.remove('male');
                             } else {
-                              _seeking.add('male');
+                              _seeking
+                                ..remove('everyone')
+                                ..add('male');
                             }
                           }),
                         ),
@@ -399,19 +401,22 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                             if (_seeking.contains('female')) {
                               _seeking.remove('female');
                             } else {
-                              _seeking.add('female');
+                              _seeking
+                                ..remove('everyone')
+                                ..add('female');
                             }
                           }),
                         ),
+                        // "不限" = 'everyone'，與申請流程「都可以」對應，互斥於男女選項
                         _SeekingChip(
                           label: l10n.editProfileSeekingOther,
-                          isSelected: _seeking.contains('other'),
+                          isSelected: _seeking.contains('everyone'),
                           colors: colors,
                           onTap: () => setState(() {
-                            if (_seeking.contains('other')) {
-                              _seeking.remove('other');
+                            if (_seeking.contains('everyone')) {
+                              _seeking.remove('everyone');
                             } else {
-                              _seeking.add('other');
+                              _seeking = {'everyone'};
                             }
                           }),
                         ),

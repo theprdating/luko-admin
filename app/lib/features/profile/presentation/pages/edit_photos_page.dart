@@ -119,10 +119,11 @@ class _EditPhotosPageState extends ConsumerState<EditPhotosPage>
       final paths = (row?['photo_paths'] as List?)?.cast<String>() ?? [];
 
       // profile-photos 是 public bucket，getPublicUrl 同步計算，URL 永久有效
+      // Beta users may store full URLs (PR Dating source) until import-beta-media completes
       final slots = paths.map<PhotoSlot>((path) {
-        final url = supabase.storage
-            .from('profile-photos')
-            .getPublicUrl(path);
+        final url = (path.startsWith('https://') || path.startsWith('http://'))
+            ? path
+            : supabase.storage.from('profile-photos').getPublicUrl(path);
         return ExistingSlot(storagePath: path, signedUrl: url);
       }).toList();
 

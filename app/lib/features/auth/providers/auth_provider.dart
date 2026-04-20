@@ -155,13 +155,20 @@ final betaUserDataProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
 
     final preapproved = await supabase
         .from('preapproved_emails')
-        .select('display_name, gender, seeking, bio')
+        .select('display_name, gender, seeking, bio, source_photo_urls')
         .eq('email', email)
         .maybeSingle();
     debugPrint('[betaUserData] preapproved row=$preapproved');
     if (preapproved == null) return null;
 
-    // 嘗試從 profiles 取得上次的照片路徑（可能不存在，不影響主流程）
+    // source_photo_urls：PR Dating 的 public URLs，供首次 onboarding 顯示鎖定照片用
+    final sourcePhotoUrls = (preapproved['source_photo_urls'] as List?)
+        ?.cast<String>()
+        .toList() ?? const <String>[];
+
+    // 嘗試從 profiles 取得照片路徑：
+    //   - profiles 已存在（Edge Function 跑完）→ 用 Luko Storage paths
+    //   - profiles 不存在或為空（首次 onboarding）→ fallback 到 source_photo_urls
     List<String> photoPaths = const [];
     try {
       final profileRow = await supabase
@@ -176,6 +183,12 @@ final betaUserDataProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
       }
     } catch (e) {
       debugPrint('[betaUserData] profiles fetch error: $e');
+    }
+
+    // profiles 空 → 用 PR Dating source URLs（首次 onboarding）
+    if (photoPaths.isEmpty) {
+      photoPaths = sourcePhotoUrls;
+      debugPrint('[betaUserData] using source_photo_urls as fallback: ${photoPaths.length} photos');
     }
 
     final result = {

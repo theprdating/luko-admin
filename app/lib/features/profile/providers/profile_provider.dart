@@ -35,6 +35,8 @@ final myProfilePhotoUrlsProvider = FutureProvider<List<String>>((ref) async {
   final supabase = ref.read(supabaseProvider);
 
   return photoPaths.map((path) {
+    // Beta users may have full URLs (PR Dating source) until import-beta-media completes
+    if (path.startsWith('https://') || path.startsWith('http://')) return path;
     return supabase.storage
         .from('profile-photos')
         .getPublicUrl(path);
@@ -62,6 +64,8 @@ final myProfilePhotoThumbnailUrlsProvider = FutureProvider<List<String>>((ref) a
   final supabase = ref.read(supabaseProvider);
 
   return photoPaths.map((path) {
+    // Beta users may have full URLs (PR Dating source) until import-beta-media completes
+    if (path.startsWith('https://') || path.startsWith('http://')) return path;
     return supabase.storage
         .from('profile-photos')
         .getPublicUrl(path);

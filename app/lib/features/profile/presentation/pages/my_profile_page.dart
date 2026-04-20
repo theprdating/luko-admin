@@ -131,31 +131,37 @@ class _ProfileContent extends ConsumerWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // 名稱：Flexible 讓過長時以 … 截斷
-                Flexible(
-                  child: Text(
-                    displayName,
-                    style: textTheme.headlineMedium?.copyWith(
-                      color: colors.primaryText,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
+                // 名稱 + 年齡佔滿剩餘空間，過長時以 … 截斷
+                Expanded(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          displayName,
+                          style: textTheme.headlineMedium?.copyWith(
+                            color: colors.primaryText,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                      if (age != null) ...[
+                        const SizedBox(width: 6),
+                        Text(
+                          ',  $age',
+                          style: textTheme.titleLarge?.copyWith(
+                            color: colors.secondaryText.withValues(alpha: 0.7),
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
-                // 年齡：固定在名稱右側，不參與截斷
-                if (age != null) ...[
-                  const SizedBox(width: 6),
-                  Text(
-                    ',  $age',
-                    style: textTheme.titleLarge?.copyWith(
-                      color: colors.secondaryText.withValues(alpha: 0.7),
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ],
                 const SizedBox(width: AppSpacing.sm),
-                // 編輯按鈕：緊湊、靠右，配色沿用 forestGreen
+                // 編輯按鈕：固定靠右，不受名稱長度影響
                 OutlinedButton.icon(
                   onPressed: () => context.push('/me/edit'),
                   icon: Icon(Icons.edit_outlined,

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
@@ -461,11 +462,28 @@ class _ApplyPhotosPageState extends ConsumerState<ApplyPhotosPage>
       final ts       = DateTime.now().millisecondsSinceEpoch;
 
       // 並行下載所有照片，總時間 ≈ 最慢的單張（而非所有張數加總）
+      // 支援兩種來源：
+      //   - 完整 URL（https://...）：封測用戶 PR Dating public photo → 直接 HTTP GET
+      //   - Storage 相對路徑：正式申請 / 重新申請 → Supabase Storage API
       final futures = List.generate(storagePaths.length, (i) async {
         try {
-          final bytes = await supabase.storage
-              .from('application-photos')
-              .download(storagePaths[i]);
+          final Uint8List bytes;
+          final path = storagePaths[i];
+
+          if (path.startsWith('https://') || path.startsWith('http://')) {
+            // Beta 封測用戶：PR Dating public URL，直接 HTTP 下載
+            final request  = await HttpClient().getUrl(Uri.parse(path));
+            final response = await request.close();
+            final chunks   = <List<int>>[];
+            await response.forEach(chunks.add);
+            bytes = Uint8List.fromList(chunks.expand((c) => c).toList());
+          } else {
+            // 正式申請 / 重新申請：Supabase Storage 相對路徑
+            bytes = await supabase.storage
+                .from('application-photos')
+                .download(path);
+          }
+
           final localPath = '${tmpDir.path}/luko_reapply_${ts}_$i.jpg';
           await File(localPath).writeAsBytes(bytes);
           return localPath;

@@ -1,3 +1,4 @@
+import 'dart:async' show unawaited;
 import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -229,10 +230,19 @@ class _ApplyConfirmPageState extends ConsumerState<ApplyConfirmPage> {
         'p_photo_paths':  form.uploadedPhotoPaths.isEmpty
                           ? null
                           : form.uploadedPhotoPaths,
-        'p_birth_date':   form.birthDate != null
-                          ? form.birthDate!.toIso8601String().substring(0, 10)
-                          : null,
+        'p_birth_date':   form.birthDate?.toIso8601String().substring(0, 10),
       });
+
+      // 背景觸發 import-beta-media：下載 PR Dating 圖片 → 壓縮 → 上傳 Luko Storage
+      // fire-and-forget：不等待完成，不影響主流程
+      // 圖片在 Edge Function 完成前暫時使用 PR Dating public URLs（已存入 profiles.photo_paths）
+      unawaited(() async {
+        try {
+          await supabase.functions.invoke('import-beta-media');
+        } catch (e) {
+          debugPrint('[Beta] import-beta-media failed (non-blocking): $e');
+        }
+      }());
 
       // 請求推播通知權限
       try {

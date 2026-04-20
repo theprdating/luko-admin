@@ -135,7 +135,7 @@ class _EditReverifyPageState extends ConsumerState<EditReverifyPage> {
             await supabase.storage.from('profile-photos').upload(
               storagePath,
               File(newPhoto.localPath),
-              fileOptions: const FileOptions(contentType: 'image/jpeg', upsert: true),
+              fileOptions: const FileOptions(contentType: 'image/jpeg'),
             );
             pendingPaths.add(storagePath);
         }
@@ -148,7 +148,7 @@ class _EditReverifyPageState extends ConsumerState<EditReverifyPage> {
         await supabase.storage.from('profile-photos').upload(
           storagePath,
           File(localPath),
-          fileOptions: const FileOptions(contentType: 'image/jpeg', upsert: true),
+          fileOptions: const FileOptions(contentType: 'image/jpeg'),
         );
         reverifyPaths.add(storagePath);
       }

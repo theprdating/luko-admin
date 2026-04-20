@@ -207,32 +207,67 @@ serve(async (req) => {
   }
 
   const { user_id, request_id, action, review_note, rejection_reason } = body
-  if (!user_id || !action) {
-    return new Response(JSON.stringify({ error: 'Missing user_id or action' }), {
+  if (!user_id || !action || !request_id) {
+    return new Response(JSON.stringify({ error: 'Missing user_id, action, or request_id' }), {
       status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
     })
   }
 
-  // ── 3. Fetch profile ────────────────────────────────────────────────────────
+  // ── 3. Validate the photo_change_requests row is still pending ──────────────
+  const { data: changeReq, error: reqErr } = await adminDb
+    .from('photo_change_requests')
+    .select('id, status, new_photo_paths, selfie_path')
+    .eq('id', request_id)
+    .single()
+
+  if (reqErr || !changeReq) {
+    return new Response(JSON.stringify({ error: 'Request not found' }), {
+      status: 404, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+    })
+  }
+  if (changeReq.status !== 'pending') {
+    return new Response(JSON.stringify({ error: `Request already ${changeReq.status}` }), {
+      status: 409, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+    })
+  }
+
+  // ── 4. Fetch profile (no photo_pending_review guard — it may be stale) ──────
   const { data: profile, error: profileErr } = await adminDb
     .from('profiles')
     .select('id, display_name, photo_paths, pending_photo_paths, reverify_photo_paths')
     .eq('id', user_id)
-    .eq('photo_pending_review', true)
     .single()
 
   if (profileErr || !profile) {
-    return new Response(JSON.stringify({ error: 'Profile not found or not pending review' }), {
+    return new Response(JSON.stringify({ error: 'Profile not found' }), {
       status: 404, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
     })
   }
 
-  const oldPaths: string[]     = profile.photo_paths          ?? []
-  const pendingPaths: string[] = profile.pending_photo_paths  ?? []
+  const oldPaths: string[]      = profile.photo_paths          ?? []
   const reverifyPaths: string[] = profile.reverify_photo_paths ?? []
   const now = new Date().toISOString()
 
-  // ── 4A. APPROVE ─────────────────────────────────────────────────────────────
+  // pending_photo_paths may be empty if profile state got out of sync;
+  // fall back to new_photo_paths from the change request row.
+  const pendingPaths: string[] =
+    (profile.pending_photo_paths ?? []).length > 0
+      ? (profile.pending_photo_paths ?? [])
+      : (changeReq.new_photo_paths ?? [])
+
+  // ── Helper: mark request reviewed (always required) ─────────────────────────
+  async function markRequest(status: 'approved' | 'rejected'): Promise<string | null> {
+    const { error } = await adminDb.from('photo_change_requests').update({
+      status,
+      reviewed_by: callerUserId,
+      reviewed_at: now,
+      review_note: review_note?.trim() || null,
+      selfie_path: null,
+    }).eq('id', request_id)
+    return error?.message ?? null
+  }
+
+  // ── 5A. APPROVE ─────────────────────────────────────────────────────────────
   if (action === 'approve') {
     if (pendingPaths.length === 0) {
       return new Response(JSON.stringify({ error: 'No pending photos to approve' }), {
@@ -258,16 +293,12 @@ serve(async (req) => {
       })
     }
 
-    // a2) Mark the photo_change_request row as approved; null out selfie_path
-    //     (the file will be deleted from storage below, so the path becomes a dead link)
-    if (request_id) {
-      await adminDb.from('photo_change_requests').update({
-        status: 'approved',
-        reviewed_by: callerUserId,
-        reviewed_at: now,
-        review_note: review_note?.trim() || null,
-        selfie_path: null,
-      }).eq('id', request_id)
+    // a2) Mark request approved — required, error surfaced to caller
+    const markErr = await markRequest('approved')
+    if (markErr) {
+      return new Response(JSON.stringify({ error: `Request update failed: ${markErr}` }), {
+        status: 500, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+      })
     }
 
     // b) Rebuild profile_photos table (delete all, re-insert new set as verified)
@@ -305,7 +336,7 @@ serve(async (req) => {
     )
   }
 
-  // ── 4B. REJECT ──────────────────────────────────────────────────────────────
+  // ── 5B. REJECT ──────────────────────────────────────────────────────────────
   if (action === 'reject') {
     // Photos to delete: newly uploaded ones not in current approved set
     const oldSet = new Set(oldPaths)
@@ -324,16 +355,12 @@ serve(async (req) => {
       })
     }
 
-    // a2) Mark the photo_change_request row as rejected; null out selfie_path
-    //     (the file will be deleted from storage below, so the path becomes a dead link)
-    if (request_id) {
-      await adminDb.from('photo_change_requests').update({
-        status: 'rejected',
-        reviewed_by: callerUserId,
-        reviewed_at: now,
-        review_note: review_note?.trim() || null,
-        selfie_path: null,
-      }).eq('id', request_id)
+    // a2) Mark request rejected — required, error surfaced to caller
+    const markErr = await markRequest('rejected')
+    if (markErr) {
+      return new Response(JSON.stringify({ error: `Request update failed: ${markErr}` }), {
+        status: 500, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+      })
     }
 
     // b) Storage cleanup (fire-and-forget)

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Luko Admin — 發送公告</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .announce-shell { max-width: 720px; margin: 32px auto; padding: 0 20px; }
+    .announce-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+    }
+    .announce-card h2 { margin-bottom: 6px; }
+    .announce-card .subtitle { color: var(--text-secondary); font-size: 12.5px; margin-bottom: 20px; }
+    .field { margin-bottom: 16px; }
+    .field label { display:block; font-size:12px; color:var(--text-secondary); margin-bottom:6px; font-weight:500; }
+    .field input, .field textarea {
+      width:100%;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      padding: 10px 12px;
+      font-family: var(--font);
+      font-size: 14px;
+      transition: border-color 0.15s;
+    }
+    .field input:focus, .field textarea:focus { outline:none; border-color: var(--brand-gold); }
+    .field textarea { min-height: 180px; resize: vertical; line-height: 1.6; }
+    .char-count { font-size: 11px; color: var(--text-secondary); text-align: right; margin-top: 4px; }
+    .preview-box {
+      background: var(--bg-elevated);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin: 14px 0;
+      border: 1px solid var(--border);
+    }
+    .preview-box .pv-title {
+      color: var(--text-primary); font-size: 14.5px; font-weight: 600; margin-bottom: 8px;
+    }
+    .preview-box .pv-body {
+      color: var(--text-primary); font-size: 13px; line-height: 1.7; white-space: pre-wrap;
+    }
+    .preview-box .pv-empty { color: var(--text-secondary); font-style: italic; }
+    .options-row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom: 16px; }
+    .options-row label { display:flex; align-items:center; gap:6px; font-size:12.5px; color: var(--text-primary); cursor:pointer; }
+    .stats-row {
+      display:flex; gap:16px; padding: 12px 16px;
+      background: var(--brand-gold-subtle);
+      border: 1px solid var(--brand-gold-border);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+      font-size: 13px;
+    }
+    .stats-row .num { color: var(--brand-gold); font-weight: 600; }
+    .send-btn {
+      width: 100%; padding: 14px; font-size: 15px; font-weight: 600;
+      background: var(--brand-gold); color: var(--text-on-gold);
+      border-radius: var(--radius); letter-spacing: 0.04em;
+    }
+    .send-btn:hover:not(:disabled) { background: var(--brand-gold-hover); }
+    .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .danger-warning {
+      background: var(--error-subtle);
+      border: 1px solid var(--error-border);
+      color: var(--error-soft);
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      font-size: 12.5px;
+      margin-bottom: 14px;
+      line-height: 1.55;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <span class="navbar-brand">LUKO ADMIN</span>
+    <div class="navbar-nav">
+      <a href="dashboard.html" class="nav-link">儀表板</a>
+      <a href="review.html" class="nav-link">審核</a>
+      <a href="photo-changes.html" class="nav-link">換照審核</a>
+      <a href="reports.html" class="nav-link">檢舉審核</a>
+      <a href="announcements.html" class="nav-link">發送公告</a>
+      <a href="history.html" class="nav-link">紀錄</a>
+      <button onclick="signOut()" class="btn-ghost" style="font-size:12px;padding:6px 12px;margin-left:8px;">登出</button>
+    </div>
+  </nav>
+
+  <div id="toast-container"></div>
+
+  <div class="announce-shell">
+    <div class="announce-card">
+      <h2>發送系統公告</h2>
+      <p class="subtitle">公告會以 system_messages 寫入所有用戶的「Luko 官方」收件匣，並永久保留供用戶複查。送出後無法撤回，請仔細檢查內容。</p>
+
+      <div class="stats-row">
+        <span>預估收件人數：<span class="num" id="recipient-count">…</span> 人</span>
+        <span style="color: var(--text-secondary);">（active、未刪除、未停權）</span>
+      </div>
+
+      <div class="field">
+        <label>標題（必填，最多 100 字）</label>
+        <input type="text" id="ann-title" maxlength="100" placeholder="例如：3/15 系統維護通知">
+        <div class="char-count"><span id="title-count">0</span> / 100</div>
+      </div>
+
+      <div class="field">
+        <label>內文（必填，最多 5000 字，支援換行）</label>
+        <textarea id="ann-body" maxlength="5000" placeholder="完整公告內容..."></textarea>
+        <div class="char-count"><span id="body-count">0</span> / 5000</div>
+      </div>
+
+      <div class="options-row">
+        <label>
+          <input type="checkbox" id="include-banned" style="accent-color: var(--brand-gold);">
+          連停權帳號一併發送
+        </label>
+        <label>
+          <input type="checkbox" id="push-fcm" style="accent-color: var(--brand-gold);">
+          同步推播到手機（FCM）
+        </label>
+      </div>
+      <div id="push-warning" class="danger-warning" style="display:none;">
+        ⚠️ 已啟用手機推播：用戶會在鎖屏 / 通知欄看到此公告。請僅在「系統維護」「條款更新」「重大通知」等情境使用。一般訊息建議只進收件匣即可。
+      </div>
+
+      <!-- Preview -->
+      <div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;">預覽（用戶看到的樣子）</div>
+        <div class="preview-box">
+          <div class="pv-title" id="pv-title">（未填標題）</div>
+          <div class="pv-body" id="pv-body"><span class="pv-empty">（未填內文）</span></div>
+        </div>
+      </div>
+
+      <div class="danger-warning">
+        ⚠️ 送出後會立即進入所有用戶的收件匣，且無法撤回。建議先在 Slack / 內部頻道讓另一位管理員看過內容再送出。
+      </div>
+
+      <button class="send-btn" id="send-btn" disabled onclick="confirmSend()">送出公告</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="theme.js"></script>
+  <script src="app.js"></script>
+  <script>
+    setActiveNavLink()
+
+    let isSubmitting = false
+
+    async function init() {
+      await requireAdmin()
+      await loadRecipientCount()
+      bindEvents()
+    }
+
+    async function loadRecipientCount() {
+      const includeBanned = document.getElementById('include-banned').checked
+      let query = db.from('profiles').select('id', { count: 'exact', head: true }).eq('is_deleted', false)
+      if (!includeBanned) query = query.neq('account_status', 'banned')
+      const { count, error } = await query
+      if (error) {
+        document.getElementById('recipient-count').textContent = '讀取失敗'
+        return
+      }
+      document.getElementById('recipient-count').textContent = count ?? 0
+    }
+
+    function bindEvents() {
+      const titleEl = document.getElementById('ann-title')
+      const bodyEl  = document.getElementById('ann-body')
+
+      const refreshUI = () => {
+        const t = titleEl.value
+        const b = bodyEl.value
+        document.getElementById('title-count').textContent = t.length
+        document.getElementById('body-count').textContent  = b.length
+        document.getElementById('pv-title').textContent =
+          t.trim() || '（未填標題）'
+        const pvBody = document.getElementById('pv-body')
+        if (b.trim()) {
+          pvBody.textContent = b
+          pvBody.classList.remove('pv-empty')
+        } else {
+          pvBody.innerHTML = '<span class="pv-empty">（未填內文）</span>'
+        }
+        document.getElementById('send-btn').disabled =
+          !t.trim() || !b.trim() || isSubmitting
+      }
+
+      titleEl.addEventListener('input', refreshUI)
+      bodyEl.addEventListener('input', refreshUI)
+      document.getElementById('include-banned').addEventListener('change', loadRecipientCount)
+      document.getElementById('push-fcm').addEventListener('change', (e) => {
+        document.getElementById('push-warning').style.display = e.target.checked ? '' : 'none'
+      })
+      refreshUI()
+    }
+
+    async function confirmSend() {
+      if (isSubmitting) return
+      const title = document.getElementById('ann-title').value.trim()
+      const body  = document.getElementById('ann-body').value.trim()
+      const includeBanned = document.getElementById('include-banned').checked
+      const pushFcm = document.getElementById('push-fcm').checked
+      if (!title || !body) return
+
+      const recipientText = document.getElementById('recipient-count').textContent
+      const pushNote = pushFcm ? '\n\n⚠️ 將同步推播到手機（鎖屏會跳通知）' : ''
+      const ok = confirm(
+        `即將發送公告給 ${recipientText} 位用戶：\n\n` +
+        `標題：${title}\n\n` +
+        `${body.slice(0, 200)}${body.length > 200 ? '\n...' : ''}` +
+        pushNote +
+        `\n\n送出後無法撤回。確定送出？`
+      )
+      if (!ok) return
+
+      isSubmitting = true
+      const btn = document.getElementById('send-btn')
+      btn.disabled = true
+      btn.textContent = pushFcm ? '送出中（推播較慢）...' : '送出中...'
+
+      let freshToken
+      try { freshToken = await getFreshToken() } catch {
+        isSubmitting = false; btn.disabled = false; btn.textContent = '送出公告'
+        return
+      }
+
+      const { data, error } = await db.functions.invoke('send-announcement', {
+        body: { title, body, include_banned: includeBanned, push: pushFcm },
+        headers: { Authorization: `Bearer ${freshToken}` },
+      })
+
+      if (error) {
+        showToast('送出失敗：' + (error.message || '未知錯誤'), 'error')
+        btn.disabled = false
+        btn.textContent = '送出公告'
+        isSubmitting = false
+        return
+      }
+
+      const sent = data?.sent ?? 0
+      const pushSent = data?.push?.sent ?? 0
+      const msg = pushFcm
+        ? `✓ 公告已送達 ${sent} 位用戶 · 推播 ${pushSent} 台裝置`
+        : `✓ 公告已送達 ${sent} 位用戶`
+      showToast(msg, 'success')
+      // 清空表單
+      document.getElementById('ann-title').value = ''
+      document.getElementById('ann-body').value = ''
+      document.getElementById('title-count').textContent = '0'
+      document.getElementById('body-count').textContent  = '0'
+      document.getElementById('pv-title').textContent = '（未填標題）'
+      document.getElementById('pv-body').innerHTML =
+        '<span class="pv-empty">（未填內文）</span>'
+      document.getElementById('push-fcm').checked = false
+      document.getElementById('push-warning').style.display = 'none'
+      btn.textContent = '送出公告'
+      isSubmitting = false
+    }
+
+    init()
+  </script>
+</body>
+</html>

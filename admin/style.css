@@ -1,21 +1,5 @@
-/* ── Reset & Variables ───────────────────────────────────────────────────── */
-:root {
-  --bg-base:      #0D0D0D;
-  --bg-card:      #1A1A1A;
-  --bg-elevated:  #222222;
-  --border:       #2A2A2A;
-  --text-primary: #F0EDE8;
-  --text-second:  #888888;
-  --gold:         #C9A96E;
-  --green:        #2C6E4E;
-  --green-sub:    rgba(44,110,78,0.15);
-  --red:          #DC4444;
-  --red-sub:      rgba(220,68,68,0.15);
-  --blue:         #4A90D9;
-  --font:         -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --radius:       8px;
-  --radius-sm:    4px;
-}
+/* ── Tokens（單一來源於 tokens.css，需在 HTML <link> 順序中先載入）─────────── */
+@import url('./tokens.css');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -78,7 +62,7 @@ h2 { font-size: 18px; font-weight: 600; }
   transition: all 0.15s;
 }
 .nav-link:hover  { color: var(--text-primary); background: var(--bg-elevated); }
-.nav-link.active { color: var(--gold); background: rgba(201,169,110,0.08); }
+.nav-link.active { color: var(--gold); background: var(--brand-gold-subtle); }
 
 /* ── Buttons ─────────────────────────────────────────────────────────────── */
 button, .btn {
@@ -93,8 +77,8 @@ button, .btn {
   line-height: 1;
 }
 
-.btn-primary { background: var(--gold); color: #000; }
-.btn-primary:hover { background: #D4B478; }
+.btn-primary { background: var(--gold); color: var(--text-on-gold); }
+.btn-primary:hover { background: var(--brand-gold-hover); }
 
 .btn-ghost {
   background: transparent;
@@ -240,7 +224,7 @@ button, .btn {
   transition: background 0.1s;
 }
 .queue-item:hover  { background: var(--bg-elevated); }
-.queue-item.active { background: rgba(201,169,110,0.08); border-left-color: var(--gold); }
+.queue-item.active { background: var(--brand-gold-subtle); border-left-color: var(--gold); }
 
 .queue-avatar-placeholder {
   width: 42px;
@@ -272,14 +256,14 @@ button, .btn {
   flex-shrink: 0;
 }
 .queue-badge-reapply {
-  background: rgba(201,169,110,0.15);
+  background: var(--brand-gold-subtle);
   color: var(--gold);
-  border: 1px solid rgba(201,169,110,0.3);
+  border: 1px solid var(--brand-gold-border);
 }
 .queue-badge-final {
-  background: rgba(220,68,68,0.15);
-  color: #F99;
-  border: 1px solid rgba(220,68,68,0.3);
+  background: var(--error-subtle);
+  color: var(--error-soft);
+  border: 1px solid var(--error-border);
 }
 
 .queue-empty {
@@ -329,7 +313,7 @@ button, .btn {
   border: 1px solid var(--border);
 }
 
-.tag-gold { border-color: rgba(201,169,110,0.5); color: var(--gold); }
+.tag-gold { border-color: var(--brand-gold-border); color: var(--gold); }
 
 .detail-body {
   padding: 20px 24px;
@@ -358,7 +342,7 @@ button, .btn {
   object-fit: contain;
   cursor: zoom-in;
   transition: opacity 0.15s;
-  background: #111;
+  background: var(--bg-base);
   display: block;
   border: 1px solid var(--border);
 }
@@ -424,8 +408,8 @@ button, .btn {
 }
 .review-note-label.user-visible { color: var(--gold); font-weight: 600; }
 .decision-note.note-user-visible {
-  border-color: rgba(201,169,110,0.5);
-  background: rgba(201,169,110,0.04);
+  border-color: var(--brand-gold-border);
+  background: var(--brand-gold-subtle);
 }
 
 .verify-label {
@@ -452,18 +436,18 @@ button, .btn {
   align-items: flex-start;
   gap: 12px;
   padding: 11px 24px;
-  background: rgba(201,169,110,0.06);
-  border-bottom: 1px solid rgba(201,169,110,0.18);
+  background: var(--brand-gold-subtle);
+  border-bottom: 1px solid var(--brand-gold-border);
   flex-shrink: 0;
 }
 .reapply-banner-final {
-  background: rgba(220,68,68,0.07);
-  border-bottom-color: rgba(220,68,68,0.25);
+  background: var(--error-subtle);
+  border-bottom-color: var(--error-border);
 }
 
 .reapply-count-badge {
-  background: rgba(201,169,110,0.13);
-  border: 1px solid rgba(201,169,110,0.35);
+  background: var(--brand-gold-subtle);
+  border: 1px solid var(--brand-gold-border);
   color: var(--gold);
   border-radius: 6px;
   padding: 3px 9px;
@@ -475,9 +459,9 @@ button, .btn {
   letter-spacing: 0.02em;
 }
 .reapply-count-final {
-  background: rgba(220,68,68,0.13);
-  border-color: rgba(220,68,68,0.4);
-  color: #F99;
+  background: var(--error-subtle);
+  border-color: var(--error-border);
+  color: var(--error-soft);
 }
 
 .reapply-context { flex: 1; min-width: 0; }
@@ -493,14 +477,14 @@ button, .btn {
   text-transform: uppercase;
 }
 .reapply-type-soft {
-  background: rgba(201,169,110,0.1);
+  background: var(--brand-gold-subtle);
   color: var(--gold);
-  border: 1px solid rgba(201,169,110,0.3);
+  border: 1px solid var(--brand-gold-border);
 }
 .reapply-type-hard {
   background: var(--red-sub);
-  color: #F99;
-  border: 1px solid rgba(220,68,68,0.3);
+  color: var(--error-soft);
+  border: 1px solid var(--error-border);
 }
 
 .reapply-prev-note {
@@ -531,19 +515,19 @@ button, .btn {
 
 .btn-approve {
   flex: 1; padding: 11px; font-size: 15px; font-weight: 600;
-  background: var(--green); color: #fff;
+  background: var(--green); color: var(--text-on-dark);
   border-radius: var(--radius); letter-spacing: 0.02em;
 }
-.btn-approve:hover  { background: #347A5A; }
-.btn-approve.active { box-shadow: 0 0 0 2px #6FCFA4; }
+.btn-approve:hover  { background: var(--forest-green-hover); }
+.btn-approve.active { box-shadow: 0 0 0 2px var(--success-soft); }
 
 .btn-reject {
   flex: 1; padding: 11px; font-size: 15px; font-weight: 600;
-  background: var(--red); color: #fff;
+  background: var(--red); color: var(--text-on-dark);
   border-radius: var(--radius); letter-spacing: 0.02em;
 }
-.btn-reject:hover  { background: #E85555; }
-.btn-reject.active { box-shadow: 0 0 0 2px #F99; }
+.btn-reject:hover  { background: var(--error-hover); }
+.btn-reject.active { box-shadow: 0 0 0 2px var(--error-soft); }
 
 /* Pick panel — slides in when approve/reject is chosen */
 .pick-panel {
@@ -580,16 +564,16 @@ button, .btn {
 .pick-sub  { font-size: 11px; color: var(--text-second); line-height: 1.3; }
 
 .pick-btn-approve:hover              { border-color: var(--green); }
-.pick-btn-approve:hover .pick-sub    { color: rgba(111,207,164,0.65); }
+.pick-btn-approve:hover .pick-sub    { color: var(--success-soft-faded); }
 .pick-btn-approve.selected           { background: var(--green-sub); border-color: var(--green); }
-.pick-btn-approve.selected .pick-main{ color: #6FCFA4; }
-.pick-btn-approve.selected .pick-sub { color: rgba(111,207,164,0.65); }
+.pick-btn-approve.selected .pick-main{ color: var(--success-soft); }
+.pick-btn-approve.selected .pick-sub { color: var(--success-soft-faded); }
 
 .pick-btn-reject:hover               { border-color: var(--red); }
-.pick-btn-reject:hover .pick-sub     { color: rgba(255,153,153,0.65); }
+.pick-btn-reject:hover .pick-sub     { color: var(--error-soft-faded); }
 .pick-btn-reject.selected            { background: var(--red-sub); border-color: var(--red); }
-.pick-btn-reject.selected .pick-main { color: #F99; }
-.pick-btn-reject.selected .pick-sub  { color: rgba(255,153,153,0.65); }
+.pick-btn-reject.selected .pick-main { color: var(--error-soft); }
+.pick-btn-reject.selected .pick-sub  { color: var(--error-soft-faded); }
 
 /* Full-width confirm button */
 .btn-confirm {
@@ -600,12 +584,12 @@ button, .btn {
   font-size: 14px;
   letter-spacing: 0.02em;
 }
-.btn-confirm-approve                { background: var(--green); color: #fff; }
-.btn-confirm-approve:hover:not(:disabled) { background: #347A5A; }
+.btn-confirm-approve                { background: var(--green); color: var(--text-on-dark); }
+.btn-confirm-approve:hover:not(:disabled) { background: var(--forest-green-hover); }
 .btn-confirm-approve:disabled       { opacity: 0.3; cursor: not-allowed; }
 
-.btn-confirm-reject                 { background: var(--red); color: #fff; }
-.btn-confirm-reject:hover:not(:disabled)  { background: #E85555; }
+.btn-confirm-reject                 { background: var(--red); color: var(--text-on-dark); }
+.btn-confirm-reject:hover:not(:disabled)  { background: var(--error-hover); }
 .btn-confirm-reject:disabled        { opacity: 0.3; cursor: not-allowed; }
 
 /* Shortcut hint */
@@ -682,8 +666,8 @@ button, .btn {
   pointer-events: auto;
 }
 
-.toast-success { background: #162A1E; border: 1px solid var(--green); color: #6FCFA4; }
-.toast-error   { background: #2A1616; border: 1px solid var(--red); color: #F99; }
+.toast-success { background: var(--toast-success-bg); border: 1px solid var(--green); color: var(--success-soft); }
+.toast-error   { background: var(--toast-error-bg); border: 1px solid var(--red); color: var(--error-soft); }
 .toast-info    { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-primary); }
 
 @keyframes toast-in {
@@ -722,9 +706,9 @@ button, .btn {
   font-size: 12px;
   font-weight: 500;
 }
-.s-approved { background: var(--green-sub); color: #6FCFA4; border: 1px solid rgba(44,110,78,0.4); }
-.s-rejected { background: var(--red-sub); color: #F99; border: 1px solid rgba(220,68,68,0.35); }
-.s-pending  { background: rgba(201,169,110,0.1); color: var(--gold); border: 1px solid rgba(201,169,110,0.3); }
+.s-approved { background: var(--green-sub); color: var(--success-soft); border: 1px solid var(--success-border); }
+.s-rejected { background: var(--red-sub); color: var(--error-soft); border: 1px solid var(--error-border); }
+.s-pending  { background: var(--brand-gold-subtle); color: var(--gold); border: 1px solid var(--brand-gold-border); }
 
 .tier-badge {
   display: inline-flex;
@@ -736,8 +720,8 @@ button, .btn {
   font-size: 11px;
   font-weight: 700;
 }
-.tier-S { background: rgba(201,169,110,0.25); color: var(--gold); border: 1px solid var(--gold); }
-.tier-A { background: rgba(74,144,217,0.2); color: var(--blue); border: 1px solid var(--blue); }
+.tier-S { background: var(--brand-gold-subtle); color: var(--gold); border: 1px solid var(--gold); }
+.tier-A { background: var(--info-subtle); color: var(--blue); border: 1px solid var(--blue); }
 .tier-B { background: var(--bg-elevated); color: var(--text-second); border: 1px solid var(--border); }
 
 .rejection-type-badge {
@@ -745,8 +729,8 @@ button, .btn {
   padding: 1px 6px;
   border-radius: 4px;
   background: var(--red-sub);
-  color: #F99;
-  border: 1px solid rgba(220,68,68,0.3);
+  color: var(--error-soft);
+  border: 1px solid var(--error-border);
 }
 
 /* ── History Table ───────────────────────────────────────────────────────── */
@@ -795,4 +779,4 @@ button, .btn {
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #444; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }

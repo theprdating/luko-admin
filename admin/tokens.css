@@ -1,0 +1,84 @@
+/*
+ * Luko Admin — Design Tokens
+ *
+ * 與 app/lib/core/theme/app_colors.dart 的 Dark mode 對齊。
+ * Admin 永遠暗色，無 Light/Dark 切換。
+ *
+ * 修改前先確認 AppColors.dark 是否同步更新。
+ * 來源：app/lib/core/theme/app_colors.dart
+ *
+ * 命名分類：
+ *   --forest-*       Forest Green 主強調色族（成功 / primary action）
+ *   --brand-*        品牌沉浸頁色（navbar、login）
+ *   --bg-*           表面層（base → card → elevated）
+ *   --text-*         文字色階
+ *   --success/warning/error  狀態色
+ */
+
+:root {
+  /* ─── Brand / Forest ─── */
+  --forest-green:         #5A8F6D;
+  --forest-green-subtle:  rgba(90, 143, 109, 0.12);
+  --forest-green-hover:   #6BA37D;
+  --forest-deep:          #162E24;
+  --brand-bg:             #0F1E15;
+  --brand-spot:           #1E3D2F;
+  --brand-gold:           #C9A96E;
+  --brand-gold-hover:     #D4B478;
+  --brand-gold-subtle:    rgba(201, 169, 110, 0.12);
+  --brand-gold-border:    rgba(201, 169, 110, 0.35);
+  --brand-on-dark:        #F0FDF4;
+
+  /* ─── Surfaces ─── */
+  --bg-base:              #111614;
+  --bg-card:              #1C2420;
+  --bg-elevated:          #233029;
+  --border:               #2A352A;
+  --border-strong:        #3A4A3A;
+
+  /* ─── Text ─── */
+  --text-primary:         #F0F4F0;
+  --text-secondary:       #8A9E89;
+  --text-on-dark:         #F0FDF4;
+  --text-on-gold:         #1A2219;
+
+  /* ─── Status ─── */
+  --success:              #5A8F6D;
+  --success-soft:         #6FCFA4;
+  --success-subtle:       rgba(90, 143, 109, 0.15);
+  --success-border:       rgba(90, 143, 109, 0.4);
+
+  --warning:              #E6A830;
+  --warning-soft:         #F2C166;
+  --warning-subtle:       rgba(230, 168, 48, 0.15);
+  --warning-border:       rgba(230, 168, 48, 0.4);
+
+  --error:                #CF6679;
+  --error-soft:           #F09BAB;
+  --error-hover:          #DC7889;
+  --error-subtle:         rgba(207, 102, 121, 0.15);
+  --error-border:         rgba(207, 102, 121, 0.4);
+  --error-soft-faded:     rgba(240, 155, 171, 0.65);
+  --success-soft-faded:   rgba(111, 207, 164, 0.65);
+  --toast-success-bg:     #162A1E;
+  --toast-error-bg:       #2A1616;
+
+  --info:                 #4A90D9;
+  --info-subtle:          rgba(74, 144, 217, 0.15);
+
+  /* ─── Geometry ─── */
+  --radius:               8px;
+  --radius-sm:            4px;
+  --radius-lg:            14px;
+  --font:                 -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans TC',
+                          'PingFang TC', 'Microsoft JhengHei', sans-serif;
+
+  /* ─── Legacy aliases（舊 CSS 仍透過這些舊名引用，逐步淘汰）─── */
+  --gold:           var(--brand-gold);
+  --green:          var(--forest-green);
+  --green-sub:      var(--success-subtle);
+  --red:            var(--error);
+  --red-sub:        var(--error-subtle);
+  --blue:           var(--info);
+  --text-second:    var(--text-secondary);
+}

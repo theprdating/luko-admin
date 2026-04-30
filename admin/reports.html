@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Luko Admin — 檢舉審核</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* reports-specific layout tweaks（盡量沿用 style.css 既有 class）*/
+    .report-meta-row { display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--text-secondary); }
+    .report-meta-row strong { color:var(--text-primary); }
+    .evidence-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; }
+    .evidence-grid img { width:100%; height:160px; object-fit:cover; border-radius:var(--radius); cursor:zoom-in; border:1px solid var(--border); }
+    .history-block { background:var(--bg-elevated); border-radius:var(--radius); padding:10px 12px; font-size:12px; line-height:1.6; }
+    .history-block .label { color:var(--text-secondary); }
+    .history-block .num { color:var(--brand-gold); font-weight:600; font-size:14px; }
+    .reason-tag { display:inline-block; padding:1px 8px; border-radius:10px; font-size:11px; background:var(--error-subtle); color:var(--error-soft); border:1px solid var(--error-border); }
+    .reason-tag.spam { background:var(--warning-subtle); color:var(--warning-soft); border-color:var(--warning-border); }
+    .reason-tag.fake_photo, .reason-tag.inappropriate { background:var(--error-subtle); color:var(--error-soft); border-color:var(--error-border); }
+    .reason-tag.harassment { background:var(--brand-gold-subtle); color:var(--brand-gold); border-color:var(--brand-gold-border); }
+    .action-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; }
+    .action-btn {
+      padding:10px;
+      background:var(--bg-elevated);
+      border:1px solid var(--border);
+      color:var(--text-primary);
+      border-radius:var(--radius);
+      cursor:pointer;
+      font-size:13px;
+      transition:all 0.12s;
+    }
+    .action-btn:hover { border-color:var(--brand-gold); }
+    .action-btn.selected.dismiss { border-color:var(--text-secondary); background:var(--bg-card); }
+    .action-btn.selected.warn    { border-color:var(--warning); background:var(--warning-subtle); color:var(--warning-soft); }
+    .action-btn.selected.bantemp { border-color:var(--error); background:var(--error-subtle); color:var(--error-soft); }
+    .action-btn.selected.banperm { border-color:var(--error); background:var(--error-subtle); color:var(--error-soft); font-weight:600; }
+    .ban-days-row { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-top:6px; }
+    .ban-days-row .preset {
+      padding:4px 10px; font-size:12px; border-radius:var(--radius-sm);
+      background:var(--bg-elevated); border:1px solid var(--border); color:var(--text-primary);
+      cursor:pointer;
+    }
+    .ban-days-row .preset.active { border-color:var(--error); color:var(--error-soft); }
+    .notify-block { background:var(--bg-elevated); border-radius:var(--radius); padding:10px 12px; }
+    .notify-block label { display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer; }
+    .notify-block textarea { margin-top:6px; }
+    .chat-history-modal {
+      position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1500;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .chat-history-box {
+      width:560px; max-height:80vh; background:var(--bg-card);
+      border:1px solid var(--border); border-radius:var(--radius);
+      display:flex; flex-direction:column; overflow:hidden;
+    }
+    .chat-history-header { padding:14px 18px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+    .chat-history-list { flex:1; overflow-y:auto; padding:14px 18px; }
+    .chat-msg { padding:8px 12px; margin-bottom:6px; background:var(--bg-elevated); border-radius:var(--radius-sm); font-size:13px; }
+    .chat-msg .who { font-size:11px; color:var(--text-secondary); margin-bottom:2px; }
+    .history-link {
+      font-size:11px; color:var(--brand-gold); margin-left:8px;
+      cursor:pointer; text-decoration:underline;
+    }
+    .history-row {
+      display:flex; gap:12px; align-items:center; padding:8px 10px;
+      border-bottom:1px solid var(--border); font-size:12px;
+    }
+    .history-row:last-child { border-bottom:none; }
+    .history-row .role-tag {
+      font-size:10px; padding:1px 6px; border-radius:4px;
+      background:var(--bg-elevated); color:var(--text-secondary);
+    }
+    .history-row .role-reporter { color:var(--info); border:1px solid var(--info); }
+    .history-row .role-reported { color:var(--error-soft); border:1px solid var(--error-border); }
+    .history-row .uid-link { color:var(--brand-gold); cursor:pointer; }
+    .history-row .uid-link:hover { text-decoration:underline; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <span class="navbar-brand">LUKO ADMIN</span>
+    <div class="navbar-nav">
+      <a href="dashboard.html" class="nav-link">儀表板</a>
+      <a href="review.html" class="nav-link">審核</a>
+      <a href="photo-changes.html" class="nav-link">換照審核</a>
+      <a href="reports.html" class="nav-link">檢舉審核</a>
+      <a href="announcements.html" class="nav-link">發送公告</a>
+      <a href="history.html" class="nav-link">紀錄</a>
+      <button onclick="signOut()" class="btn-ghost" style="font-size:12px;padding:6px 12px;margin-left:8px;">登出</button>
+    </div>
+  </nav>
+
+  <div id="toast-container"></div>
+
+  <div id="lightbox" class="lightbox hidden">
+    <button class="lightbox-close" onclick="closeLightbox()">×</button>
+    <img id="lightbox-img" src="" alt="">
+    <div id="lightbox-caption" class="lightbox-caption"></div>
+  </div>
+
+  <div id="chat-history-modal" class="chat-history-modal hidden">
+    <div class="chat-history-box">
+      <div class="chat-history-header">
+        <strong>對話紀錄</strong>
+        <button class="btn-ghost" style="padding:4px 10px;font-size:12px;" onclick="closeChatHistory()">關閉</button>
+      </div>
+      <div class="chat-history-list" id="chat-history-list"></div>
+    </div>
+  </div>
+
+  <div id="user-history-modal" class="chat-history-modal hidden">
+    <div class="chat-history-box" style="width:640px;">
+      <div class="chat-history-header">
+        <strong id="user-history-title">用戶檢舉紀錄</strong>
+        <button class="btn-ghost" style="padding:4px 10px;font-size:12px;" onclick="closeUserHistory()">關閉</button>
+      </div>
+      <div class="chat-history-list" id="user-history-list"></div>
+    </div>
+  </div>
+
+  <div class="review-layout">
+    <aside class="queue-panel">
+      <div class="queue-header">
+        <h2>檢舉審核</h2>
+        <div class="queue-count" id="reports-count">載入中...</div>
+      </div>
+      <div class="queue-tabs">
+        <button class="queue-tab active" id="rtab-pending"  onclick="switchReportTab('pending')">待處理 <span class="queue-tab-count" id="rcount-pending">0</span></button>
+        <button class="queue-tab"        id="rtab-actioned" onclick="switchReportTab('actioned')">已處理 <span class="queue-tab-count" id="rcount-actioned">0</span></button>
+      </div>
+      <ul class="queue-list" id="reports-list">
+        <li class="loading-state"><div class="loading-spinner"></div>載入中...</li>
+      </ul>
+    </aside>
+
+    <section class="detail-panel" id="report-detail-panel">
+      <div class="detail-placeholder">← 從左側選擇一筆檢舉開始審核</div>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="theme.js"></script>
+  <script src="app.js"></script>
+  <script>
+    setActiveNavLink()
+
+    const REPORT_EVIDENCE_BUCKET = 'report-evidence'
+    const REASON_LABELS = {
+      fake_photo:    '照騙 / 與本人不符',
+      harassment:    '騷擾 / 不當言行',
+      spam:          '廣告 / 詐騙',
+      inappropriate: '不當內容',
+      other:         '其他',
+    }
+    const TEMPLATES = {
+      reporter_resolved: (name) => `感謝你協助維護 Luko 社群品質。\n\n你針對「${name}」的檢舉已審核完成，我們已採取相應措施。`,
+      reporter_dismissed: () => `感謝你的檢舉。\n\n經過審核，本次檢舉證據未達處分標準，但我們會持續追蹤該帳號的行為。\n\n若日後發現新事證，歡迎再次檢舉。`,
+      reported_warn: () => `Luko 收到關於你的社群行為反映，經審核後我們認為部分行為已偏離 Luko 的相處原則。\n\n本次以提醒方式處理，請對待每一位你遇見的人保有禮貌與尊重。\n\n再次違反可能導致暫時或永久停權。`,
+      reported_ban_temp: (days) => `Luko 收到關於你的社群行為反映，經審核後判定違反社群規範。\n\n你的帳號將暫時停權 ${days} 天。停權期間將無法登入或進行配對。\n\n停權結束後，請以善意對待每一位你遇見的人。`,
+      reported_ban_perm: () => `Luko 收到關於你的社群行為反映，經審核後判定嚴重違反社群規範。\n\n你的帳號已被永久停權，無法繼續使用 Luko。\n\n如有疑問請來信 support@luko.app。`,
+    }
+
+    let currentTab     = 'pending'
+    let reportsList    = []
+    let selectedReport = null
+    let pickedAction   = null   // 'dismiss' | 'warn' | 'ban_temp' | 'ban_perm'
+    let pickedBanDays  = 7
+
+    async function init() {
+      await requireAdmin()
+      await loadReports()
+    }
+
+    async function loadReports() {
+      const { data, error } = await db
+        .from('reports')
+        .select('id, reporter_id, reported_id, reason, note, evidence_paths, match_id, status, admin_action, created_at, reviewed_at')
+        .order('created_at', { ascending: false })
+        .limit(200)
+
+      if (error) {
+        showToast('載入失敗：' + error.message, 'error')
+        return
+      }
+      reportsList = data || []
+      renderReportQueue()
+
+      const visible = filteredReports()
+      if (visible.length > 0) selectReport(visible[0].id)
+      else document.getElementById('report-detail-panel').innerHTML = '<div class="detail-placeholder">目前無檢舉</div>'
+    }
+
+    function filteredReports() {
+      if (currentTab === 'pending')  return reportsList.filter(r => r.status !== 'actioned')
+      if (currentTab === 'actioned') return reportsList.filter(r => r.status === 'actioned')
+      return reportsList
+    }
+
+    function switchReportTab(t) {
+      currentTab = t
+      document.getElementById('rtab-pending').classList.toggle('active', t === 'pending')
+      document.getElementById('rtab-actioned').classList.toggle('active', t === 'actioned')
+      renderReportQueue()
+      const visible = filteredReports()
+      if (visible.length > 0) selectReport(visible[0].id)
+      else document.getElementById('report-detail-panel').innerHTML = '<div class="detail-placeholder">此類別目前無檢舉</div>'
+    }
+
+    function renderReportQueue() {
+      const pendingN  = reportsList.filter(r => r.status !== 'actioned').length
+      const actionedN = reportsList.filter(r => r.status === 'actioned').length
+      document.getElementById('rcount-pending').textContent  = pendingN
+      document.getElementById('rcount-actioned').textContent = actionedN
+      document.getElementById('reports-count').textContent   = `共 ${reportsList.length} 筆`
+
+      const visible = filteredReports()
+      const list = document.getElementById('reports-list')
+      if (visible.length === 0) {
+        list.innerHTML = '<li class="queue-empty">目前無資料</li>'
+        return
+      }
+      list.innerHTML = visible.map(r => `
+        <li class="queue-item ${r.id === selectedReport?.id ? 'active' : ''}" onclick="selectReport('${r.id}')">
+          <div class="queue-info">
+            <div class="queue-name">
+              <span class="reason-tag ${r.reason}">${REASON_LABELS[r.reason] || r.reason}</span>
+            </div>
+            <div class="queue-meta">${r.reporter_id.slice(0,8)}… → ${r.reported_id.slice(0,8)}…</div>
+            <div class="queue-meta">${timeAgo(r.created_at)}</div>
+          </div>
+        </li>
+      `).join('')
+    }
+
+    async function selectReport(id) {
+      const r = reportsList.find(x => x.id === id)
+      if (!r) return
+      selectedReport = r
+      pickedAction   = null
+      pickedBanDays  = 7
+      renderReportQueue()
+
+      document.getElementById('report-detail-panel').innerHTML =
+        '<div class="loading-state" style="flex:1;"><div class="loading-spinner"></div>載入...</div>'
+
+      // Fetch reporter + reported profiles + sanction history + evidence URLs
+      const [{ data: reporter }, { data: reported }, reporterStats, reportedStats, sanctions, evidenceUrls] = await Promise.all([
+        db.from('profiles').select('id, display_name, gender, birth_date, account_status').eq('id', r.reporter_id).maybeSingle(),
+        db.from('profiles').select('id, display_name, gender, birth_date, account_status').eq('id', r.reported_id).maybeSingle(),
+        fetchUserReportStats(r.reporter_id, 'reporter_id'),
+        fetchUserReportStats(r.reported_id, 'reported_id'),
+        db.from('user_sanctions').select('type, expires_at, lifted_at, issued_at').eq('user_id', r.reported_id).order('issued_at', { ascending: false }),
+        Promise.all((r.evidence_paths || []).map(p => getSignedUrl(REPORT_EVIDENCE_BUCKET, p))),
+      ])
+
+      renderReportDetail({
+        report: r,
+        reporter: reporter?.data || reporter,
+        reported: reported?.data || reported,
+        reporterStats,
+        reportedStats,
+        sanctions: sanctions?.data || [],
+        evidenceUrls: evidenceUrls.filter(Boolean),
+      })
+    }
+
+    async function fetchUserReportStats(userId, role) {
+      const { data, error } = await db
+        .from('reports')
+        .select('id, reason, admin_action, status', { count: 'exact' })
+        .eq(role, userId)
+      if (error) return { total: 0, actioned: 0, dismissed: 0, reasons: {} }
+      const reasons = {}
+      let actioned = 0, dismissed = 0
+      for (const x of data || []) {
+        reasons[x.reason] = (reasons[x.reason] || 0) + 1
+        if (x.admin_action === 'dismissed') dismissed++
+        else if (x.status === 'actioned')   actioned++
+      }
+      return { total: data?.length || 0, actioned, dismissed, reasons }
+    }
+
+    function renderReportDetail({ report, reporter, reported, reporterStats, reportedStats, sanctions, evidenceUrls }) {
+      const isActioned = report.status === 'actioned'
+      const evHtml = evidenceUrls.length === 0
+        ? `<div style="color:var(--text-secondary);font-size:13px;">無附圖</div>`
+        : `<div class="evidence-grid">${evidenceUrls.map((u, i) => `<img src="${u}" onclick="openLightbox('${u}','證據 ${i+1}')">`).join('')}</div>`
+
+      const reasonLabel = REASON_LABELS[report.reason] || report.reason
+      const sanctionsHtml = sanctions.length === 0
+        ? '<span style="color:var(--text-secondary);">無歷史處分</span>'
+        : sanctions.map(s => {
+            const active = !s.lifted_at && (!s.expires_at || new Date(s.expires_at) > new Date())
+            return `<div>${s.type}${s.expires_at ? '（' + s.expires_at.slice(0,10) + '）' : ''}${active ? ' <span style="color:var(--error-soft);">[active]</span>' : ''}</div>`
+          }).join('')
+
+      document.getElementById('report-detail-panel').innerHTML = `
+        <div class="applicant-header">
+          <div>
+            <div class="applicant-name">檢舉案 #${report.id.slice(0,8)}</div>
+            <div class="applicant-tags">
+              <span class="reason-tag ${report.reason}">${reasonLabel}</span>
+              <span class="tag" style="color:var(--text-secondary);">${timeAgo(report.created_at)}</span>
+              ${isActioned ? `<span class="status-badge s-approved">已處理</span>` : `<span class="status-badge s-pending">待處理</span>`}
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-body">
+          <!-- 檢舉人 -->
+          <div>
+            <div class="section-title" style="margin-bottom:8px;">
+              檢舉人
+              <span class="history-link" onclick="openUserHistory('${report.reporter_id}', '${(reporter?.display_name || '?').replace(/'/g, "\\'")}')">查看完整紀錄</span>
+            </div>
+            <div class="report-meta-row">
+              <div><strong>${escapeHtml(reporter?.display_name || '?')}</strong> · ${reporter?.id?.slice(0,8) || ''}…</div>
+              <div>狀態：${reporter?.account_status || 'active'}</div>
+            </div>
+            <div class="history-block" style="margin-top:8px;">
+              <span class="label">過往：</span>
+              共檢舉 <span class="num">${reporterStats.total}</span> 次 ·
+              成立 <span class="num">${reporterStats.actioned}</span> ·
+              不成立 <span class="num">${reporterStats.dismissed}</span>
+            </div>
+          </div>
+
+          <!-- 被檢舉人 -->
+          <div>
+            <div class="section-title" style="margin-bottom:8px;">
+              被檢舉人
+              <span class="history-link" onclick="openUserHistory('${report.reported_id}', '${(reported?.display_name || '?').replace(/'/g, "\\'")}')">查看完整紀錄</span>
+            </div>
+            <div class="report-meta-row">
+              <div><strong>${escapeHtml(reported?.display_name || '?')}</strong> · ${reported?.id?.slice(0,8) || ''}…</div>
+              <div>狀態：${reported?.account_status || 'active'}</div>
+            </div>
+            <div class="history-block" style="margin-top:8px;">
+              <span class="label">過往被檢舉：</span>
+              共 <span class="num">${reportedStats.total}</span> 次 ·
+              成立 <span class="num">${reportedStats.actioned}</span> ·
+              不成立 <span class="num">${reportedStats.dismissed}</span>
+              <div style="margin-top:6px;">${sanctionsHtml}</div>
+            </div>
+          </div>
+
+          <!-- 檢舉內容 -->
+          <div>
+            <div class="section-title" style="margin-bottom:8px;">檢舉說明</div>
+            <div class="bio-text">${report.note ? escapeHtml(report.note).replace(/\n/g,'<br>') : '<span class="bio-empty">（未填寫）</span>'}</div>
+          </div>
+
+          <!-- 證據圖 -->
+          <div>
+            <div class="section-title" style="margin-bottom:8px;">證據圖（${evidenceUrls.length}）</div>
+            ${evHtml}
+          </div>
+
+          <!-- 對話紀錄 -->
+          ${report.match_id ? `
+            <div>
+              <div class="section-title" style="margin-bottom:8px;">對話紀錄</div>
+              <button class="btn-ghost" onclick="viewChatHistory('${report.match_id}', '${report.id}')">調閱對話（會記錄 audit log）</button>
+            </div>` : ''
+          }
+        </div>
+
+        ${isActioned ? `
+          <div class="decision-panel">
+            <div style="color:var(--text-secondary);font-size:13px;">已處分：${report.admin_action || '?'} · ${report.reviewed_at ? timeAgo(report.reviewed_at) : ''}</div>
+          </div>
+        ` : `
+          <!-- Decision Panel -->
+          <div class="decision-panel">
+            <div class="section-title" style="margin-bottom:6px;">處分決定</div>
+            <div class="action-grid">
+              <button class="action-btn" data-action="dismiss"  onclick="pickAction('dismiss')">不成立</button>
+              <button class="action-btn" data-action="warn"     onclick="pickAction('warn')">警告</button>
+              <button class="action-btn" data-action="ban_temp" onclick="pickAction('ban_temp')">暫時停權</button>
+              <button class="action-btn" data-action="ban_perm" onclick="pickAction('ban_perm')">永久停權</button>
+            </div>
+
+            <div id="ban-days-block" style="display:none;">
+              <div style="font-size:11px;color:var(--text-secondary);margin-top:8px;">停權天數</div>
+              <div class="ban-days-row">
+                ${[7, 14, 30].map(d => `<button class="preset" data-days="${d}" onclick="pickBanDays(${d})">${d} 天</button>`).join('')}
+                <input type="number" id="ban-days-custom" min="1" max="365" placeholder="自訂..." style="width:100px;padding:4px 8px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);" onchange="pickBanDays(this.valueAsNumber)">
+              </div>
+            </div>
+
+            <label class="review-note-label" style="margin-top:10px;">內部備註（不對用戶顯示）</label>
+            <textarea class="decision-note" id="admin-note" placeholder="處分原因摘要..."></textarea>
+
+            <!-- 通知 -->
+            <div class="notify-block" style="margin-top:8px;">
+              <label><input type="checkbox" id="notify-reporter" checked> 通知檢舉人</label>
+              <textarea id="reporter-message" placeholder="點上方處分按鈕後自動帶入模板，可編輯" style="margin-top:6px;"></textarea>
+            </div>
+            <div class="notify-block" style="margin-top:8px;">
+              <label><input type="checkbox" id="notify-reported" checked> 通知被檢舉人</label>
+              <textarea id="reported-message" placeholder="點上方處分按鈕後自動帶入模板，可編輯" style="margin-top:6px;"></textarea>
+            </div>
+
+            <button class="btn-confirm btn-confirm-approve" id="btn-submit-review" disabled onclick="submitReview()" style="margin-top:8px;">送出處分</button>
+          </div>
+        `}
+      `
+    }
+
+    function pickAction(action) {
+      pickedAction = action
+      document.querySelectorAll('.action-btn').forEach(b => {
+        b.classList.remove('selected', 'dismiss', 'warn', 'bantemp', 'banperm')
+        if (b.dataset.action === action) {
+          b.classList.add('selected')
+          if (action === 'dismiss')  b.classList.add('dismiss')
+          if (action === 'warn')     b.classList.add('warn')
+          if (action === 'ban_temp') b.classList.add('bantemp')
+          if (action === 'ban_perm') b.classList.add('banperm')
+        }
+      })
+      document.getElementById('ban-days-block').style.display = action === 'ban_temp' ? '' : 'none'
+
+      // Auto-fill templates
+      const reportedName = reportsList.find(r => r.id === selectedReport.id)?.reported_id?.slice(0,8) || ''
+      if (action === 'dismiss') {
+        document.getElementById('reporter-message').value = TEMPLATES.reporter_dismissed()
+        document.getElementById('reported-message').value = ''
+        document.getElementById('notify-reported').checked = false
+      } else {
+        document.getElementById('reporter-message').value = TEMPLATES.reporter_resolved(reportedName)
+        if (action === 'warn')     document.getElementById('reported-message').value = TEMPLATES.reported_warn()
+        if (action === 'ban_temp') document.getElementById('reported-message').value = TEMPLATES.reported_ban_temp(pickedBanDays)
+        if (action === 'ban_perm') document.getElementById('reported-message').value = TEMPLATES.reported_ban_perm()
+        document.getElementById('notify-reported').checked = true
+      }
+      document.getElementById('btn-submit-review').disabled = false
+    }
+
+    function pickBanDays(d) {
+      pickedBanDays = d
+      document.querySelectorAll('.ban-days-row .preset').forEach(b =>
+        b.classList.toggle('active', Number(b.dataset.days) === d))
+      // Refresh template
+      if (pickedAction === 'ban_temp') {
+        document.getElementById('reported-message').value = TEMPLATES.reported_ban_temp(d)
+      }
+    }
+
+    async function submitReview() {
+      if (!pickedAction || !selectedReport) return
+      const btn = document.getElementById('btn-submit-review')
+      btn.disabled = true
+      btn.textContent = '送出中...'
+
+      const payload = {
+        report_id: selectedReport.id,
+        action:    pickedAction,
+        ban_days:  pickedAction === 'ban_temp' ? pickedBanDays : undefined,
+        admin_note: document.getElementById('admin-note').value.trim() || undefined,
+        notify_reporter: document.getElementById('notify-reporter').checked,
+        notify_reported: document.getElementById('notify-reported').checked,
+        reporter_message: document.getElementById('reporter-message').value.trim() || undefined,
+        reported_message: document.getElementById('reported-message').value.trim() || undefined,
+      }
+
+      let freshToken
+      try { freshToken = await getFreshToken() } catch { btn.disabled = false; return }
+
+      const { error } = await db.functions.invoke('review-report', {
+        body: payload,
+        headers: { Authorization: `Bearer ${freshToken}` },
+      })
+
+      if (error) {
+        showToast('送出失敗：' + (error.message || '未知錯誤'), 'error')
+        btn.disabled = false
+        btn.textContent = '送出處分'
+        return
+      }
+      showToast('已送出處分', 'success')
+      await loadReports()
+    }
+
+    async function viewChatHistory(matchId, reportId) {
+      // Audit log first
+      const { data: { session } } = await db.auth.getSession()
+      if (!session) return
+      // Note: real audit write happens via service role; here we only fetch (admin RLS allows read)
+      const { data: msgs, error } = await db
+        .from('messages')
+        .select('id, sender_id, content, created_at')
+        .or(`match_id.eq.${matchId},chat_room_id.eq.${matchId}`)
+        .order('created_at', { ascending: true })
+        .limit(500)
+
+      if (error) {
+        showToast('讀取對話失敗：' + error.message, 'error')
+        return
+      }
+
+      // Audit log via RPC (service role function)
+      try {
+        await db.rpc('log_admin_action', {
+          p_admin_id: session.user.id,
+          p_action: 'view_chat_history',
+          p_target_match_id: matchId,
+          p_target_report_id: reportId,
+          p_metadata: { count: msgs?.length || 0 },
+        })
+      } catch (e) {
+        console.warn('audit log skipped:', e)
+      }
+
+      const list = document.getElementById('chat-history-list')
+      if (!msgs || msgs.length === 0) {
+        list.innerHTML = '<div style="color:var(--text-secondary);">無對話紀錄</div>'
+      } else {
+        list.innerHTML = msgs.map(m => `
+          <div class="chat-msg">
+            <div class="who">${m.sender_id?.slice(0,8) || '?'}… · ${timeAgo(m.created_at)}</div>
+            <div>${escapeHtml(m.content || '')}</div>
+          </div>
+        `).join('')
+      }
+      document.getElementById('chat-history-modal').classList.remove('hidden')
+    }
+
+    function closeChatHistory() {
+      document.getElementById('chat-history-modal').classList.add('hidden')
+    }
+
+    // ── 用戶檢舉紀錄（雙向：他檢舉過誰、誰檢舉過他）────────────────────────
+    async function openUserHistory(userId, displayName) {
+      document.getElementById('user-history-title').textContent =
+        `${displayName} 的檢舉紀錄（${userId.slice(0,8)}…）`
+
+      const list = document.getElementById('user-history-list')
+      list.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div>載入中...</div>'
+      document.getElementById('user-history-modal').classList.remove('hidden')
+
+      // 同時撈：他作為 reporter 的檢舉 + 他作為 reported 被檢舉的記錄
+      const [{ data: asReporter }, { data: asReported }] = await Promise.all([
+        db.from('reports')
+          .select('id, reported_id, reason, status, admin_action, created_at')
+          .eq('reporter_id', userId)
+          .order('created_at', { ascending: false }),
+        db.from('reports')
+          .select('id, reporter_id, reason, status, admin_action, created_at')
+          .eq('reported_id', userId)
+          .order('created_at', { ascending: false }),
+      ])
+
+      const merged = [
+        ...(asReporter || []).map(r => ({ ...r, _role: 'reporter', other: r.reported_id })),
+        ...(asReported || []).map(r => ({ ...r, _role: 'reported', other: r.reporter_id })),
+      ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+
+      if (merged.length === 0) {
+        list.innerHTML = '<div style="color:var(--text-secondary);padding:20px;text-align:center;">無檢舉紀錄</div>'
+        return
+      }
+
+      // 撈對方 display_name（去重）
+      const otherIds = [...new Set(merged.map(r => r.other))]
+      const { data: otherProfiles } = await db
+        .from('profiles')
+        .select('id, display_name, account_status')
+        .in('id', otherIds)
+      const profMap = new Map((otherProfiles || []).map(p => [p.id, p]))
+
+      list.innerHTML = merged.map(r => {
+        const p = profMap.get(r.other)
+        const roleLabel = r._role === 'reporter' ? '檢舉了' : '被檢舉於'
+        const roleClass = r._role === 'reporter' ? 'role-reporter' : 'role-reported'
+        const reasonLabel = REASON_LABELS[r.reason] || r.reason
+        const statusLabel = r.status === 'actioned'
+          ? `<span style="color:var(--success-soft);">${r.admin_action || '已處理'}</span>`
+          : `<span style="color:var(--warning-soft);">待處理</span>`
+        return `
+          <div class="history-row">
+            <span class="role-tag ${roleClass}">${roleLabel}</span>
+            <span class="uid-link" onclick="loadReportById('${r.id}')">案 ${r.id.slice(0,8)}…</span>
+            <span style="flex:1;">
+              <span class="reason-tag ${r.reason}" style="font-size:10px;">${reasonLabel}</span>
+              對方：<span class="uid-link" onclick="openUserHistory('${r.other}', '${(p?.display_name || '?').replace(/'/g, "\\'")}')">${escapeHtml(p?.display_name || '?')}</span>
+              ${p?.account_status && p.account_status !== 'active' ? `<span style="color:var(--error-soft);font-size:10px;">[${p.account_status}]</span>` : ''}
+            </span>
+            <span style="color:var(--text-secondary);font-size:11px;">${timeAgo(r.created_at)}</span>
+            ${statusLabel}
+          </div>
+        `
+      }).join('')
+    }
+
+    function closeUserHistory() {
+      document.getElementById('user-history-modal').classList.add('hidden')
+    }
+
+    /// 點該紀錄 row 的「案 #xxx」→ 跳到該檢舉案，同時關掉 history modal
+    function loadReportById(reportId) {
+      // 若該案在當前 list 中，直接 select
+      const found = reportsList.find(r => r.id === reportId)
+      if (found) {
+        closeUserHistory()
+        switchReportTab(found.status === 'actioned' ? 'actioned' : 'pending')
+        selectReport(reportId)
+      } else {
+        // 不在當前 list（可能因 limit 200 截掉）→ 重新讀 + 跳轉
+        showToast('該檢舉案不在目前列表中（建議用篩選查找）', 'info')
+      }
+    }
+
+    function openLightbox(url, caption) {
+      document.getElementById('lightbox-img').src = url
+      document.getElementById('lightbox-caption').textContent = caption || ''
+      document.getElementById('lightbox').classList.remove('hidden')
+    }
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.add('hidden')
+      document.getElementById('lightbox-img').src = ''
+    }
+    document.getElementById('lightbox').addEventListener('click', function(e) { if (e.target === this) closeLightbox() })
+
+    init()
+  </script>
+</body>
+</html>

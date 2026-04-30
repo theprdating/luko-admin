@@ -274,7 +274,7 @@ class SystemInboxListTile extends ConsumerWidget {
               radius: 28,
               backgroundColor: colors.forestGreen.withValues(alpha: 0.10),
               backgroundImage: const AssetImage(
-                'assets/images/app_icon_fill.png',
+                'assets/images/app_icon.png',
               ),
             ),
             const SizedBox(width: 14),

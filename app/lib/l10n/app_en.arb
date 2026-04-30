@@ -654,6 +654,27 @@
   "reviewPendingEmailCopied": "Email copied",
   "@reviewPendingEmailCopied": { "description": "SnackBar after copying email on pending page" },
 
+  "navDiscover": "Discover",
+  "@navDiscover": { "description": "Bottom nav: Discover tab label" },
+
+  "navGallery": "Gallery",
+  "@navGallery": { "description": "Bottom nav: Gallery tab label" },
+
+  "navMessages": "Messages",
+  "@navMessages": { "description": "Bottom nav: Messages tab label" },
+
+  "navProfile": "Profile",
+  "@navProfile": { "description": "Bottom nav: Profile tab label" },
+
+  "navExitHint": "Press back again to exit",
+  "@navExitHint": { "description": "Snackbar shown on first back press in shell" },
+
+  "editProfileManagePhotos": "Manage Photos",
+  "@editProfileManagePhotos": { "description": "Manage photos button in edit profile" },
+
+  "applyQuestionFeatured": "Featured · Tap to remove",
+  "@applyQuestionFeatured": { "description": "Badge on featured question card in questions editor" },
+
   "discoverTitle": "Discover",
   "@discoverTitle": { "description": "Discover tab title" },
 
@@ -677,8 +698,348 @@
   "discoverMidnightCountdownLabel": "Next refresh in",
   "@discoverMidnightCountdownLabel": { "description": "Discover page countdown label" },
 
+  "discoverCuratedCount": "Today, we picked {count} people worth getting to know slowly",
+  "@discoverCuratedCount": {
+    "description": "Discover page hero title showing today's curated count",
+    "placeholders": {
+      "count": { "type": "int", "description": "Number of curated candidates today" }
+    }
+  },
+
+  "discoverSwipeHint": "Swipe left or right to catch the next person's vibe and story.",
+  "@discoverSwipeHint": { "description": "Hint above the discover carousel" },
+
+  "discoverPeekHint": "Open the card to see fuller photos, answers, and a better sense of their rhythm.",
+  "@discoverPeekHint": { "description": "Hint for expanding a discover card into detail" },
+
+  "discoverQueueProgress": "{current} of {total}",
+  "@discoverQueueProgress": {
+    "description": "Progress label for discover carousel",
+    "placeholders": {
+      "current": { "type": "int", "description": "Current card index" },
+      "total": { "type": "int", "description": "Total number of discover cards" }
+    }
+  },
+
+  "discoverOpenDetail": "Open the full profile",
+  "@discoverOpenDetail": { "description": "CTA on discover carousel card" },
+
+  "discoverActionPass": "Pass for now",
+  "@discoverActionPass": { "description": "Pass action label on discover and candidate detail pages" },
+
+  "discoverActionLike": "Want to know more",
+  "@discoverActionLike": { "description": "Like action label on discover and candidate detail pages" },
+
+  "discoverActionDm": "Make the first move",
+  "@discoverActionDm": { "description": "DM action label on discover and candidate detail pages" },
+
+  "discoverDetailIntro": "Instead of deciding too fast, try reading a little deeper into their rhythm.",
+  "@discoverDetailIntro": { "description": "Atmospheric intro copy used in discover and detail views" },
+
+  "discoverDecisionLiked": "Heart sent to {name}",
+  "@discoverDecisionLiked": {
+    "description": "State text after sending a like",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "discoverDecisionDm": "First words delivered",
+  "@discoverDecisionDm": { "description": "State text after sending a DM" },
+
+  "discoverDecisionDisliked": "Farewell",
+  "@discoverDecisionDisliked": { "description": "State text after farewell" },
+
+  "discoverDecisionWaiting": "Awaiting reply",
+  "@discoverDecisionWaiting": { "description": "Waiting for response" },
+
+  "discoverDecisionUndo": "Undo",
+  "@discoverDecisionUndo": { "description": "Undo button" },
+
+  "discoverDecisionUndoRemaining": "{count} left this month",
+  "@discoverDecisionUndoRemaining": {
+    "description": "Undo remaining quota",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "discoverDecisionUndoExhausted": "No undos left this month",
+  "@discoverDecisionUndoExhausted": { "description": "Undo exhausted" },
+
+  "discoverActionConfirmTitleDislike": "Confirm farewell?",
+  "@discoverActionConfirmTitleDislike": { "description": "Farewell confirm" },
+
+  "discoverActionConfirmTitleLike": "Send your heart?",
+  "@discoverActionConfirmTitleLike": { "description": "Like confirm" },
+
+  "discoverActionConfirmTitleDm": "Send your first words?",
+  "@discoverActionConfirmTitleDm": { "description": "DM confirm" },
+
+  "discoverActionConfirmTitleUndo": "Take it back?",
+  "@discoverActionConfirmTitleUndo": { "description": "Undo confirm" },
+
+  "discoverActionConfirmDislikeBody": "After farewell, they will no longer appear in either of your pools — you won't be matched again. You can undo once this month; they will not be notified.",
+  "@discoverActionConfirmDislikeBody": { "description": "Dislike confirm body" },
+
+  "discoverActionConfirmUndoBody": "Reverts to no decision; they may reappear in your pool. Limited to once per person per month.",
+  "@discoverActionConfirmUndoBody": { "description": "Undo confirm body" },
+
+  "discoverActionConfirmLikeBody": "This cannot be taken back. {count} hearts left this week.",
+  "@discoverActionConfirmLikeBody": {
+    "description": "Like confirm body",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "discoverActionConfirmDmBody": "This cannot be taken back. {count} messages left this week.",
+  "@discoverActionConfirmDmBody": {
+    "description": "DM confirm body",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "discoverActionConfirmDontShow": "Don't ask again",
+  "@discoverActionConfirmDontShow": { "description": "Don't ask again" },
+
+  "discoverActionConfirmCancel": "Cancel",
+  "@discoverActionConfirmCancel": { "description": "Cancel" },
+
+  "discoverActionConfirmConfirm": "Confirm",
+  "@discoverActionConfirmConfirm": { "description": "Confirm" },
+
+  "discoverDmComposeTitle": "Send a first line",
+  "@discoverDmComposeTitle": { "description": "DM compose sheet title" },
+
+  "discoverDmComposeSubtitle": "One line. Make them want to pause.",
+  "@discoverDmComposeSubtitle": { "description": "DM compose subtitle" },
+
+  "discoverDmComposeHint": "Say something worth remembering…",
+  "@discoverDmComposeHint": { "description": "DM input placeholder" },
+
+  "discoverDmComposeSend": "Send",
+  "@discoverDmComposeSend": { "description": "DM send button" },
+
+  "matchSuccessTitle": "You've met",
+  "@matchSuccessTitle": { "description": "Match success title" },
+
+  "matchSuccessSubtitle": "Go say hello",
+  "@matchSuccessSubtitle": { "description": "Match success subtitle" },
+
+  "matchSuccessReminder": "Send a message within 3 days",
+  "@matchSuccessReminder": { "description": "Match success countdown" },
+
+  "matchSuccessPrimary": "Send first words",
+  "@matchSuccessPrimary": { "description": "Match success CTA" },
+
+  "matchSuccessSecondary": "Later",
+  "@matchSuccessSecondary": { "description": "Match success secondary" },
+
+  "chatMatchCelebrateBanner": "You matched with {name}",
+  "@chatMatchCelebrateBanner": {
+    "description": "Centered system banner shown to both users in chat after a mutual match",
+    "placeholders": { "name": { "type": "String", "example": "Alice" } }
+  },
+
+  "chatReplyToOther": "Replying to {name}",
+  "@chatReplyToOther": {
+    "description": "Small label above an IG-style reply bubble — replying to the partner",
+    "placeholders": { "name": { "type": "String", "example": "Alice" } }
+  },
+
+  "chatReplyToSelf": "Replying to yourself",
+  "@chatReplyToSelf": { "description": "Reply header label when replying to your own message" },
+
+  "settingsActionConfirms": "Action confirms",
+  "@settingsActionConfirms": { "description": "Settings section" },
+
+  "settingsConfirmDislike": "Confirm farewell",
+  "@settingsConfirmDislike": { "description": "Toggle" },
+
+  "settingsConfirmLike": "Confirm heart",
+  "@settingsConfirmLike": { "description": "Toggle" },
+
+  "settingsConfirmDm": "Confirm message",
+  "@settingsConfirmDm": { "description": "Toggle" },
+
+  "discoverGuideTooltip": "About Daily Picks",
+  "@discoverGuideTooltip": { "description": "Discover page guide button tooltip" },
+
+  "discoverGuideTitle": "Daily Picks",
+  "@discoverGuideTitle": { "description": "Discover guide dialog title" },
+
+  "discoverGuideIntro": "Take your time. Look closely.",
+  "@discoverGuideIntro": { "description": "Discover guide dialog subtitle" },
+
+  "discoverGuideThreeTitle": "Three Per Day",
+  "@discoverGuideThreeTitle": { "description": "Discover guide item 1 title" },
+
+  "discoverGuideThreeBody": "Each day at 00:00 (Taipei time) we hand-pick 1–3 profiles (members always 3). Selection isn't random — we put people with shared interests, or who've thought about the same questions, in front of you.\n\nEveryone here passed review. Treat them the way you'd want to be treated.",
+  "@discoverGuideThreeBody": { "description": "Discover guide item 1 body" },
+
+  "discoverGuideLikeTitle": "Like · Message · Pass",
+  "@discoverGuideLikeTitle": { "description": "Discover guide item 2 title" },
+
+  "discoverGuideLikeBody": "Like: when both of you like, the chat opens automatically.\nMessage: leave an opening line — you can send it even before they decide.\nPass: this person won't appear again.\n\nFree tier: 3 likes per week, 1 message per month. Members get more.",
+  "@discoverGuideLikeBody": { "description": "Discover guide item 2 body" },
+
+  "discoverGuideMeetTitle": "When Both Pause, You Meet",
+  "@discoverGuideMeetTitle": { "description": "Discover guide item 3 title" },
+
+  "discoverGuideMeetBody": "When you both like, the chat opens. Anyone you don't act on is kept in the Memory Hallway for later.",
+  "@discoverGuideMeetBody": { "description": "Discover guide item 3 body" },
+
+  "discoverGuideConfirm": "Got It",
+  "@discoverGuideConfirm": { "description": "Discover guide dialog confirm button" },
+
+  "candidateDetailSectionBio": "About",
+  "@candidateDetailSectionBio": { "description": "Candidate detail bio section title" },
+
+  "candidateDetailSectionInterests": "Interests",
+  "@candidateDetailSectionInterests": { "description": "Candidate detail interests section title" },
+
+  "candidateDetailSectionAnswers": "Things to Talk About",
+  "@candidateDetailSectionAnswers": { "description": "Candidate detail answers section title" },
+
+  "candidateDetailPhotoCount": "{current} / {total}",
+  "@candidateDetailPhotoCount": {
+    "description": "Photo count label on candidate detail page",
+    "placeholders": {
+      "current": { "type": "int", "description": "Current photo number" },
+      "total": { "type": "int", "description": "Total photo count" }
+    }
+  },
+
+  "candidateMutualTitle": "You're both interested",
+  "@candidateMutualTitle": { "description": "Mutual match dialog title" },
+
+  "candidateMutualBody": "You and {name} both felt a spark. You can start slowly through messages now.",
+  "@candidateMutualBody": {
+    "description": "Mutual match dialog body",
+    "placeholders": {
+      "name": { "type": "String", "description": "The other person's display name" }
+    }
+  },
+
+  "candidateMutualAction": "Got it",
+  "@candidateMutualAction": { "description": "Mutual match dialog confirmation button" },
+
+  "candidateDetailEmptyBio": "A little mystery can be nice too. Maybe the rest is for a real conversation.",
+  "@candidateDetailEmptyBio": { "description": "Fallback detail copy when a candidate has no bio" },
+
+  "candidateDetailAnswerExpand": "Expand",
+  "@candidateDetailAnswerExpand": { "description": "Expand long answer button" },
+
+  "candidateDetailAnswerCollapse": "Collapse",
+  "@candidateDetailAnswerCollapse": { "description": "Collapse long answer button" },
+
+  "candidateAboutHim": "About Him",
+  "@candidateAboutHim": { "description": "Card/detail featured-question male label" },
+
+  "candidateAboutHer": "About Her",
+  "@candidateAboutHer": { "description": "Card/detail featured-question female label" },
+
+  "candidateGroupThoughts": "Thoughts",
+  "@candidateGroupThoughts": { "description": "Detail QA group - Thoughts" },
+
+  "candidateGroupRelationship": "Relationship",
+  "@candidateGroupRelationship": { "description": "Detail QA group - Relationship" },
+
+  "candidateGroupLife": "Life",
+  "@candidateGroupLife": { "description": "Detail QA group - Life" },
+
+  "candidateSectionSelfIntro": "Bio",
+  "@candidateSectionSelfIntro": { "description": "Detail self-intro section header" },
+
+  "candidateSectionInterests": "Interests",
+  "@candidateSectionInterests": { "description": "Detail interests section header" },
+
+  "candidateBadgeResonance": "INTERSECT",
+  "@candidateBadgeResonance": { "description": "Card/detail resonance badge" },
+
+  "candidateActionSkip": "Farewell",
+  "@candidateActionSkip": { "description": "Card/detail farewell button" },
+
+  "candidateActionDm": "Message",
+  "@candidateActionDm": { "description": "Card/detail message button" },
+
+  "candidateActionLike": "Heart",
+  "@candidateActionLike": { "description": "Card/detail heart button" },
+
+  "discoverDistanceUnknown": "ELSEWHERE",
+  "@discoverDistanceUnknown": { "description": "Distance unknown fallback" },
+
+  "discoverDistanceWithin": "within {km} km",
+  "@discoverDistanceWithin": {
+    "description": "Bucketed distance display",
+    "placeholders": { "km": { "type": "String" } }
+  },
+
+  "discoverDistanceKm": "{km} km",
+  "@discoverDistanceKm": {
+    "description": "Exact km (legacy, retained)",
+    "placeholders": { "km": { "type": "String" } }
+  },
+
+  "discoverDistanceFar": "50+ km",
+  "@discoverDistanceFar": { "description": "Distance > 50 km" },
+
+  "discoverLoadError": "Failed to load",
+  "@discoverLoadError": { "description": "Discover load error" },
+
+  "discoverRefreshAt": "Refreshes tomorrow at {time}",
+  "@discoverRefreshAt": {
+    "description": "Discover next-refresh hint",
+    "placeholders": { "time": { "type": "String" } }
+  },
+
+  "discoverRefreshDoneAt": "Done for today · Refreshes tomorrow at {time}",
+  "@discoverRefreshDoneAt": {
+    "description": "Discover all-decided refresh hint",
+    "placeholders": { "time": { "type": "String" } }
+  },
+
   "matchTitle": "Matches",
   "@matchTitle": { "description": "Match tab title" },
+
+  "matchPageTitle": "Gallery",
+  "@matchPageTitle": { "description": "Gallery page title" },
+
+  "matchGalleryTooltip": "About the Gallery",
+  "@matchGalleryTooltip": { "description": "Gallery guide button tooltip" },
+
+  "matchGalleryGuideTitle": "About the Gallery",
+  "@matchGalleryGuideTitle": { "description": "Gallery guide dialog title" },
+
+  "matchGalleryGuideIntro": "This is where every encounter is held.",
+  "@matchGalleryGuideIntro": { "description": "Gallery guide dialog intro" },
+
+  "matchGuidePendingTitle": "Awaiting Reply",
+  "@matchGuidePendingTitle": { "description": "Gallery guide pending item title" },
+
+  "matchGuidePendingBody": "You sent an opening line. They have 3 days to decide whether to reply.",
+  "@matchGuidePendingBody": { "description": "Gallery guide pending item body" },
+
+  "matchGuideMissedTitle": "Fading Moments",
+  "@matchGuideMissedTitle": { "description": "Gallery guide missed item title" },
+
+  "matchGuideMissedBody": "If there's no reply within 3 days, the wait fades quietly. After 30 days, they return to the matching pool.",
+  "@matchGuideMissedBody": { "description": "Gallery guide missed item body" },
+
+  "matchGuideMutualTitle": "Matched",
+  "@matchGuideMutualTitle": { "description": "Gallery guide mutual item title" },
+
+  "matchGuideMutualBody": "You both paused for each other. The chat is open.",
+  "@matchGuideMutualBody": { "description": "Gallery guide mutual item body" },
+
+  "matchGalleryConfirm": "Got It",
+  "@matchGalleryConfirm": { "description": "Gallery guide dialog confirm button" },
+
+  "matchPendingBadge": "Awaiting Reply",
+  "@matchPendingBadge": { "description": "Gallery pending reply badge" },
+
+  "matchOpenChat": "Open conversation",
+  "@matchOpenChat": { "description": "Mutual matched, can open chat" },
+
+  "matchEmptyTitle": "No Encounters Yet",
+  "@matchEmptyTitle": { "description": "Gallery empty state title" },
+
+  "matchEmptyBody": "Head to Discover and leave a gesture for someone who makes you pause.\nWhen both pause, the meeting begins.",
+  "@matchEmptyBody": { "description": "Gallery empty state body" },
 
   "matchNewMatch": "It's a Match!",
   "@matchNewMatch": { "description": "New match notification title" },
@@ -863,16 +1224,37 @@
   "profileSectionInterests": "Interests",
   "@profileSectionInterests": { "description": "Profile interests section title" },
 
-  "profileSectionQuestions": "Q&A",
+  "profileSectionQuestions": "Things to Talk About",
   "@profileSectionQuestions": { "description": "Profile Q&A section title" },
 
-  "profileNoBio": "No bio yet",
+  "profileSectionSoftTags": "Lifestyle",
+  "@profileSectionSoftTags": { "description": "Profile soft tags section title (smoking, drinking, kids, pets, diet, sleep)" },
+
+  "softTagSmoking": "Smoking",
+  "@softTagSmoking": { "description": "Smoking field label" },
+
+  "softTagDrinking": "Drinking",
+  "@softTagDrinking": { "description": "Drinking field label" },
+
+  "softTagKids": "Kids",
+  "@softTagKids": { "description": "Kids field label" },
+
+  "softTagPets": "Pets",
+  "@softTagPets": { "description": "Pets field label" },
+
+  "softTagDiet": "Diet",
+  "@softTagDiet": { "description": "Diet field label" },
+
+  "softTagSleepPattern": "Sleep",
+  "@softTagSleepPattern": { "description": "Sleep pattern field label" },
+
+  "profileNoBio": "Nothing here yet — write a little.",
   "@profileNoBio": { "description": "Empty bio placeholder" },
 
-  "profileNoInterests": "No interests set",
+  "profileNoInterests": "Nothing chosen yet.",
   "@profileNoInterests": { "description": "Empty interests placeholder" },
 
-  "profileNoQuestions": "No questions answered",
+  "profileNoQuestions": "Nothing answered yet.",
   "@profileNoQuestions": { "description": "Empty questions placeholder" },
 
   "profileLoadError": "Could not load profile",
@@ -893,19 +1275,31 @@
   "editProfileSectionSeeking": "Looking for",
   "@editProfileSectionSeeking": { "description": "Seeking section title" },
 
-  "editProfileSectionInterests": "Interests",
+  "editProfileSectionInterests": "Your everyday",
   "@editProfileSectionInterests": { "description": "Interests section title" },
 
-  "editProfileSectionQuestions": "Q&A",
+  "editProfileSectionQuestions": "What you'd like to talk about",
   "@editProfileSectionQuestions": { "description": "Q&A section title" },
+
+  "editProfileSectionSoftTags": "Your lifestyle",
+  "@editProfileSectionSoftTags": { "description": "Soft tags section title in edit profile page" },
+
+  "editProfileSoftTagsHint": "All optional, change anytime",
+  "@editProfileSoftTagsHint": { "description": "Soft tags section helper text" },
+
+  "editProfileSoftTagNotSet": "Not set",
+  "@editProfileSoftTagNotSet": { "description": "Placeholder shown when a soft tag is not yet selected" },
+
+  "editProfileSoftTagClear": "Clear selection",
+  "@editProfileSoftTagClear": { "description": "Button to clear a previously selected soft tag" },
 
   "editProfileNameLabel": "Display Name",
   "@editProfileNameLabel": { "description": "Display name field label" },
 
-  "editProfileBioLabel": "Bio",
+  "editProfileBioLabel": "About you",
   "@editProfileBioLabel": { "description": "Bio field label" },
 
-  "editProfileBioHint": "Tell us about yourself...",
+  "editProfileBioHint": "Not perfect — something real is enough.",
   "@editProfileBioHint": { "description": "Bio input hint" },
 
   "editProfileBioHelper": "Optional, max {max} characters",
@@ -1086,5 +1480,344 @@
   "@betaApplyPhotosLockedTitle": { "description": "Beta photos locked title" },
 
   "betaApplyPhotosLockedBody": "To confirm your identity, photos can't be changed right now. You can update them in your profile after joining the app.",
-  "@betaApplyPhotosLockedBody": { "description": "Beta photos locked body text" }
+  "@betaApplyPhotosLockedBody": { "description": "Beta photos locked body text" },
+
+  "messagesPageTitle": "Conversations",
+  "@messagesPageTitle": { "description": "Messages page title" },
+
+  "matchLoadFailed": "Failed to load",
+  "@matchLoadFailed": { "description": "Gallery load failed" },
+
+  "matchStatusDmPending": "Awaiting reply",
+  "@matchStatusDmPending": { "description": "DM waiting" },
+
+  "matchStatusGallery": "In the archive",
+  "@matchStatusGallery": { "description": "Gallery status" },
+
+  "matchStatusChatted": "In conversation",
+  "@matchStatusChatted": { "description": "Chatted status" },
+
+  "matchStatusMutual": "Matched",
+  "@matchStatusMutual": { "description": "Mutual no msg yet" },
+
+  "matchExpired": "Faded",
+  "@matchExpired": { "description": "Expired countdown" },
+
+  "matchRemainDays": "{count}d left",
+  "@matchRemainDays": {
+    "description": "Days remaining",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "matchRemainHours": "{count}h left",
+  "@matchRemainHours": {
+    "description": "Hours remaining",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "matchRemainMinutes": "{count}m left",
+  "@matchRemainMinutes": {
+    "description": "Minutes remaining",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "chatMeLabel": "Me",
+  "@chatMeLabel": { "description": "Chat preview self prefix" },
+
+  "chatNotStarted": "Neither has spoken yet…",
+  "@chatNotStarted": { "description": "Mutual but no message yet" },
+
+  "chatTimeJustNow": "just now",
+  "@chatTimeJustNow": { "description": "Just now" },
+
+  "chatTimeMinutesAgo": "{count}m ago",
+  "@chatTimeMinutesAgo": {
+    "description": "Minutes ago",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "chatTimeDaysAgo": "{count}d ago",
+  "@chatTimeDaysAgo": {
+    "description": "Days ago",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "matchGuideReviveTitle": "Heart-stir · Once More",
+  "@matchGuideReviveTitle": { "description": "Gallery guide revive title" },
+
+  "matchGuideReviveBody": "If you missed pausing for someone that day, send a Heart-stir to bring them back. Once a month — a gentle apology, and a second chance.",
+  "@matchGuideReviveBody": { "description": "Gallery guide revive body" },
+
+  "reviveButton": "Heart-stir",
+  "@reviveButton": { "description": "Detail page revive button" },
+
+  "reviveQuotaLabel": "{count} left this month",
+  "@reviveQuotaLabel": {
+    "description": "Revive quota remaining",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "reviveConfirmKicker": "HEART-STIR · ONCE MORE",
+  "@reviveConfirmKicker": { "description": "Revive dialog kicker" },
+
+  "reviveConfirmTitle": "Reach out to {name} again?",
+  "@reviveConfirmTitle": {
+    "description": "Revive confirm title",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "reviveConfirmBody": "Only one a month. They'll be notified, and this moment will be extended by 3 days.",
+  "@reviveConfirmBody": { "description": "Revive confirm body" },
+
+  "reviveCancel": "Not yet",
+  "@reviveCancel": { "description": "Cancel revive" },
+
+  "reviveConfirm": "Send",
+  "@reviveConfirm": { "description": "Confirm revive" },
+
+  "reviveDoneTitle": "Heart-stir sent",
+  "@reviveDoneTitle": { "description": "Revive done title" },
+
+  "reviveDoneBody": "{name} will see this. May the pause last a little longer this time.",
+  "@reviveDoneBody": {
+    "description": "Revive done body",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "reviveQuotaExhausted": "No Heart-stirs left this month.",
+  "@reviveQuotaExhausted": { "description": "Revive exhausted" },
+
+  "reviveAlreadyChatted": "You've already started talking.",
+  "@reviveAlreadyChatted": { "description": "Already chatted" },
+
+  "reviveFailed": "Couldn't send Heart-stir. Try again later.",
+  "@reviveFailed": { "description": "Revive failed" },
+
+  "chatInputHint": "Send a message…",
+  "@chatInputHint": { "description": "Chat input hint" },
+
+  "chatSendFailed": "Couldn't send. Try again later.",
+  "@chatSendFailed": { "description": "Chat send failed" },
+
+  "chatRetry": "Retry",
+  "@chatRetry": { "description": "Retry action on send-failed snackbar" },
+
+  "chatEmpty": "No messages yet — say something to start.",
+  "@chatEmpty": { "description": "Chat empty state" },
+
+  "chatDateToday": "Today",
+  "@chatDateToday": { "description": "Chat date today" },
+
+  "chatDateYesterday": "Yesterday",
+  "@chatDateYesterday": { "description": "Chat date yesterday" },
+
+  "chatMenuReport": "Report",
+  "@chatMenuReport": { "description": "Chat menu: report" },
+
+  "chatMenuLeave": "Leave conversation",
+  "@chatMenuLeave": { "description": "Chat menu: leave" },
+
+  "chatMenuReportToast": "Reporting isn't available yet.",
+  "@chatMenuReportToast": { "description": "Report placeholder" },
+
+  "chatMenuLeaveToast": "Leaving isn't available yet.",
+  "@chatMenuLeaveToast": { "description": "Leave placeholder" },
+
+  "chatActionReply": "Reply",
+  "@chatActionReply": { "description": "Long-press menu: reply" },
+
+  "chatActionCopy": "Copy",
+  "@chatActionCopy": { "description": "Long-press menu: copy" },
+
+  "chatActionCopied": "Copied",
+  "@chatActionCopied": { "description": "Copy success toast" },
+
+  "chatReplyImagePreview": "[Photo]",
+  "@chatReplyImagePreview": { "description": "Reply preview placeholder when replying to an image message" },
+
+  "chatReplyCancel": "Cancel reply",
+  "@chatReplyCancel": { "description": "A11y label for the cancel button on the reply preview" },
+
+  "chatImagePickFailed": "Couldn't pick the photo. Try again.",
+  "@chatImagePickFailed": { "description": "Image pick failed toast" },
+
+  "chatImageSendFailed": "Couldn't send the photo. Try again later.",
+  "@chatImageSendFailed": { "description": "Image send failed toast" },
+
+  "chatImageSending": "Sending photo…",
+  "@chatImageSending": { "description": "Image uploading toast" },
+
+  "chatUrlWarningTitle": "Before you leave Luko",
+  "@chatUrlWarningTitle": { "description": "Title shown before opening a link from a chat message" },
+
+  "chatUrlWarningBody": "Luko can't vouch for this link. A few things to keep in mind:\n\n• Investment, crypto, and gambling sites are often scams\n• Never share your ID, bank details, or verification codes in chat\n• If someone pushes you toward an exchange or transfer, stop and report them",
+  "@chatUrlWarningBody": { "description": "Link warning body" },
+
+  "chatUrlWarningUrl": "Destination",
+  "@chatUrlWarningUrl": { "description": "Label shown above the destination URL" },
+
+  "chatUrlWarningDismiss": "Don't show again",
+  "@chatUrlWarningDismiss": { "description": "Don't show again checkbox" },
+
+  "chatUrlWarningOpen": "Open anyway",
+  "@chatUrlWarningOpen": { "description": "Confirm open URL" },
+
+  "chatUrlWarningCancel": "Cancel",
+  "@chatUrlWarningCancel": { "description": "Cancel" },
+
+  "chatUrlOpenFailed": "Couldn't open this link.",
+  "@chatUrlOpenFailed": { "description": "url_launcher fail toast" },
+
+  "chatReportTitle": "Report this user",
+  "@chatReportTitle": { "description": "Report sheet title" },
+
+  "chatReportSubtitle": "We'll review within 24 hours. Severe cases lead to account removal.",
+  "@chatReportSubtitle": { "description": "Report sheet subtitle" },
+
+  "chatReportReasonHarassment": "Harassment or hostile behaviour",
+  "@chatReportReasonHarassment": { "description": "Report reason: harassment" },
+
+  "chatReportReasonInappropriate": "Inappropriate content",
+  "@chatReportReasonInappropriate": { "description": "Report reason: inappropriate" },
+
+  "chatReportReasonSpam": "Scam or spam",
+  "@chatReportReasonSpam": { "description": "Report reason: spam" },
+
+  "chatReportReasonOther": "Other",
+  "@chatReportReasonOther": { "description": "Report reason: other" },
+
+  "chatReportNoteHint": "Add details (optional, up to 300 chars)",
+  "@chatReportNoteHint": { "description": "Report note hint" },
+
+  "chatReportSubmit": "Submit report",
+  "@chatReportSubmit": { "description": "Report submit button" },
+
+  "chatReportSent": "Report received. Thank you.",
+  "@chatReportSent": { "description": "Report sent toast" },
+
+  "chatReportFailed": "Couldn't submit report. Try again later.",
+  "@chatReportFailed": { "description": "Report failed toast" },
+
+  "chatLeaveTitle": "Leave this conversation",
+  "@chatLeaveTitle": { "description": "Leave conversation confirm title" },
+
+  "chatLeaveBody": "Once you leave, they won't be able to contact you again. This can't be undone.",
+  "@chatLeaveBody": { "description": "Leave conversation confirm body" },
+
+  "chatLeaveConfirm": "Leave",
+  "@chatLeaveConfirm": { "description": "Leave confirm" },
+
+  "chatLeaveCancel": "Cancel",
+  "@chatLeaveCancel": { "description": "Leave cancel" },
+
+  "chatLeaveSuccess": "You've left the conversation.",
+  "@chatLeaveSuccess": { "description": "Leave success toast" },
+
+  "chatLeaveFailed": "Couldn't leave. Try again later.",
+  "@chatLeaveFailed": { "description": "Leave failed toast" },
+
+  "chatImageMessage": "[Photo]",
+  "@chatImageMessage": { "description": "Chat list preview: image message" },
+
+  "matchDayYesterday": "Yesterday",
+  "@matchDayYesterday": { "description": "Gallery yesterday section" },
+
+  "matchDayBeforeYesterday": "Two days ago",
+  "@matchDayBeforeYesterday": { "description": "Gallery 2-days-ago section" },
+
+  "matchDayThreeDaysAgo": "Three days ago",
+  "@matchDayThreeDaysAgo": { "description": "Gallery 3-days-ago section" },
+
+  "matchDayEmpty": "No one to revisit on this day",
+  "@matchDayEmpty": { "description": "Time gallery: empty day in tabs" },
+
+  "messagesEmptyTitle": "No conversations yet",
+  "@messagesEmptyTitle": { "description": "Messages empty title" },
+
+  "messagesEmptyBody": "When both of you pause and leave a line,\nthe conversation will quietly open here.",
+  "@messagesEmptyBody": { "description": "Messages empty body" },
+
+
+  "profilePageTitle": "My Profile",
+  "@profilePageTitle": { "description": "Profile page title" },
+
+  "chatReportReasonFakePhoto": "Fake photo / Not the real person",
+  "@chatReportReasonFakePhoto": {},
+
+  "chatReportEvidenceTitle": "Attach evidence (required)",
+  "@chatReportEvidenceTitle": {},
+
+  "chatReportEvidenceHintFakePhoto": "Please attach a screenshot of the real person (e.g. IG, video call).",
+  "@chatReportEvidenceHintFakePhoto": {},
+  "chatReportEvidenceHintHarassment": "Please attach screenshots of the harassing messages.",
+  "@chatReportEvidenceHintHarassment": {},
+  "chatReportEvidenceHintSpam": "Please attach screenshots of the scam link or ad.",
+  "@chatReportEvidenceHintSpam": {},
+  "chatReportEvidenceHintInappropriate": "Please attach screenshots of the inappropriate content.",
+  "@chatReportEvidenceHintInappropriate": {},
+  "chatReportEvidenceHintOther": "Please attach evidence images.",
+  "@chatReportEvidenceHintOther": {},
+
+  "chatReportEvidenceCount": "Attached {count} / 3",
+  "@chatReportEvidenceCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "chatReportEvidenceAdd": "Add photo",
+  "@chatReportEvidenceAdd": {},
+
+  "chatReportEvidenceRequired": "Please attach at least 1 evidence image.",
+  "@chatReportEvidenceRequired": {},
+
+  "chatReportEvidenceMax": "Maximum 3 images.",
+  "@chatReportEvidenceMax": {},
+
+  "chatLeaveOptionPermanentTitle": "Permanently block",
+  "@chatLeaveOptionPermanentTitle": {},
+  "chatLeaveOptionPermanentBody": "This person will never appear in your match pool again.",
+  "@chatLeaveOptionPermanentBody": {},
+  "chatLeaveOptionSoftTitle": "Temporarily leave",
+  "@chatLeaveOptionSoftTitle": {},
+  "chatLeaveOptionSoftBody": "After 30 days you may match again.",
+  "@chatLeaveOptionSoftBody": {},
+
+  "chatReportFollowupTitle": "Thank you for your report",
+  "@chatReportFollowupTitle": {},
+  "chatReportFollowupBody": "We will review it shortly. For your safety, we suggest:",
+  "@chatReportFollowupBody": {},
+  "chatReportFollowupBlock": "Block this person (both removed from each other's match pool)",
+  "@chatReportFollowupBlock": {},
+  "chatReportFollowupSoftExit": "Just leave the chat (may match again after 30 days)",
+  "@chatReportFollowupSoftExit": {},
+  "chatReportFollowupKeep": "Keep things as they are",
+  "@chatReportFollowupKeep": {},
+  "chatReportFollowupConfirm": "Confirm",
+  "@chatReportFollowupConfirm": {},
+
+  "systemInboxTitle": "PR Dating",
+  "@systemInboxTitle": {},
+  "systemInboxEmpty": "No notifications",
+  "@systemInboxEmpty": {},
+  "systemInboxListEntryName": "PR Dating",
+  "@systemInboxListEntryName": {},
+  "systemInboxListEntryPreview": "Welcome, review results, community reminders",
+  "@systemInboxListEntryPreview": {},
+
+  "gateBannedTitle": "Your account has been suspended",
+  "@gateBannedTitle": {},
+  "gateBannedTempBody": "Your account has been temporarily suspended for violating community guidelines. It will be lifted on {expiresAt}.",
+  "@gateBannedTempBody": {
+    "placeholders": { "expiresAt": { "type": "String" } }
+  },
+  "gateBannedPermBody": "Your account has been permanently suspended for serious violations. For inquiries please contact support@luko.app.",
+  "@gateBannedPermBody": {},
+  "gateBannedContact": "Contact support",
+  "@gateBannedContact": {},
+
+  "warningAckTitle": "Community guidelines reminder",
+  "@warningAckTitle": {},
+  "warningAckBody": "Luko has received a report about your behaviour. Please be polite and respectful to everyone you meet here.\n\nFurther violations may lead to temporary or permanent suspension.",
+  "@warningAckBody": {},
+  "warningAckConfirm": "I understand",
+  "@warningAckConfirm": {}
 }

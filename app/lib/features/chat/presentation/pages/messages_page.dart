@@ -180,16 +180,24 @@ class _MessagesPageState extends ConsumerState<MessagesPage>
                 return p.daysSinceMatch() <= 3;
               }).toList();
 
-              // 系統收件匣固定 entry 永遠顯示在頂部（即使 chat list 為空）
+              // 系統收件匣以最新訊息時間融入排序，與一般對話一起依時間遞減排列
+              final latestSystem = ref.watch(latestSystemMessageProvider).valueOrNull;
+              final rows = <_InboxRow>[
+                ...filtered.map((p) => _InboxRow.chat(p, p.sortAt)),
+                if (latestSystem != null)
+                  _InboxRow.system(latestSystem.createdAt),
+              ]..sort((a, b) => b.sortAt.compareTo(a.sortAt));
+
               return ListView.separated(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(vertical: 6),
-                itemCount: filtered.length + 1,
+                itemCount: rows.length,
                 separatorBuilder: (_, __) =>
                     Divider(height: 1, indent: 80, color: colors.divider),
                 itemBuilder: (_, i) {
-                  if (i == 0) return const SystemInboxListTile();
-                  return _ChatTile(item: filtered[i - 1]);
+                  final row = rows[i];
+                  if (row.isSystem) return const SystemInboxListTile();
+                  return _ChatTile(item: row.chat!);
                 },
               );
             },
@@ -198,6 +206,20 @@ class _MessagesPageState extends ConsumerState<MessagesPage>
       ),
     );
   }
+}
+
+// ── Row descriptor：合併 system inbox 與對話列，共用同一份排序基準 ─────────
+
+class _InboxRow {
+  const _InboxRow._({required this.isSystem, required this.sortAt, this.chat});
+  factory _InboxRow.system(DateTime sortAt) =>
+      _InboxRow._(isSystem: true, sortAt: sortAt);
+  factory _InboxRow.chat(ChatPreview chat, DateTime sortAt) =>
+      _InboxRow._(isSystem: false, sortAt: sortAt, chat: chat);
+
+  final bool isSystem;
+  final DateTime sortAt;
+  final ChatPreview? chat;
 }
 
 // ── 聊天列 tile ───────────────────────────────────────────────────────────────

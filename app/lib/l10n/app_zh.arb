@@ -654,6 +654,27 @@
   "reviewPendingEmailCopied": "信箱已複製",
   "@reviewPendingEmailCopied": { "description": "等待審核頁複製信箱後的 SnackBar 提示" },
 
+  "navDiscover": "探索",
+  "@navDiscover": { "description": "底部導覽：探索" },
+
+  "navGallery": "時光廊",
+  "@navGallery": { "description": "底部導覽：時光廊" },
+
+  "navMessages": "訊息",
+  "@navMessages": { "description": "底部導覽：訊息" },
+
+  "navProfile": "我的",
+  "@navProfile": { "description": "底部導覽：我的" },
+
+  "navExitHint": "再按一次退出程式",
+  "@navExitHint": { "description": "Shell 底部首次返回時的 SnackBar 提示" },
+
+  "editProfileManagePhotos": "管理照片",
+  "@editProfileManagePhotos": { "description": "編輯個人資料頁的管理照片按鈕" },
+
+  "applyQuestionFeatured": "精選 · 點擊取消",
+  "@applyQuestionFeatured": { "description": "問答編輯頁精選問題卡片的標籤" },
+
   "discoverTitle": "探索",
   "@discoverTitle": { "description": "探索分頁標題" },
 
@@ -677,8 +698,348 @@
   "discoverMidnightCountdownLabel": "距離下次刷新",
   "@discoverMidnightCountdownLabel": { "description": "探索頁倒數計時標籤" },
 
+  "discoverCuratedCount": "今天為你挑了 {count} 位值得慢慢認識的人",
+  "@discoverCuratedCount": {
+    "description": "探索頁主標題，顯示今日精選人數",
+    "placeholders": {
+      "count": { "type": "int", "description": "今日候選人數量" }
+    }
+  },
+
+  "discoverSwipeHint": "左右滑動，看看下一位的氣質與故事。",
+  "@discoverSwipeHint": { "description": "探索頁卡片區上方的左右滑動提示" },
+
+  "discoverPeekHint": "點開卡片，可以看更完整的照片、回答與生活感。",
+  "@discoverPeekHint": { "description": "探索頁與詳細頁的展開提示" },
+
+  "discoverQueueProgress": "第 {current} 位，共 {total} 位",
+  "@discoverQueueProgress": {
+    "description": "探索頁目前所在卡片進度",
+    "placeholders": {
+      "current": { "type": "int", "description": "目前第幾位候選人" },
+      "total": { "type": "int", "description": "總候選人數" }
+    }
+  },
+
+  "discoverOpenDetail": "點開看完整檔案",
+  "@discoverOpenDetail": { "description": "探索頁卡片底部 CTA" },
+
+  "discoverActionPass": "先略過",
+  "@discoverActionPass": { "description": "探索頁與候選人詳細頁的略過按鈕" },
+
+  "discoverActionLike": "想再認識",
+  "@discoverActionLike": { "description": "探索頁與候選人詳細頁的喜歡按鈕" },
+
+  "discoverActionDm": "直接開場",
+  "@discoverActionDm": { "description": "探索頁與候選人詳細頁的私訊按鈕" },
+
+  "discoverDetailIntro": "比起快速判斷，不如多讀一點她／他的生活感。",
+  "@discoverDetailIntro": { "description": "探索頁與候選人詳細頁的氛圍引導文案" },
+
+  "discoverDecisionLiked": "已對 {name} 動心",
+  "@discoverDecisionLiked": {
+    "description": "探索頁或詳細頁送出心動後的狀態文字",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "discoverDecisionDm": "已寄出第一句話",
+  "@discoverDecisionDm": { "description": "探索頁或詳細頁送出私訊後的狀態文字" },
+
+  "discoverDecisionDisliked": "已道別",
+  "@discoverDecisionDisliked": { "description": "探索頁或詳細頁道別後的狀態文字" },
+
+  "discoverDecisionWaiting": "靜待回音",
+  "@discoverDecisionWaiting": { "description": "已表態後等待對方回應的副標" },
+
+  "discoverDecisionUndo": "反悔",
+  "@discoverDecisionUndo": { "description": "道別後可反悔的按鈕" },
+
+  "discoverDecisionUndoRemaining": "本月還可反悔 {count} 次",
+  "@discoverDecisionUndoRemaining": {
+    "description": "反悔按鈕剩餘額度提示",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "discoverDecisionUndoExhausted": "本月反悔次數已用完",
+  "@discoverDecisionUndoExhausted": { "description": "反悔額度耗盡提示" },
+
+  "discoverActionConfirmTitleDislike": "確定要道別嗎？",
+  "@discoverActionConfirmTitleDislike": { "description": "道別動作確認標題" },
+
+  "discoverActionConfirmTitleLike": "確定送出心動？",
+  "@discoverActionConfirmTitleLike": { "description": "心動動作確認標題" },
+
+  "discoverActionConfirmTitleDm": "確定寄出訊息？",
+  "@discoverActionConfirmTitleDm": { "description": "傳訊息動作確認標題" },
+
+  "discoverActionConfirmTitleUndo": "確定要反悔？",
+  "@discoverActionConfirmTitleUndo": { "description": "反悔動作確認標題" },
+
+  "discoverActionConfirmDislikeBody": "道別後對方不會再出現在你們任一方的配對池中，未來也不會再配對到。本月可反悔 1 次，對方不會被通知。",
+  "@discoverActionConfirmDislikeBody": { "description": "道別動作確認內文" },
+
+  "discoverActionConfirmUndoBody": "反悔後將恢復為尚未表態的狀態，對方仍可能出現在你的配對池中。本月每人僅可反悔 1 次。",
+  "@discoverActionConfirmUndoBody": { "description": "反悔動作確認內文" },
+
+  "discoverActionConfirmLikeBody": "送出後無法收回。本週還剩 {count} 次心動額度。",
+  "@discoverActionConfirmLikeBody": {
+    "description": "心動動作確認內文",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "discoverActionConfirmDmBody": "送出後無法收回。本週還剩 {count} 次訊息額度。",
+  "@discoverActionConfirmDmBody": {
+    "description": "傳訊息動作確認內文",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "discoverActionConfirmDontShow": "以後不再確認",
+  "@discoverActionConfirmDontShow": { "description": "確認彈窗的不再提示勾選" },
+
+  "discoverActionConfirmCancel": "取消",
+  "@discoverActionConfirmCancel": { "description": "確認彈窗取消按鈕" },
+
+  "discoverActionConfirmConfirm": "確定",
+  "@discoverActionConfirmConfirm": { "description": "確認彈窗確認按鈕" },
+
+  "discoverDmComposeTitle": "傳送開場白",
+  "@discoverDmComposeTitle": { "description": "DM 撰寫 sheet 標題" },
+
+  "discoverDmComposeSubtitle": "只有這一句，讓對方願意停下來。",
+  "@discoverDmComposeSubtitle": { "description": "DM 撰寫 sheet 副標" },
+
+  "discoverDmComposeHint": "說一句，足以被記得的話…",
+  "@discoverDmComposeHint": { "description": "DM 輸入框 placeholder" },
+
+  "discoverDmComposeSend": "送出",
+  "@discoverDmComposeSend": { "description": "DM 送出按鈕" },
+
+  "matchSuccessTitle": "你們相遇了",
+  "@matchSuccessTitle": { "description": "配對成功全屏標題" },
+
+  "matchSuccessSubtitle": "快去和對方聊天吧",
+  "@matchSuccessSubtitle": { "description": "配對成功全屏副標" },
+
+  "matchSuccessReminder": "記得在 3 天內傳訊息給對方",
+  "@matchSuccessReminder": { "description": "配對成功倒數提示" },
+
+  "matchSuccessPrimary": "寄出第一句話",
+  "@matchSuccessPrimary": { "description": "配對成功主 CTA" },
+
+  "matchSuccessSecondary": "稍後再說",
+  "@matchSuccessSecondary": { "description": "配對成功次 CTA" },
+
+  "chatMatchCelebrateBanner": "恭喜你和 {name} 配對成功",
+  "@chatMatchCelebrateBanner": {
+    "description": "聊天室置中系統訊息：剛配對成功時雙方都會看到",
+    "placeholders": { "name": { "type": "String", "example": "Alice" } }
+  },
+
+  "chatReplyToOther": "回覆 {name}",
+  "@chatReplyToOther": {
+    "description": "回覆訊息上方的小標籤（IG 風）— 對方為原訊息發送者",
+    "placeholders": { "name": { "type": "String", "example": "Alice" } }
+  },
+
+  "chatReplyToSelf": "回覆自己",
+  "@chatReplyToSelf": { "description": "回覆訊息上方的小標籤 — 自己回自己" },
+
+  "settingsActionConfirms": "動作確認",
+  "@settingsActionConfirms": { "description": "Settings 動作確認區塊標題" },
+
+  "settingsConfirmDislike": "道別時確認",
+  "@settingsConfirmDislike": { "description": "Settings 道別確認 toggle" },
+
+  "settingsConfirmLike": "心動時確認",
+  "@settingsConfirmLike": { "description": "Settings 心動確認 toggle" },
+
+  "settingsConfirmDm": "傳訊息時確認",
+  "@settingsConfirmDm": { "description": "Settings 傳訊息確認 toggle" },
+
+  "discoverGuideTooltip": "關於每日精選",
+  "@discoverGuideTooltip": { "description": "探索頁說明按鈕提示" },
+
+  "discoverGuideTitle": "每日精選",
+  "@discoverGuideTitle": { "description": "探索頁說明彈窗標題" },
+
+  "discoverGuideIntro": "慢下來，認真看見。",
+  "@discoverGuideIntro": { "description": "探索頁說明彈窗副標" },
+
+  "discoverGuideThreeTitle": "每日三位",
+  "@discoverGuideThreeTitle": { "description": "探索頁說明彈窗第一條標題" },
+
+  "discoverGuideThreeBody": "每天 00:00（台北時間）為你精選 1–3 位（會員固定 3 位）。挑選不是隨機，而是優先把興趣相同、或在同一道問題上有過想法的人放在你面前。\n\n每一位都通過審核，請以你希望被對待的方式去對待這些人。",
+  "@discoverGuideThreeBody": { "description": "探索頁說明彈窗第一條內文" },
+
+  "discoverGuideLikeTitle": "喜歡 · 傳訊息 · 略過",
+  "@discoverGuideLikeTitle": { "description": "探索頁說明彈窗第二條標題" },
+
+  "discoverGuideLikeBody": "喜歡：彼此都喜歡時，聊天室自動開啟。\n傳訊息：留下一句開場白，即使對方還未表態也能先送出。\n略過：這位不會再出現在你面前。\n\n一般會員每週 3 個喜歡、每月 1 則開場白；會員額度更多。",
+  "@discoverGuideLikeBody": { "description": "探索頁說明彈窗第二條內文" },
+
+  "discoverGuideMeetTitle": "彼此停下便相遇",
+  "@discoverGuideMeetTitle": { "description": "探索頁說明彈窗第三條標題" },
+
+  "discoverGuideMeetBody": "彼此都喜歡時聊天室開啟。沒有立刻表態的相遇會收進時光廊，留待之後重啟。",
+  "@discoverGuideMeetBody": { "description": "探索頁說明彈窗第三條內文" },
+
+  "discoverGuideConfirm": "明白了",
+  "@discoverGuideConfirm": { "description": "探索頁說明彈窗確認按鈕" },
+
+  "candidateDetailSectionBio": "關於我",
+  "@candidateDetailSectionBio": { "description": "候選人詳細頁自我介紹區塊標題" },
+
+  "candidateDetailSectionInterests": "日常所好",
+  "@candidateDetailSectionInterests": { "description": "候選人詳細頁興趣區塊標題" },
+
+  "candidateDetailSectionAnswers": "想聊的",
+  "@candidateDetailSectionAnswers": { "description": "候選人詳細頁問答區塊標題" },
+
+  "candidateDetailPhotoCount": "{current} / {total}",
+  "@candidateDetailPhotoCount": {
+    "description": "候選人詳細頁照片數量顯示",
+    "placeholders": {
+      "current": { "type": "int", "description": "目前第幾張照片" },
+      "total": { "type": "int", "description": "總照片數量" }
+    }
+  },
+
+  "candidateMutualTitle": "你們互相喜歡",
+  "@candidateMutualTitle": { "description": "探索頁或詳細頁互相喜歡時的彈窗標題" },
+
+  "candidateMutualBody": "你和 {name} 都對彼此有好感，現在可以從訊息慢慢開始。",
+  "@candidateMutualBody": {
+    "description": "互相喜歡彈窗內文",
+    "placeholders": {
+      "name": { "type": "String", "description": "對方的顯示名稱" }
+    }
+  },
+
+  "candidateMutualAction": "知道了",
+  "@candidateMutualAction": { "description": "互相喜歡彈窗確認按鈕" },
+
+  "candidateDetailEmptyBio": "先留一點空白，見面時再慢慢知道也不錯。",
+  "@candidateDetailEmptyBio": { "description": "候選人沒有自介時的詳細頁替代文案" },
+
+  "candidateDetailAnswerExpand": "展開",
+  "@candidateDetailAnswerExpand": { "description": "候選人詳細頁問答回答展開按鈕" },
+
+  "candidateDetailAnswerCollapse": "收起",
+  "@candidateDetailAnswerCollapse": { "description": "候選人詳細頁問答回答收起按鈕" },
+
+  "candidateAboutHim": "關於他",
+  "@candidateAboutHim": { "description": "卡片/詳細頁招牌題男性 label" },
+
+  "candidateAboutHer": "關於她",
+  "@candidateAboutHer": { "description": "卡片/詳細頁招牌題女性 label" },
+
+  "candidateGroupThoughts": "想法",
+  "@candidateGroupThoughts": { "description": "詳細頁問答群組-想法" },
+
+  "candidateGroupRelationship": "感情",
+  "@candidateGroupRelationship": { "description": "詳細頁問答群組-感情" },
+
+  "candidateGroupLife": "生活",
+  "@candidateGroupLife": { "description": "詳細頁問答群組-生活" },
+
+  "candidateSectionSelfIntro": "自介",
+  "@candidateSectionSelfIntro": { "description": "詳細頁自介區塊" },
+
+  "candidateSectionInterests": "興趣",
+  "@candidateSectionInterests": { "description": "詳細頁興趣區塊" },
+
+  "candidateBadgeResonance": "交集",
+  "@candidateBadgeResonance": { "description": "詳細頁/卡片共鳴標記" },
+
+  "candidateActionSkip": "道別",
+  "@candidateActionSkip": { "description": "卡片/詳細頁道別按鈕" },
+
+  "candidateActionDm": "傳訊息",
+  "@candidateActionDm": { "description": "卡片/詳細頁傳訊息按鈕" },
+
+  "candidateActionLike": "心動",
+  "@candidateActionLike": { "description": "卡片/詳細頁心動按鈕" },
+
+  "discoverDistanceUnknown": "彼方",
+  "@discoverDistanceUnknown": { "description": "距離未知 fallback【彼方】" },
+
+  "discoverDistanceWithin": "{km} 公里內",
+  "@discoverDistanceWithin": {
+    "description": "距離模糊化顯示【X 公里內】",
+    "placeholders": { "km": { "type": "String" } }
+  },
+
+  "discoverDistanceKm": "{km} 公里",
+  "@discoverDistanceKm": {
+    "description": "距離公里顯示（舊，保留）",
+    "placeholders": { "km": { "type": "String" } }
+  },
+
+  "discoverDistanceFar": "50 公里外",
+  "@discoverDistanceFar": { "description": "距離大於 50 公里" },
+
+  "discoverLoadError": "載入失敗",
+  "@discoverLoadError": { "description": "探索頁載入失敗訊息" },
+
+  "discoverRefreshAt": "明日 {time} 更新",
+  "@discoverRefreshAt": {
+    "description": "探索頁明日刷新時間提示",
+    "placeholders": { "time": { "type": "String" } }
+  },
+
+  "discoverRefreshDoneAt": "今日已完成 · 明日 {time} 更新",
+  "@discoverRefreshDoneAt": {
+    "description": "探索頁今日已決定完後的訊息",
+    "placeholders": { "time": { "type": "String" } }
+  },
+
   "matchTitle": "配對",
   "@matchTitle": { "description": "配對分頁標題" },
+
+  "matchPageTitle": "時光廊",
+  "@matchPageTitle": { "description": "時光廊頁面標題" },
+
+  "matchGalleryTooltip": "關於時光廊",
+  "@matchGalleryTooltip": { "description": "時光廊說明按鈕提示" },
+
+  "matchGalleryGuideTitle": "關於時光廊",
+  "@matchGalleryGuideTitle": { "description": "時光廊說明彈窗標題" },
+
+  "matchGalleryGuideIntro": "這裡收藏你與每一位相遇的時光。",
+  "@matchGalleryGuideIntro": { "description": "時光廊說明彈窗導引文案" },
+
+  "matchGuidePendingTitle": "等待回覆",
+  "@matchGuidePendingTitle": { "description": "時光廊說明：等待回覆項目標題" },
+
+  "matchGuidePendingBody": "你送出了開場白，對方有 3 天時間決定是否回覆。",
+  "@matchGuidePendingBody": { "description": "時光廊說明：等待回覆項目內文" },
+
+  "matchGuideMissedTitle": "時光淡去",
+  "@matchGuideMissedTitle": { "description": "時光廊說明：錯過項目標題" },
+
+  "matchGuideMissedBody": "若 3 天內沒有回覆，這段等待會悄悄淡去。30 天後，他 / 她將重回配對池。",
+  "@matchGuideMissedBody": { "description": "時光廊說明：錯過項目內文" },
+
+  "matchGuideMutualTitle": "已配對",
+  "@matchGuideMutualTitle": { "description": "時光廊說明：已配對項目標題" },
+
+  "matchGuideMutualBody": "彼此都停下了腳步，聊天室已開啟。",
+  "@matchGuideMutualBody": { "description": "時光廊說明：已配對項目內文" },
+
+  "matchGalleryConfirm": "明白了",
+  "@matchGalleryConfirm": { "description": "時光廊說明彈窗確認按鈕" },
+
+  "matchPendingBadge": "等待回覆",
+  "@matchPendingBadge": { "description": "時光廊等待回覆狀態徽章" },
+
+  "matchOpenChat": "進入對話",
+  "@matchOpenChat": { "description": "已配對且可進入對話" },
+
+  "matchEmptyTitle": "時光尚未展開",
+  "@matchEmptyTitle": { "description": "時光廊空狀態標題" },
+
+  "matchEmptyBody": "到探索頁，為讓你停下的人留下一點心意。\n當彼此都停下，便是相遇的開始。",
+  "@matchEmptyBody": { "description": "時光廊空狀態說明文字" },
 
   "matchNewMatch": "互相喜歡！",
   "@matchNewMatch": { "description": "新配對通知標題" },
@@ -860,19 +1221,40 @@
   "profileSectionBio": "關於我",
   "@profileSectionBio": { "description": "個人資料－關於我標題" },
 
-  "profileSectionInterests": "興趣",
+  "profileSectionInterests": "日常所好",
   "@profileSectionInterests": { "description": "個人資料－興趣標題" },
 
-  "profileSectionQuestions": "個人問答",
+  "profileSectionQuestions": "想聊的",
   "@profileSectionQuestions": { "description": "個人資料－問答標題" },
 
-  "profileNoBio": "尚未填寫自我介紹",
+  "profileSectionSoftTags": "生活風格",
+  "@profileSectionSoftTags": { "description": "個人資料－軟標籤標題（抽菸/飲酒/小孩/寵物/飲食/作息）" },
+
+  "softTagSmoking": "抽菸",
+  "@softTagSmoking": { "description": "抽菸欄位標籤" },
+
+  "softTagDrinking": "飲酒",
+  "@softTagDrinking": { "description": "飲酒欄位標籤" },
+
+  "softTagKids": "小孩",
+  "@softTagKids": { "description": "小孩欄位標籤" },
+
+  "softTagPets": "寵物",
+  "@softTagPets": { "description": "寵物欄位標籤" },
+
+  "softTagDiet": "飲食",
+  "@softTagDiet": { "description": "飲食欄位標籤" },
+
+  "softTagSleepPattern": "作息",
+  "@softTagSleepPattern": { "description": "作息欄位標籤" },
+
+  "profileNoBio": "還沒寫下關於你的字。",
   "@profileNoBio": { "description": "尚未填寫 bio 的提示" },
 
-  "profileNoInterests": "尚未設定興趣",
+  "profileNoInterests": "還沒挑選日常所好。",
   "@profileNoInterests": { "description": "尚未設定興趣的提示" },
 
-  "profileNoQuestions": "尚未回答任何問題",
+  "profileNoQuestions": "還沒回答任何問題。",
   "@profileNoQuestions": { "description": "尚未回答問題的提示" },
 
   "profileLoadError": "無法載入個人資料",
@@ -893,19 +1275,31 @@
   "editProfileSectionSeeking": "想認識",
   "@editProfileSectionSeeking": { "description": "想認識區塊標題" },
 
-  "editProfileSectionInterests": "興趣",
+  "editProfileSectionInterests": "你的日常所好",
   "@editProfileSectionInterests": { "description": "興趣區塊標題" },
 
-  "editProfileSectionQuestions": "個人問答",
+  "editProfileSectionQuestions": "你想聊的",
   "@editProfileSectionQuestions": { "description": "問答區塊標題" },
+
+  "editProfileSectionSoftTags": "你的生活風格",
+  "@editProfileSectionSoftTags": { "description": "編輯檔案頁－軟標籤區塊標題" },
+
+  "editProfileSoftTagsHint": "全部選填，隨時可調整",
+  "@editProfileSoftTagsHint": { "description": "軟標籤區塊說明文字" },
+
+  "editProfileSoftTagNotSet": "未選擇",
+  "@editProfileSoftTagNotSet": { "description": "軟標籤尚未選擇時顯示的 placeholder" },
+
+  "editProfileSoftTagClear": "清除選擇",
+  "@editProfileSoftTagClear": { "description": "清除已選軟標籤的按鈕" },
 
   "editProfileNameLabel": "顯示名稱",
   "@editProfileNameLabel": { "description": "顯示名稱欄位標籤" },
 
-  "editProfileBioLabel": "自我介紹",
+  "editProfileBioLabel": "關於你",
   "@editProfileBioLabel": { "description": "自我介紹欄位標籤" },
 
-  "editProfileBioHint": "介紹一下自己...",
+  "editProfileBioHint": "不用完美，寫一點真實的就好。",
   "@editProfileBioHint": { "description": "自我介紹輸入提示" },
 
   "editProfileBioHelper": "選填，最多 {max} 字",
@@ -1086,5 +1480,344 @@
   "@betaApplyPhotosLockedTitle": { "description": "Beta photos locked title" },
 
   "betaApplyPhotosLockedBody": "為了確保是本人，目前暫時無法更換照片。進入 APP 後可以在個人資料頁自由更換。",
-  "@betaApplyPhotosLockedBody": { "description": "Beta photos locked body text" }
+  "@betaApplyPhotosLockedBody": { "description": "Beta photos locked body text" },
+
+  "messagesPageTitle": "對話",
+  "@messagesPageTitle": { "description": "對話頁面標題" },
+
+  "matchLoadFailed": "載入失敗",
+  "@matchLoadFailed": { "description": "時光廊載入失敗訊息" },
+
+  "matchStatusDmPending": "等待回應",
+  "@matchStatusDmPending": { "description": "DM 等待對方回應" },
+
+  "matchStatusGallery": "靜候時光",
+  "@matchStatusGallery": { "description": "Gallery 狀態" },
+
+  "matchStatusChatted": "對話中",
+  "@matchStatusChatted": { "description": "已開始對話" },
+
+  "matchStatusMutual": "已配對",
+  "@matchStatusMutual": { "description": "雙方互配但尚未開口" },
+
+  "matchExpired": "已淡去",
+  "@matchExpired": { "description": "倒數過期顯示" },
+
+  "matchRemainDays": "剩 {count} 天",
+  "@matchRemainDays": {
+    "description": "剩餘天數",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "matchRemainHours": "剩 {count} 小時",
+  "@matchRemainHours": {
+    "description": "剩餘小時",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "matchRemainMinutes": "剩 {count} 分鐘",
+  "@matchRemainMinutes": {
+    "description": "剩餘分鐘",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "chatMeLabel": "我",
+  "@chatMeLabel": { "description": "對話列表中表示自己傳送的前綴" },
+
+  "chatNotStarted": "彼此都還沒開口…",
+  "@chatNotStarted": { "description": "雙方互配但都未發過訊息的提示" },
+
+  "chatTimeJustNow": "剛剛",
+  "@chatTimeJustNow": { "description": "剛剛收到訊息" },
+
+  "chatTimeMinutesAgo": "{count} 分鐘前",
+  "@chatTimeMinutesAgo": {
+    "description": "幾分鐘前",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "chatTimeDaysAgo": "{count} 天前",
+  "@chatTimeDaysAgo": {
+    "description": "幾天前",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "matchGuideReviveTitle": "心動 · 再一次",
+  "@matchGuideReviveTitle": { "description": "時光廊說明：心動配額" },
+
+  "matchGuideReviveBody": "若你忘了當天為彼此停下，可以使用「心動」把對方再次喚起。每月 1 次，是給疏忽的補償，也是給彼此的第二次機會。",
+  "@matchGuideReviveBody": { "description": "時光廊說明：心動配額內文" },
+
+  "reviveButton": "心動",
+  "@reviveButton": { "description": "詳細頁挽留按鈕文字" },
+
+  "reviveQuotaLabel": "本月剩 {count}",
+  "@reviveQuotaLabel": {
+    "description": "本月剩餘心動次數",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "reviveConfirmKicker": "心動 · 再一次",
+  "@reviveConfirmKicker": { "description": "心動確認對話框小標" },
+
+  "reviveConfirmTitle": "對 {name} 再一次心動？",
+  "@reviveConfirmTitle": {
+    "description": "心動確認標題",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "reviveConfirmBody": "本月只有 1 次。送出後對方會收到通知，這段時光也會延長 3 天。",
+  "@reviveConfirmBody": { "description": "心動確認內文" },
+
+  "reviveCancel": "再想想",
+  "@reviveCancel": { "description": "心動取消" },
+
+  "reviveConfirm": "送出",
+  "@reviveConfirm": { "description": "心動確認" },
+
+  "reviveDoneTitle": "心動已送達",
+  "@reviveDoneTitle": { "description": "心動完成標題" },
+
+  "reviveDoneBody": "{name} 收到了。願這次彼此能停下久一點。",
+  "@reviveDoneBody": {
+    "description": "心動完成內文",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "reviveQuotaExhausted": "本月心動已用完，下月再試。",
+  "@reviveQuotaExhausted": { "description": "心動已用完" },
+
+  "reviveAlreadyChatted": "你們已經開始對話了。",
+  "@reviveAlreadyChatted": { "description": "已對話無需挽留" },
+
+  "reviveFailed": "心動送出失敗，請稍後再試。",
+  "@reviveFailed": { "description": "心動失敗" },
+
+  "chatInputHint": "傳訊息…",
+  "@chatInputHint": { "description": "聊天輸入提示" },
+
+  "chatSendFailed": "傳送失敗，請稍後再試。",
+  "@chatSendFailed": { "description": "聊天送出失敗" },
+
+  "chatRetry": "重試",
+  "@chatRetry": { "description": "聊天送出失敗 snackbar 重試 action" },
+
+  "chatEmpty": "還沒有訊息，先說一句吧。",
+  "@chatEmpty": { "description": "聊天室空狀態" },
+
+  "chatDateToday": "今天",
+  "@chatDateToday": { "description": "聊天日期：今天" },
+
+  "chatDateYesterday": "昨天",
+  "@chatDateYesterday": { "description": "聊天日期：昨天" },
+
+  "chatMenuReport": "檢舉",
+  "@chatMenuReport": { "description": "聊天選單：檢舉" },
+
+  "chatMenuLeave": "離開對話",
+  "@chatMenuLeave": { "description": "聊天選單：離開" },
+
+  "chatMenuReportToast": "檢舉功能尚未開放",
+  "@chatMenuReportToast": { "description": "檢舉 placeholder toast" },
+
+  "chatMenuLeaveToast": "離開功能尚未開放",
+  "@chatMenuLeaveToast": { "description": "離開 placeholder toast" },
+
+  "chatActionReply": "回覆",
+  "@chatActionReply": { "description": "長按訊息選單：回覆" },
+
+  "chatActionCopy": "複製",
+  "@chatActionCopy": { "description": "長按訊息選單：複製" },
+
+  "chatActionCopied": "已複製",
+  "@chatActionCopied": { "description": "複製成功 toast" },
+
+  "chatReplyImagePreview": "[照片]",
+  "@chatReplyImagePreview": { "description": "回覆預覽：被回覆訊息為照片時顯示的佔位文字" },
+
+  "chatReplyCancel": "取消回覆",
+  "@chatReplyCancel": { "description": "回覆預覽列上的取消按鈕 a11y" },
+
+  "chatImagePickFailed": "選取照片失敗，請再試一次。",
+  "@chatImagePickFailed": { "description": "選照片失敗 toast" },
+
+  "chatImageSendFailed": "照片傳送失敗，請稍後再試。",
+  "@chatImageSendFailed": { "description": "照片送出失敗 toast" },
+
+  "chatImageSending": "正在傳送照片…",
+  "@chatImageSending": { "description": "照片上傳中 toast" },
+
+  "chatUrlWarningTitle": "離開 Luko 前，請留心",
+  "@chatUrlWarningTitle": { "description": "點擊聊天訊息中連結時的警告標題" },
+
+  "chatUrlWarningBody": "Luko 無法擔保此連結的安全性。請特別留意：\n\n• 投資、加密貨幣、博弈相關網站常為詐騙\n• 不要在聊天中提供身分證、銀行帳號、驗證碼\n• 對方若引導你前往交易所或匯款，請立即停止並回報",
+  "@chatUrlWarningBody": { "description": "連結警告內文" },
+
+  "chatUrlWarningUrl": "目的地",
+  "@chatUrlWarningUrl": { "description": "警告 dialog 顯示連結網址的 label" },
+
+  "chatUrlWarningDismiss": "不再提醒",
+  "@chatUrlWarningDismiss": { "description": "警告 dialog：不再提醒 checkbox" },
+
+  "chatUrlWarningOpen": "仍要開啟",
+  "@chatUrlWarningOpen": { "description": "警告 dialog：確認開啟連結" },
+
+  "chatUrlWarningCancel": "取消",
+  "@chatUrlWarningCancel": { "description": "警告 dialog：取消" },
+
+  "chatUrlOpenFailed": "無法開啟此連結。",
+  "@chatUrlOpenFailed": { "description": "url_launcher 失敗 toast" },
+
+  "chatReportTitle": "檢舉這位使用者",
+  "@chatReportTitle": { "description": "檢舉 sheet 標題" },
+
+  "chatReportSubtitle": "我們會在 24 小時內審閱。嚴重案件將直接移除帳號。",
+  "@chatReportSubtitle": { "description": "檢舉 sheet 副標" },
+
+  "chatReportReasonHarassment": "騷擾或不當言論",
+  "@chatReportReasonHarassment": { "description": "檢舉原因：騷擾" },
+
+  "chatReportReasonInappropriate": "不雅內容",
+  "@chatReportReasonInappropriate": { "description": "檢舉原因：不雅內容" },
+
+  "chatReportReasonSpam": "詐騙或廣告",
+  "@chatReportReasonSpam": { "description": "檢舉原因：詐騙/廣告" },
+
+  "chatReportReasonOther": "其他",
+  "@chatReportReasonOther": { "description": "檢舉原因：其他" },
+
+  "chatReportNoteHint": "可補充說明（選填，最多 300 字）",
+  "@chatReportNoteHint": { "description": "檢舉補充說明 hint" },
+
+  "chatReportSubmit": "送出檢舉",
+  "@chatReportSubmit": { "description": "檢舉送出按鈕" },
+
+  "chatReportSent": "我們已收到你的檢舉。",
+  "@chatReportSent": { "description": "檢舉送出成功 toast" },
+
+  "chatReportFailed": "檢舉送出失敗，請稍後再試。",
+  "@chatReportFailed": { "description": "檢舉送出失敗 toast" },
+
+  "chatLeaveTitle": "離開這個對話",
+  "@chatLeaveTitle": { "description": "離開對話確認 dialog 標題" },
+
+  "chatLeaveBody": "離開後對方將無法再聯繫你，這個動作無法復原。",
+  "@chatLeaveBody": { "description": "離開對話確認 dialog 內文" },
+
+  "chatLeaveConfirm": "離開",
+  "@chatLeaveConfirm": { "description": "離開確認" },
+
+  "chatLeaveCancel": "取消",
+  "@chatLeaveCancel": { "description": "離開取消" },
+
+  "chatLeaveSuccess": "已離開對話。",
+  "@chatLeaveSuccess": { "description": "離開成功 toast" },
+
+  "chatLeaveFailed": "離開失敗，請稍後再試。",
+  "@chatLeaveFailed": { "description": "離開失敗 toast" },
+
+  "chatImageMessage": "[照片]",
+  "@chatImageMessage": { "description": "對話列表預覽：圖片訊息" },
+
+  "matchDayYesterday": "昨日",
+  "@matchDayYesterday": { "description": "時光廊：昨日分組標題" },
+
+  "matchDayBeforeYesterday": "前天",
+  "@matchDayBeforeYesterday": { "description": "時光廊：前天分組標題" },
+
+  "matchDayThreeDaysAgo": "大前天",
+  "@matchDayThreeDaysAgo": { "description": "時光廊：大前天分組標題" },
+
+  "matchDayEmpty": "這天沒有錯過的人",
+  "@matchDayEmpty": { "description": "時光廊：選中的日期沒有 unviewed candidate" },
+
+  "messagesEmptyTitle": "對話尚未展開",
+  "@messagesEmptyTitle": { "description": "對話列表空狀態標題" },
+
+  "messagesEmptyBody": "當彼此都停下，並各自留下一句話，\n對話便會在這裡靜靜展開。",
+  "@messagesEmptyBody": { "description": "對話列表空狀態說明" },
+
+
+  "profilePageTitle": "我的檔案",
+  "@profilePageTitle": { "description": "個人資料頁面標題" },
+
+  "chatReportReasonFakePhoto": "照騙 / 與本人不符",
+  "@chatReportReasonFakePhoto": {},
+
+  "chatReportEvidenceTitle": "附上佐證圖片（必填）",
+  "@chatReportEvidenceTitle": {},
+
+  "chatReportEvidenceHintFakePhoto": "請附上對方真實樣貌的截圖（如 IG、通話畫面）",
+  "@chatReportEvidenceHintFakePhoto": {},
+  "chatReportEvidenceHintHarassment": "請附上騷擾訊息截圖",
+  "@chatReportEvidenceHintHarassment": {},
+  "chatReportEvidenceHintSpam": "請附上詐騙連結或廣告截圖",
+  "@chatReportEvidenceHintSpam": {},
+  "chatReportEvidenceHintInappropriate": "請附上不當內容截圖",
+  "@chatReportEvidenceHintInappropriate": {},
+  "chatReportEvidenceHintOther": "請附上佐證圖片",
+  "@chatReportEvidenceHintOther": {},
+
+  "chatReportEvidenceCount": "已附上 {count} / 3 張",
+  "@chatReportEvidenceCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "chatReportEvidenceAdd": "新增照片",
+  "@chatReportEvidenceAdd": {},
+
+  "chatReportEvidenceRequired": "請至少附上 1 張佐證圖片",
+  "@chatReportEvidenceRequired": {},
+
+  "chatReportEvidenceMax": "最多只能附 3 張",
+  "@chatReportEvidenceMax": {},
+
+  "chatLeaveOptionPermanentTitle": "永久封鎖",
+  "@chatLeaveOptionPermanentTitle": {},
+  "chatLeaveOptionPermanentBody": "對方不會再出現在你的配對池中",
+  "@chatLeaveOptionPermanentBody": {},
+  "chatLeaveOptionSoftTitle": "暫時離開",
+  "@chatLeaveOptionSoftTitle": {},
+  "chatLeaveOptionSoftBody": "30 天後雙方有機會再次配對",
+  "@chatLeaveOptionSoftBody": {},
+
+  "chatReportFollowupTitle": "感謝檢舉",
+  "@chatReportFollowupTitle": {},
+  "chatReportFollowupBody": "我們會盡快進行審核。為了你的安全，建議：",
+  "@chatReportFollowupBody": {},
+  "chatReportFollowupBlock": "封鎖對方（雙方互不再出現於配對池）",
+  "@chatReportFollowupBlock": {},
+  "chatReportFollowupSoftExit": "僅退出聊天室（30 天後可再配對）",
+  "@chatReportFollowupSoftExit": {},
+  "chatReportFollowupKeep": "維持現狀",
+  "@chatReportFollowupKeep": {},
+  "chatReportFollowupConfirm": "確定",
+  "@chatReportFollowupConfirm": {},
+
+  "systemInboxTitle": "PR Dating",
+  "@systemInboxTitle": {},
+  "systemInboxEmpty": "目前沒有通知",
+  "@systemInboxEmpty": {},
+  "systemInboxListEntryName": "PR Dating",
+  "@systemInboxListEntryName": {},
+  "systemInboxListEntryPreview": "歡迎、審核結果、規範提醒",
+  "@systemInboxListEntryPreview": {},
+
+  "gateBannedTitle": "你的帳號已停權",
+  "@gateBannedTitle": {},
+  "gateBannedTempBody": "你的帳號因違反社群規範被暫時停權，將於 {expiresAt} 解除。停權期間請反思並準備以善意回到 Luko。",
+  "@gateBannedTempBody": {
+    "placeholders": { "expiresAt": { "type": "String" } }
+  },
+  "gateBannedPermBody": "你的帳號因嚴重違反社群規範被永久停權。如有疑問請來信 support@luko.app。",
+  "@gateBannedPermBody": {},
+  "gateBannedContact": "聯絡客服",
+  "@gateBannedContact": {},
+
+  "warningAckTitle": "社群規範提醒",
+  "@warningAckTitle": {},
+  "warningAckBody": "Luko 收到關於你的社群行為反映。請對待每一位你遇見的人保有禮貌與尊重。\n\n再次違反可能導致暫時或永久停權。",
+  "@warningAckBody": {},
+  "warningAckConfirm": "我已了解",
+  "@warningAckConfirm": {}
 }
